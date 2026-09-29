@@ -765,7 +765,6 @@ function seedData(){
 }
 
 let isAdmin = sessionStorage.getItem('dmd-admin') === '1';
-let data = load();
 let filterStatus = 'all';
 let filterBU = null;
 let searchTerm = '';
@@ -815,6 +814,7 @@ function load(){
   save(seeded);
   return seeded;
 }
+let data = load();
 function save(d){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
   catch(e){ toast('Gagal menyimpan ke storage browser'); }
