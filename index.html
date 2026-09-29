@@ -1021,7 +1021,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.06';
+const APP_VERSION = '0.07';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
 
@@ -1513,9 +1513,9 @@ function cardHtml(item){
       ? `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Kontrak berakhir ${Math.abs(dd)} hari lalu, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`
       : `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
   } else if(st === 'track'){
-    timeBadge = `<span class="time-badge ${dispDd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${dispDd} hari lagi</span>`;
+    timeBadge = `<span class="time-badge ${dispDd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${item.type === 'recurring' ? `Siklus ${fmtDate(dispTarget)} · ` : ''}${dispDd} hari lagi</span>`;
     if(dispDd <= 3){
-      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Deadline ${dispDd} hari lagi, progress baru ${item.progress}%.</span></div>`;
+      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>${item.type === 'recurring' ? `Siklus bulanan ini tutup ${dispDd} hari lagi (${fmtDate(dispTarget)}), progress bulan ini baru ${item.progress}%. Kontrak masih jalan${item.contractEnd ? ' sampai ' + fmtDateY(item.contractEnd) : ''}.` : `Deadline ${dispDd} hari lagi, progress baru ${item.progress}%.`}</span></div>`;
     }
   } else {
     timeBadge = `<span class="time-badge ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>${fmtDate(dispTarget)}</span>`;
