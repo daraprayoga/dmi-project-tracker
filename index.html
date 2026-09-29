@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DMD Project Board</title>
+<title>BMD Project Board</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%8A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -278,11 +278,13 @@
   .mh-calc-row input{width:56px;text-align:center;padding:8px 6px;}
   .mh-calc-row .btn-secondary{padding:8px 12px;font-size:12px;flex-shrink:0;}
   .modal.readonly .mh-calc-row{display:none;}
-  .catalog-row{grid-template-columns:1fr 90px 100px 30px;}
+  .catalog-row{grid-template-columns:118px 1fr 76px 96px 30px;}
   .catalog-row .cat-cost{text-align:center;font-size:11px;font-weight:800;color:var(--accent-text);white-space:nowrap;}
+  .catalog-group-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);margin:16px 0 7px;}
+  .catalog-group-label:first-child{margin-top:0;}
   @media(max-width:480px){
     .catalog-row{grid-template-columns:1fr 1fr;row-gap:6px;}
-    .catalog-row .cat-name{grid-column:1 / -1;}
+    .catalog-row .cat-category,.catalog-row .cat-name{grid-column:1 / -1;}
     .catalog-row .cat-cost{text-align:left;}
     .catalog-row .metric-remove{justify-self:end;}
   }
@@ -432,7 +434,7 @@
       <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
       <div>
         <div class="brand-name">Project Board</div>
-        <div class="brand-sub"><span>Digital Marketing &amp; Data</span><span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
+        <div class="brand-sub"><span>Brand Marketing &amp; Data</span><span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
       </div>
       <button class="sidebar-close" id="sidebarClose" aria-label="Tutup filter">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -485,6 +487,7 @@
           Hapus semua data
         </button>
       </div>
+      <div class="side-note" id="appVersion" style="text-align:center;padding-top:12px;">BMD Project Tracker</div>
     </div>
   </aside>
 
@@ -564,8 +567,8 @@
       <input type="date" id="f_target">
     </div>
     <div class="field" id="targetRecurringWrap" style="display:none;">
-      <label for="f_recur_day">Recurs on day of month</label>
-      <input type="number" id="f_recur_day" min="1" max="31" placeholder="e.g. 1">
+      <label for="f_recur_day">Berulang tiap tanggal berapa</label>
+      <input type="number" id="f_recur_day" min="1" max="31" placeholder="mis. 1">
       <div class="field-hint" id="recurHint"></div>
       <div class="field-row" style="margin-top:10px;">
         <div class="field" style="margin-bottom:0;">
@@ -731,6 +734,7 @@
     </div>
 
     <div class="side-label" style="padding:2px 0 8px;">Daftar layanan</div>
+    <datalist id="catalogCategoryList"></datalist>
     <div id="catalogRows"></div>
     <button type="button" class="todo-add admin-only" id="catalogAddBtn">
       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
@@ -780,6 +784,10 @@ const firebaseConfig = {
 };
 const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
+// Bump this (and the delivered filename) every time a new revision goes out,
+// so it's always clear which version is live on a given browser/device.
+const APP_VERSION = '0.01';
+document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
 
 function initFirebase(){
@@ -842,6 +850,16 @@ function updateSyncHint(){
 
 const STORAGE_KEY = 'dmd-project-tracker-data';
 const CATALOG_KEY = 'dmd-project-tracker-catalog';
+// Preset categories shown first (in this order) whenever they have items;
+// admin can still type any other category freeform via the datalist.
+const CATALOG_CATEGORIES = ['Creative Production', 'Performance Marketing'];
+// Orders a {categoryName: [...]} map: known categories first (in CATALOG_CATEGORIES
+// order), then custom categories A-Z, then the uncategorized bucket last.
+function orderCategories(groups, uncategorizedLabel){
+  const known = CATALOG_CATEGORIES.filter(c => groups[c]);
+  const custom = Object.keys(groups).filter(c => c !== uncategorizedLabel && !CATALOG_CATEGORIES.includes(c)).sort();
+  return [...known, ...custom, ...(groups[uncategorizedLabel] ? [uncategorizedLabel] : [])];
+}
 function loadCatalog(){
   try{
     const raw = localStorage.getItem(CATALOG_KEY);
@@ -853,9 +871,9 @@ function loadCatalog(){
   return {
     rate: 99000,
     items: [
-      {id: 'cat-1', name:'Socmed Static', hours:5},
-      {id: 'cat-2', name:'Socmed Video/Reels', hours:10},
-      {id: 'cat-3', name:'Data & Performance Report', hours:8}
+      {id: 'cat-1', name:'Socmed Static', hours:5, category:'Creative Production'},
+      {id: 'cat-2', name:'Socmed Video/Reels', hours:10, category:'Creative Production'},
+      {id: 'cat-3', name:'Data & Performance Report', hours:8, category:'Performance Marketing'}
     ]
   };
 }
@@ -1286,7 +1304,7 @@ function cardHtml(item){
         <div class="card-sub">${esc(item.bu)} · ${esc(item.pic)}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
-          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDateY(item.contractEnd) : '↻ Monthly · day ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDateY(item.contractEnd) : '')}</div>` : ''}
+          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDateY(item.contractEnd) : '↻ Bulanan · tiap tanggal ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDateY(item.contractEnd) : '')}</div>` : ''}
           ${item.isPaidMarketing ? `<div class="card-tag" style="background:#FBF1D3;color:#8A6D1F;">Paid Ads · Fee ${item.serviceFeePct}%</div>` : ''}
           ${metricChips}
         </div>
@@ -1606,7 +1624,7 @@ function updateRecurHint(){
   const clamped = clampDayInMonth(day, now.getFullYear(), now.getMonth());
   const d = new Date(now.getFullYear(), now.getMonth(), clamped);
   document.getElementById('recurHint').textContent =
-    `Repeats every month · this cycle is due ${d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}. Progress auto-resets to 0% when a new month starts.`;
+    `Berulang tiap bulan · siklus ini jatuh tempo ${d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}. Progress otomatis reset ke 0% begitu bulan baru mulai.`;
 }
 document.querySelectorAll('#typeToggle .type-opt').forEach(btn => {
   btn.onclick = () => applyTypeUI(btn.dataset.type);
@@ -1780,20 +1798,34 @@ document.getElementById('addTodoRow').onclick = () => {
 };
 
 /* SERVICE CATALOGUE (jam kerja standar per layanan + rate manhour) */
+const CATALOG_UNCATEGORIZED = 'Tanpa kategori';
 function catalogRowHtml(c){
-  c = c || {id: uid(), name:'', hours:null};
+  c = c || {id: uid(), name:'', hours:null, category:''};
   return `<div class="metric-row catalog-row" data-cid="${c.id}">
+    <input type="text" class="cat-category" placeholder="Kategori" list="catalogCategoryList" value="${esc(c.category || '')}">
     <input type="text" class="cat-name" placeholder="mis. Socmed Static" value="${esc(c.name || '')}">
     <input type="number" class="cat-hours" placeholder="Jam/unit" min="0" step="0.5" value="${c.hours != null ? c.hours : ''}">
     <span class="cat-cost">Rp 0</span>
     <button type="button" class="metric-remove admin-only" aria-label="Hapus layanan">&times;</button>
   </div>`;
 }
+// Renders rows grouped under a category header (preset categories first, then
+// custom ones A-Z, then uncategorized), while keeping every row individually
+// addressable via .catalog-row for the collect/remove/cost logic below.
 function renderCatalogRows(items){
   const wrap = document.getElementById('catalogRows');
-  const rows = (items && items.length) ? items : [null];
-  wrap.innerHTML = rows.map(catalogRowHtml).join('');
+  const rows = (items && items.length) ? items : [{id: uid(), name:'', hours:null, category:''}];
+  const groups = {};
+  rows.forEach(r => {
+    const cat = (r.category || '').trim() || CATALOG_UNCATEGORIZED;
+    (groups[cat] = groups[cat] || []).push(r);
+  });
+  const orderedCats = orderCategories(groups, CATALOG_UNCATEGORIZED);
+  wrap.innerHTML = orderedCats.map(cat =>
+    `<div class="catalog-group-label">${esc(cat)}</div>${groups[cat].map(catalogRowHtml).join('')}`
+  ).join('');
   updateCatalogCosts();
+  refreshCatalogCategoryList();
 }
 function updateCatalogCosts(){
   const rate = +document.getElementById('f_catalog_rate').value || 0;
@@ -1802,13 +1834,22 @@ function updateCatalogCosts(){
     r.querySelector('.cat-cost').textContent = hours > 0 ? fmtRp(hours * rate) + '/unit' : '—';
   });
 }
-function collectCatalogRows(){
+function collectCatalogRows(keepBlanks){
   const rows = [...document.querySelectorAll('#catalogRows .catalog-row')];
-  return rows.map(r => ({
+  const list = rows.map(r => ({
     id: r.dataset.cid || uid(),
+    category: r.querySelector('.cat-category').value.trim(),
     name: r.querySelector('.cat-name').value.trim(),
     hours: r.querySelector('.cat-hours').value === '' ? null : +r.querySelector('.cat-hours').value
-  })).filter(c => c.name);
+  }));
+  return keepBlanks ? list : list.filter(c => c.name);
+}
+function refreshCatalogCategoryList(){
+  const dl = document.getElementById('catalogCategoryList');
+  if(!dl) return;
+  const custom = [...new Set(collectCatalogRows(true).map(c => c.category).filter(Boolean))];
+  const all = [...new Set([...CATALOG_CATEGORIES, ...custom])];
+  dl.innerHTML = all.map(c => `<option value="${esc(c)}">`).join('');
 }
 document.getElementById('catalogRows').addEventListener('input', updateCatalogCosts);
 document.getElementById('f_catalog_rate').addEventListener('input', updateCatalogCosts);
@@ -1816,26 +1857,36 @@ document.getElementById('catalogRows').addEventListener('click', (e) => {
   const btn = e.target.closest('.metric-remove');
   if(!btn || !isAdmin) return;
   const wrap = document.getElementById('catalogRows');
-  const row = btn.closest('.catalog-row');
-  if(wrap.children.length > 1){
-    row.remove();
-  }else{
+  const allRows = [...wrap.querySelectorAll('.catalog-row')];
+  if(allRows.length <= 1){
+    const row = btn.closest('.catalog-row');
+    row.querySelector('.cat-category').value = '';
     row.querySelector('.cat-name').value = '';
     row.querySelector('.cat-hours').value = '';
+    updateCatalogCosts();
+    return;
   }
-  updateCatalogCosts();
+  const idx = allRows.indexOf(btn.closest('.catalog-row'));
+  const remaining = collectCatalogRows(true);
+  remaining.splice(idx, 1);
+  renderCatalogRows(remaining);
 });
 document.getElementById('catalogAddBtn').onclick = () => {
   if(!isAdmin) return;
-  document.getElementById('catalogRows').insertAdjacentHTML('beforeend', catalogRowHtml(null));
-  updateCatalogCosts();
+  const current = collectCatalogRows(true);
+  current.push({id: uid(), category:'', name:'', hours:null});
+  renderCatalogRows(current);
 };
 function renderMhCalcOptions(){
   const sel = document.getElementById('mhCalcService');
   if(!sel) return;
   const current = sel.value;
+  const valid = catalogData.filter(c => c.name && c.hours != null);
+  const groups = {};
+  valid.forEach(c => { const cat = c.category || CATALOG_UNCATEGORIZED; (groups[cat] = groups[cat] || []).push(c); });
+  const orderedCats = orderCategories(groups, CATALOG_UNCATEGORIZED);
   sel.innerHTML = '<option value="">Hitung dari katalog layanan...</option>' +
-    catalogData.filter(c => c.name && c.hours != null).map(c => `<option value="${esc(c.id)}">${esc(c.name)} (${c.hours} jam)</option>`).join('');
+    orderedCats.map(cat => `<optgroup label="${esc(cat)}">${groups[cat].map(c => `<option value="${esc(c.id)}">${esc(c.name)} (${c.hours} jam)</option>`).join('')}</optgroup>`).join('');
   sel.value = current;
   const hint = document.getElementById('mhCalcRateHint');
   if(hint) hint.textContent = `Rate saat ini: ${fmtRp(catalogRate)}/jam — bisa diubah di Katalog layanan`;
