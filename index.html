@@ -28,7 +28,30 @@
     --black:#1C1B18;
   }
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
   body{margin:0;background:var(--page-bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .board-scroll,.filter-list.scroll,.sidebar,.overlay,.modal{
+    -webkit-overflow-scrolling:touch;
+    scroll-behavior:smooth;
+    overscroll-behavior:contain;
+  }
+  /* thin, calmer scrollbars instead of the default chunky ones */
+  .board-scroll::-webkit-scrollbar,.filter-list.scroll::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.overlay::-webkit-scrollbar{
+    width:8px;height:8px;
+  }
+  .board-scroll::-webkit-scrollbar-track,.filter-list.scroll::-webkit-scrollbar-track,.sidebar::-webkit-scrollbar-track,.overlay::-webkit-scrollbar-track{
+    background:transparent;
+  }
+  .board-scroll::-webkit-scrollbar-thumb,.filter-list.scroll::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.overlay::-webkit-scrollbar-thumb{
+    background:var(--border);border-radius:99px;
+  }
+  .board-scroll::-webkit-scrollbar-thumb:hover,.filter-list.scroll::-webkit-scrollbar-thumb:hover,.sidebar::-webkit-scrollbar-thumb:hover,.overlay::-webkit-scrollbar-thumb:hover{
+    background:var(--ink-faint);
+  }
+  .board-scroll,.filter-list.scroll,.sidebar,.overlay{
+    scrollbar-width:thin;
+    scrollbar-color:var(--border) transparent;
+  }
   .num{font-variant-numeric:tabular-nums;}
   button{font-family:'Inter',sans-serif;}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
@@ -53,23 +76,38 @@
   .side-label{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:16px 10px 7px;display:flex;align-items:center;}
   .side-label .clear{margin-left:auto;color:var(--accent-text);cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;font-size:11px;}
   .side-label .clear:hover{text-decoration:underline;}
-  .filter-list{display:flex;flex-direction:column;gap:2px;}
-  .filter-list.scroll{max-height:220px;overflow-y:auto;}
-  .filter-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;color:var(--ink-soft);font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
-  .filter-item:hover{background:var(--col-bg);}
+  .filter-list{display:flex;flex-direction:column;gap:5px;}
+  .filter-list.scroll{max-height:224px;overflow-y:auto;padding-bottom:2px;position:relative;}
+  .filter-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;color:var(--ink-soft);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border-soft);background:var(--card);width:100%;text-align:left;line-height:1.3;}
+  .filter-item:hover{background:var(--col-bg);border-color:var(--border);}
   .filter-item .ic{display:flex;width:15px;height:15px;flex-shrink:0;}
   .filter-item .ic svg{width:15px;height:15px;}
-  .filter-item .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .filter-item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .filter-item .cnt{margin-left:auto;background:var(--col-bg);color:var(--ink-faint);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;flex-shrink:0;}
-  .filter-item.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700;}
+  .filter-item.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700;border-color:transparent;}
   .filter-item.active .cnt{background:rgba(30,122,68,.14);color:var(--accent-text);}
   .side-note{font-size:11.5px;color:var(--ink-faint);padding:6px 10px;}
+  .scroll-fade-wrap{position:relative;}
+  .scroll-fade-wrap::after{content:'';position:absolute;left:0;right:6px;bottom:0;height:16px;background:linear-gradient(to bottom, transparent, var(--page-bg));pointer-events:none;border-radius:0 0 10px 10px;}
 
   .sidebar-bottom{margin-top:auto;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:2px;}
   .side-action{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;color:var(--ink-soft);font-size:12.5px;font-weight:600;cursor:pointer;background:none;border:none;text-align:left;width:100%;}
   .side-action svg{width:15px;height:15px;flex-shrink:0;}
   .side-action:hover{background:var(--col-bg);color:var(--ink);}
   .side-action.danger:hover{background:var(--danger-soft);color:var(--danger-text);}
+  .side-action.locked{opacity:.5;}
+  .side-action.locked:hover{background:none;color:var(--ink-soft);}
+  .data-box{border:1px solid var(--border-soft);background:var(--col-bg);border-radius:12px;padding:6px;margin-top:6px;display:flex;flex-direction:column;gap:2px;}
+  .data-box .side-action:hover{background:var(--card);}
+
+  .admin-card{border:1.5px dashed var(--border);border-radius:12px;padding:10px;margin-bottom:4px;}
+  .admin-login-btn{display:flex;align-items:center;gap:9px;width:100%;border:none;background:var(--ink);color:#fff;font-family:'Inter';font-size:12.5px;font-weight:700;padding:10px 12px;border-radius:9px;cursor:pointer;}
+  .admin-login-btn svg{width:15px;height:15px;flex-shrink:0;}
+  .admin-login-btn:hover{background:#000;}
+  body.is-admin .admin-card{border-style:solid;border-color:var(--accent);background:var(--accent-soft);}
+  body.is-admin .admin-login-btn{background:var(--accent);}
+  body.is-admin .admin-login-btn:hover{background:var(--accent-text);}
+  .admin-card .side-hint{padding:8px 2px 0;text-align:center;}
 
   /* MAIN */
   .main{flex:1;min-width:0;padding:24px 26px 10px;display:flex;flex-direction:column;}
@@ -229,6 +267,27 @@
   .card-todo{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-soft);}
   .card-todo.all-done{color:var(--accent-text);}
   .card-todo svg{width:13px;height:13px;flex-shrink:0;}
+
+  /* Admin mode / view-only gating */
+  .admin-badge{display:inline-flex;align-items:center;background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 6px;border-radius:5px;vertical-align:middle;margin-left:4px;}
+  .side-hint{font-size:10.5px;color:var(--ink-faint);padding:2px 10px 10px;}
+  body.is-admin .side-hint{color:var(--accent-text);}
+  #adminToggleBtn svg{color:var(--ink-faint);}
+  body.is-admin #adminToggleBtn{color:var(--accent-text);}
+  body.is-admin #adminToggleBtn svg{color:var(--accent-text);}
+  body:not(.is-admin) .btn-new,
+  body:not(.is-admin) .admin-only,
+  body:not(.is-admin) .card-del{display:none !important;}
+  body:not(.is-admin) .card-prog-track{cursor:default;}
+  .modal.readonly .metric-add,
+  .modal.readonly .todo-add,
+  .modal.readonly .metric-remove,
+  .modal.readonly #modalSave,
+  .modal.readonly #modalDelete{display:none;}
+  .modal.readonly input,
+  .modal.readonly .type-toggle{pointer-events:none;}
+  .modal.readonly input{background:var(--col-bg);opacity:.85;}
+  .modal-readonly-hint{font-size:11.5px;font-weight:600;color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:8px 11px;margin-bottom:14px;}
   .calc-box{background:var(--col-bg);border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-top:4px;}
   .calc-line{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);padding:4px 0;}
   .calc-line b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;}
@@ -342,7 +401,7 @@
       <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
       <div>
         <div class="brand-name">Project Board</div>
-        <div class="brand-sub">Digital Marketing &amp; Data</div>
+        <div class="brand-sub">Digital Marketing &amp; Data <span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
       </div>
       <button class="sidebar-close" id="sidebarClose" aria-label="Tutup filter">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -353,22 +412,35 @@
     <div class="filter-list" id="statusFilters"></div>
 
     <div class="side-label">Business unit <span class="clear" id="clearBU" style="display:none;">reset</span></div>
-    <div class="filter-list scroll" id="buFilters"></div>
+    <div class="scroll-fade-wrap">
+      <div class="filter-list scroll" id="buFilters"></div>
+    </div>
 
     <div class="sidebar-bottom">
-      <button class="side-action" id="exportBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4"/><path d="M4 17v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
-        Download backup
-      </button>
-      <button class="side-action" id="importBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V8m0 0l-4 4m4-4l4 4"/><path d="M4 6V4a1 1 0 011-1h14a1 1 0 011 1v2"/></svg>
-        Restore dari file
-      </button>
-      <input type="file" id="importFile" accept="application/json" style="display:none;">
-      <button class="side-action danger" id="resetBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>
-        Hapus semua data
-      </button>
+      <div class="admin-card" id="adminCard">
+        <button class="admin-login-btn" id="adminToggleBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          <span id="adminToggleLabel">Login admin (PIN)</span>
+        </button>
+        <div class="side-hint" id="syncHint">Mode lihat &middot; sync belum aktif</div>
+      </div>
+
+      <div class="side-label" style="padding-top:10px;">Save &amp; restore data</div>
+      <div class="data-box">
+        <button class="side-action" id="exportBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4"/><path d="M4 17v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+          Download backup (.json)
+        </button>
+        <button class="side-action" id="importBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V8m0 0l-4 4m4-4l4 4"/><path d="M4 6V4a1 1 0 011-1h14a1 1 0 011 1v2"/></svg>
+          Restore dari file
+        </button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+        <button class="side-action danger" id="resetBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>
+          Hapus semua data
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -412,6 +484,7 @@
 <div class="overlay" id="overlay">
   <div class="modal" role="dialog" aria-modal="true">
     <h2 id="modalTitle">Project baru</h2>
+    <div class="modal-readonly-hint" id="modalReadonlyHint" style="display:none;">Mode lihat aja &middot; login admin buat edit.</div>
 
     <div class="field">
       <label for="f_name">Nama project</label>
@@ -529,9 +602,94 @@
   </div>
 </div>
 
+<div class="overlay" id="adminOverlay">
+  <div class="confirm" role="alertdialog" aria-modal="true">
+    <h3>🔒 Admin login</h3>
+    <p>Masukin PIN admin. Perubahan yang lo buat di admin mode langsung ke-sync ke semua orang yang buka file ini.</p>
+    <input type="password" id="adminPinInput" inputmode="numeric" autocomplete="off" placeholder="• • • •" style="width:100%;background:var(--col-bg);border:2px solid var(--ink);border-radius:10px;padding:14px 12px;font-family:'Inter';font-size:22px;font-weight:700;color:var(--ink);margin:14px 0 4px;letter-spacing:.5em;text-align:center;">
+    <div class="confirm-actions">
+      <button class="btn-secondary" id="adminCancel">Batal</button>
+      <button class="btn-primary" id="adminLoginBtn">Login</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
 <script>
+/* ============ FIREBASE CONFIG ============
+   Realtime Database project shared with padel-teroos-scoring-app.
+   Board data lives under the RTDB_PATH node below, separate from the
+   scoring app's own data. */
+const firebaseConfig = {
+  apiKey: "AIzaSyBUm22kFzD0upeGy2tfWSIYQQciA2vsUog",
+  authDomain: "scoring-padel-teroos.firebaseapp.com",
+  databaseURL: "https://scoring-padel-teroos-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "scoring-padel-teroos",
+  storageBucket: "scoring-padel-teroos.firebasestorage.app",
+  messagingSenderId: "1046784012606",
+  appId: "1:1046784012606:web:ee8c0258b19ed886e6bc6f",
+  measurementId: "G-KQ1TBWSQM8"
+};
+const RTDB_PATH = 'dmd-tracker/board';
+const ADMIN_PIN = '7777';
+let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
+
+function initFirebase(){
+  if(!firebaseConfig.apiKey){
+    console.warn('Firebase config kosong — jalan mode lokal, gak sync antar browser.');
+    updateSyncHint();
+    return;
+  }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    boardRef = db.ref(RTDB_PATH);
+    cloudReady = true;
+    updateSyncHint();
+    boardRef.on('value', snap => {
+      const val = snap.val();
+      if(val && Array.isArray(val.items)){
+        data = val.items.map(migrateItem);
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+        renderAll();
+      } else if(isAdmin){
+        pushToCloud();
+      }
+      updateSyncHint();
+    }, err => {
+      console.error('RTDB sync error', err);
+      cloudReady = false;
+      updateSyncHint();
+      toast('Gagal connect ke cloud, pakai data lokal');
+    });
+  }catch(e){
+    console.error('Firebase init gagal', e);
+    cloudReady = false;
+    updateSyncHint();
+  }
+}
+function pushToCloud(){
+  if(!cloudReady || !boardRef) return;
+  boardRef.set({items: data, updatedAt: Date.now()}).catch(e => {
+    console.error(e);
+    toast('Gagal sync ke cloud');
+  });
+}
+function updateSyncHint(){
+  const el = document.getElementById('syncHint');
+  if(!el) return;
+  if(!firebaseConfig.apiKey){
+    el.textContent = isAdmin ? 'Admin mode · sync belum di-setup' : 'Mode lihat · sync belum di-setup';
+  }else if(!cloudReady){
+    el.textContent = 'Gagal connect ke cloud';
+  }else{
+    el.textContent = isAdmin ? 'Admin mode · live sync aktif' : 'Mode lihat · live sync aktif';
+  }
+}
+
 const STORAGE_KEY = 'dmd-project-tracker-data';
 
 const AVATAR_PALETTE = ['#2FA79B','#4C7EF3','#8B5CF6','#E8558B','#F0973A','#E2574C','#38A169','#5B6EF5'];
@@ -566,6 +724,7 @@ function seedData(){
   ];
 }
 
+let isAdmin = sessionStorage.getItem('dmd-admin') === '1';
 let data = load();
 let filterStatus = 'all';
 let filterBU = null;
@@ -603,6 +762,7 @@ function load(){
 function save(d){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
   catch(e){ toast('Gagal menyimpan ke storage browser'); }
+  if(isAdmin) pushToCloud();
 }
 function todayStr(){
   const d = new Date();
@@ -873,12 +1033,16 @@ function renderBoard(){
   const board = document.getElementById('board');
 
   if(!data.length){
-    board.innerHTML = `<div class="board-empty">
+    board.innerHTML = isAdmin ? `<div class="board-empty">
       <h3>Belum ada project</h3>
       <p>Mulai dengan menambah project pertama, atau restore dari file backup.</p>
       <button class="btn-new" style="margin:0 auto;" id="emptyAdd">Tambah project</button>
+    </div>` : `<div class="board-empty">
+      <h3>Belum ada data</h3>
+      <p>Menunggu admin nambahin project. Login admin buat mulai isi board ini.</p>
     </div>`;
-    document.getElementById('emptyAdd').onclick = () => openModal(null);
+    const emptyAdd = document.getElementById('emptyAdd');
+    if(emptyAdd) emptyAdd.onclick = () => openModal(null);
     return;
   }
 
@@ -931,6 +1095,7 @@ function renderBoard(){
   board.querySelectorAll('[data-del]').forEach(el => {
     el.onclick = (e) => {
       e.stopPropagation();
+      if(!isAdmin) return;
       const item = data.find(d => d.id === el.dataset.del);
       if(!item) return;
       askConfirm('Hapus project?', `"${item.name}" akan dihapus permanen. Aksi ini gak bisa dibatalkan.`, () => {
@@ -940,6 +1105,7 @@ function renderBoard(){
     };
   });
 
+  if(!isAdmin) return;
   board.querySelectorAll('[data-prog]').forEach(track => {
     let dragging = false;
     const setFrom = (e) => {
@@ -1015,8 +1181,12 @@ document.getElementById('exportBtn').onclick = () => {
   URL.revokeObjectURL(url);
   toast(`${data.length} project di-backup`);
 };
-document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importBtn').onclick = () => {
+  if(!isAdmin){ toast('Login admin dulu buat restore data'); return; }
+  document.getElementById('importFile').click();
+};
 document.getElementById('importFile').onchange = (e) => {
+  if(!isAdmin) return;
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -1072,6 +1242,7 @@ document.getElementById('importFile').onchange = (e) => {
   reader.readAsText(file);
 };
 document.getElementById('resetBtn').onclick = () => {
+  if(!isAdmin){ toast('Login admin dulu buat hapus data'); return; }
   askConfirm('Hapus semua data?',
     `Semua ${data.length} project akan dihapus permanen dari browser ini. Download backup dulu kalau masih dibutuhkan.`,
     () => { data = []; save(data); renderAll(); toast('Semua data dihapus'); });
@@ -1200,9 +1371,14 @@ document.getElementById('addTodoRow').onclick = () => {
 };
 
 function openModal(id){
+  if(!id && !isAdmin) return;
   editingId = id || null;
   const it = id ? data.find(d => d.id === id) : null;
-  document.getElementById('modalTitle').textContent = it ? 'Edit project' : 'Project baru';
+  const modalEl = document.querySelector('.modal');
+  modalEl.classList.toggle('readonly', !isAdmin);
+  document.getElementById('modalReadonlyHint').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('modalCancel').textContent = isAdmin ? 'Batal' : 'Tutup';
+  document.getElementById('modalTitle').textContent = isAdmin ? (it ? 'Edit project' : 'Project baru') : (it ? it.name : 'Project baru');
   document.getElementById('f_name').value     = it ? it.name : '';
   document.getElementById('f_bu').value       = it ? it.bu : (filterBU || '');
   document.getElementById('f_service').value  = it ? it.service : '';
@@ -1235,7 +1411,7 @@ document.getElementById('f_progress').oninput = (e) => {
   document.getElementById(id).oninput = updateCalc;
 });
 document.getElementById('modalDelete').onclick = () => {
-  if(!editingId) return;
+  if(!editingId || !isAdmin) return;
   const it = data.find(d => d.id === editingId);
   const target = editingId;
   askConfirm('Hapus project?', `"${it.name}" akan dihapus permanen.`, () => {
@@ -1244,6 +1420,7 @@ document.getElementById('modalDelete').onclick = () => {
   });
 };
 document.getElementById('modalSave').onclick = () => {
+  if(!isAdmin) return;
   const name = document.getElementById('f_name').value.trim();
   if(!name){ document.getElementById('f_name').focus(); toast('Nama project wajib diisi'); return; }
 
@@ -1286,7 +1463,8 @@ document.getElementById('sortSel').onchange = (e) => { sortMode = e.target.value
 
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
-    if(cfOverlay.classList.contains('show')) closeConfirm();
+    if(adminOverlay.classList.contains('show')) adminOverlay.classList.remove('show');
+    else if(cfOverlay.classList.contains('show')) closeConfirm();
     else if(overlay.classList.contains('show')) closeModal();
     else if(sidebarEl.classList.contains('open')) closeSidebar();
   }
@@ -1300,6 +1478,52 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/* ADMIN MODE */
+const adminOverlay = document.getElementById('adminOverlay');
+function applyAdminUI(){
+  document.body.classList.toggle('is-admin', isAdmin);
+  document.getElementById('adminToggleLabel').textContent = isAdmin ? 'Logout admin' : 'Login admin';
+  document.getElementById('adminBadge').style.display = isAdmin ? 'inline-flex' : 'none';
+  document.getElementById('importBtn').classList.toggle('locked', !isAdmin);
+  document.getElementById('resetBtn').classList.toggle('locked', !isAdmin);
+  updateSyncHint();
+}
+document.getElementById('adminToggleBtn').onclick = () => {
+  if(isAdmin){
+    isAdmin = false;
+    sessionStorage.removeItem('dmd-admin');
+    applyAdminUI();
+    renderAll();
+    toast('Admin mode dimatiin, sekarang mode lihat');
+  }else{
+    document.getElementById('adminPinInput').value = '';
+    adminOverlay.classList.add('show');
+    setTimeout(() => document.getElementById('adminPinInput').focus(), 50);
+  }
+};
+document.getElementById('adminCancel').onclick = () => adminOverlay.classList.remove('show');
+adminOverlay.onclick = (e) => { if(e.target === adminOverlay) adminOverlay.classList.remove('show'); };
+function tryAdminLogin(){
+  const pin = document.getElementById('adminPinInput').value.trim();
+  if(pin === ADMIN_PIN){
+    isAdmin = true;
+    sessionStorage.setItem('dmd-admin', '1');
+    adminOverlay.classList.remove('show');
+    applyAdminUI();
+    renderAll();
+    toast('Admin mode aktif — perubahan lo langsung ke-sync ke semua orang');
+    pushToCloud();
+  }else{
+    toast('PIN salah');
+  }
+}
+document.getElementById('adminLoginBtn').onclick = tryAdminLogin;
+document.getElementById('adminPinInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); tryAdminLogin(); }
+});
+
+applyAdminUI();
+initFirebase();
 renderAll();
 </script>
 </body>
