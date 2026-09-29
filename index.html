@@ -302,6 +302,8 @@
   .modal.readonly .type-toggle{pointer-events:none;}
   .modal.readonly input{background:var(--col-bg);opacity:.85;}
   .modal-readonly-hint{font-size:11.5px;font-weight:600;color:var(--accent-text);background:var(--accent-soft);border-radius:9px;padding:8px 11px;margin-bottom:14px;}
+  .paidmktg-toggle{display:flex;align-items:flex-start;gap:9px;background:var(--col-bg);border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px;margin-bottom:12px;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;line-height:1.4;}
+  .paidmktg-toggle input{margin-top:2px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
   .calc-box{background:var(--col-bg);border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-top:4px;}
   .calc-line{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);padding:4px 0;}
   .calc-line b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;}
@@ -571,7 +573,29 @@
     </div>
 
     <div class="section-label">Financial</div>
-    <div class="field-row">
+    <label class="paidmktg-toggle">
+      <input type="checkbox" id="f_paid_mktg">
+      <span>Paid Marketing project <span style="font-weight:500;color:var(--ink-faint);text-transform:none;">(revenue dihitung dari cost of revenue + service fee)</span></span>
+    </label>
+
+    <div id="corFirstWrap" style="display:none;">
+      <div class="field">
+        <label for="f_cor_pm">Cost of revenue (Rp) <span style="font-weight:500;color:var(--ink-faint);">— media cost / ad spend</span></label>
+        <input type="number" id="f_cor_pm" placeholder="0" min="0" step="100000">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f_service_fee_pct">Service fee (%)</label>
+          <input type="number" id="f_service_fee_pct" placeholder="8" min="0" step="0.1" value="8">
+        </div>
+        <div class="field">
+          <label for="f_pph_pct">PPh (%)</label>
+          <input type="number" id="f_pph_pct" placeholder="2" min="0" step="0.1" value="2">
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row" id="manualRevCorWrap">
       <div class="field">
         <label for="f_revenue">Revenue (Rp)</label>
         <input type="number" id="f_revenue" placeholder="0" min="0" step="100000">
@@ -587,6 +611,10 @@
     </div>
 
     <div class="calc-box">
+      <div class="calc-line" id="cRevLine" style="display:none;"><span>Revenue (auto)</span><b id="cRev">Rp 0</b></div>
+      <div class="calc-line" id="cFeeLine" style="display:none;"><span>Service fee</span><b id="cFee">Rp 0</b></div>
+      <div class="calc-line" id="cPphLine" style="display:none;"><span>PPh dipotong client</span><b id="cPph">Rp 0</b></div>
+      <div class="calc-line" id="cNetFeeLine" style="display:none;"><span>Net fee diterima (cash)</span><b id="cNetFee">Rp 0</b></div>
       <div class="calc-line"><span>Gross profit margin</span><b id="cGpm">Rp 0</b></div>
       <div class="calc-line"><span>Total cost</span><b id="cCost">Rp 0</b></div>
       <div class="calc-line total"><span>Net profit</span><b id="cNet">Rp 0</b></div>
@@ -799,6 +827,12 @@ function migrateItem(it){
     it.progressTargets = (it.qtyTarget != null && it.qtyTarget !== '')
       ? [{id: uid(), label: 'Qty', target: Number(it.qtyTarget) || 0, done: Number(it.qtyDone) || 0}]
       : [];
+  }
+  it.isPaidMarketing = !!it.isPaidMarketing;
+  if(!it.isPaidMarketing){ it.serviceFeePct = null; it.pphPct = null; }
+  else{
+    if(it.serviceFeePct == null) it.serviceFeePct = 8;
+    if(it.pphPct == null) it.pphPct = 2;
   }
   return it;
 }
@@ -1064,6 +1098,7 @@ function cardHtml(item){
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
           ${item.type === 'recurring' ? `<div class="card-tag recurring">↻ Monthly · day ${item.recurDay}</div>` : ''}
+          ${item.isPaidMarketing ? `<div class="card-tag" style="background:#FBF1D3;color:#8A6D1F;">Paid Ads · Fee ${item.serviceFeePct}%</div>` : ''}
           ${metricChips}
         </div>
       </div>
@@ -1277,6 +1312,9 @@ document.getElementById('importFile').onchange = (e) => {
             : (it.qtyTarget != null && it.qtyTarget !== '' ? [{id:uid(), label:'Qty', target:Number(it.qtyTarget)||0, done:Number(it.qtyDone)||0}] : []),
           revenue: Math.max(0, Number(it.revenue) || 0),
           cor: Math.max(0, Number(it.cor) || 0),
+          isPaidMarketing: !!it.isPaidMarketing,
+          serviceFeePct: it.isPaidMarketing ? (it.serviceFeePct != null ? Number(it.serviceFeePct) : 8) : null,
+          pphPct: it.isPaidMarketing ? (it.pphPct != null ? Number(it.pphPct) : 2) : null,
           manhour: Math.max(0, Number(it.manhour) || 0),
           metrics: Array.isArray(it.metrics)
             ? it.metrics.map(m => ({
@@ -1318,9 +1356,35 @@ document.getElementById('resetBtn').onclick = () => {
 
 /* MODAL */
 const overlay = document.getElementById('overlay');
+let isPaidMktg = false;
+function applyPaidMktgUI(flag){
+  isPaidMktg = flag;
+  document.getElementById('f_paid_mktg').checked = flag;
+  document.getElementById('corFirstWrap').style.display = flag ? 'block' : 'none';
+  document.getElementById('manualRevCorWrap').style.display = flag ? 'none' : 'grid';
+  ['cRevLine','cFeeLine','cPphLine','cNetFeeLine'].forEach(id => {
+    document.getElementById(id).style.display = flag ? 'flex' : 'none';
+  });
+  updateCalc();
+}
+document.getElementById('f_paid_mktg').onchange = (e) => applyPaidMktgUI(e.target.checked);
 function updateCalc(){
-  const rev = +document.getElementById('f_revenue').value || 0;
-  const cor = +document.getElementById('f_cor').value || 0;
+  let rev, cor;
+  if(isPaidMktg){
+    cor = +document.getElementById('f_cor_pm').value || 0;
+    const feePct = +document.getElementById('f_service_fee_pct').value || 0;
+    const pphPct = +document.getElementById('f_pph_pct').value || 0;
+    const fee = cor * feePct / 100;
+    const pph = fee * pphPct / 100;
+    rev = cor + fee;
+    document.getElementById('cRev').textContent = fmtRp(rev);
+    document.getElementById('cFee').textContent = fmtRp(fee);
+    document.getElementById('cPph').textContent = fmtRp(pph);
+    document.getElementById('cNetFee').textContent = fmtRp(fee - pph);
+  }else{
+    rev = +document.getElementById('f_revenue').value || 0;
+    cor = +document.getElementById('f_cor').value || 0;
+  }
   const mh  = +document.getElementById('f_manhour').value || 0;
   const gpm = rev - cor, cost = cor + mh, net = rev - cost;
   const pct = rev ? net/rev*100 : 0;
@@ -1330,7 +1394,11 @@ function updateCalc(){
   const pctEl = document.getElementById('cPct');
   pctEl.textContent = pct.toFixed(1) + '%';
   pctEl.style.color = pct < 10 ? 'var(--danger-text)' : pct < 20 ? 'var(--warn-text)' : 'var(--accent-text)';
+  return { rev, cor };
 }
+['f_cor_pm','f_service_fee_pct','f_pph_pct'].forEach(id => {
+  document.getElementById(id).oninput = updateCalc;
+});
 let modalType = 'onetime';
 
 function applyTypeUI(type){
@@ -1544,6 +1612,10 @@ function openModal(id){
   document.getElementById('f_revenue').value  = it ? it.revenue : '';
   document.getElementById('f_cor').value      = it ? it.cor : '';
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
+  document.getElementById('f_cor_pm').value          = it && it.isPaidMarketing ? it.cor : '';
+  document.getElementById('f_service_fee_pct').value = it && it.serviceFeePct != null ? it.serviceFeePct : 8;
+  document.getElementById('f_pph_pct').value         = it && it.pphPct != null ? it.pphPct : 2;
+  applyPaidMktgUI(it ? !!it.isPaidMarketing : false);
   renderMetricRows(it ? it.metrics : []);
   renderTodoRows(it ? ensureDefaultTodos(it.todos) : ensureDefaultTodos([]));
   document.getElementById('modalDelete').style.visibility = it ? 'visible' : 'hidden';
@@ -1579,6 +1651,7 @@ document.getElementById('modalSave').onclick = () => {
   const it = editingId ? data.find(d => d.id === editingId) : null;
   const wasRecurring = it && it.type === 'recurring';
   const nowRecurring = modalType === 'recurring';
+  const calc = updateCalc();
 
   const payload = {
     name,
@@ -1592,8 +1665,11 @@ document.getElementById('modalSave').onclick = () => {
     progressMode: progressMode,
     progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
     progress: progressMode === 'qty' ? updateQtyProgress() : +document.getElementById('f_progress').value,
-    revenue: Math.max(0, +document.getElementById('f_revenue').value || 0),
-    cor: Math.max(0, +document.getElementById('f_cor').value || 0),
+    isPaidMarketing: isPaidMktg,
+    serviceFeePct: isPaidMktg ? (+document.getElementById('f_service_fee_pct').value || 0) : null,
+    pphPct: isPaidMktg ? (+document.getElementById('f_pph_pct').value || 0) : null,
+    revenue: Math.max(0, calc.rev),
+    cor: Math.max(0, calc.cor),
     manhour: Math.max(0, +document.getElementById('f_manhour').value || 0),
     metrics: collectMetrics(),
     todos: ensureDefaultTodos(collectTodos())
