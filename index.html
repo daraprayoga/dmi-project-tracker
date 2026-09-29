@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMD Project Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg:#EEEBE4;
+    --card:#FFFFFF;
+    --col-bg:#F4F2EC;
+    --col-green-bg:#E9F6EE;
+    --border:#E3DFD4;
+    --border-soft:#ECE8DC;
+    --ink:#1F2328;
+    --ink-soft:#6B665A;
+    --ink-faint:#9C9789;
+    --accent:#2FAE64;
+    --accent-soft:#DFF5E6;
+    --accent-text:#1E7A44;
+    --danger:#D2483C;
+    --danger-soft:#FBE2DE;
+    --danger-text:#B13327;
+    --warn-soft:#FBF1D3;
+    --warn-text:#8A6D1F;
+    --black:#1C1B18;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page-bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .num{font-variant-numeric:tabular-nums;}
+  button{font-family:'Inter',sans-serif;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .shell{padding:26px;}
+  .app{
+    display:flex;background:var(--card);border-radius:24px;
+    border:1px solid rgba(0,0,0,.05);
+    min-height:calc(100vh - 52px);overflow:hidden;
+    box-shadow:0 1px 2px rgba(28,27,24,.04), 0 8px 24px -8px rgba(28,27,24,.10), 0 40px 80px -40px rgba(28,27,24,.30);
+  }
+
+  /* SIDEBAR */
+  .sidebar{width:238px;flex-shrink:0;border-right:1px solid var(--border-soft);padding:20px 14px;display:flex;flex-direction:column;}
+  .brand{display:flex;align-items:center;gap:9px;padding:4px 6px 14px;}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:var(--black);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:6px;flex-shrink:0;}
+  .brand-mark span{background:#fff;border-radius:1px;}
+  .brand-name{font-weight:700;font-size:14.5px;line-height:1.2;}
+  .brand-sub{font-size:10.5px;color:var(--ink-faint);font-weight:500;margin-top:1px;}
+  .sidebar-close{display:none;}
+
+  .side-label{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:16px 10px 7px;display:flex;align-items:center;}
+  .side-label .clear{margin-left:auto;color:var(--accent-text);cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;font-size:11px;}
+  .side-label .clear:hover{text-decoration:underline;}
+  .filter-list{display:flex;flex-direction:column;gap:2px;}
+  .filter-list.scroll{max-height:220px;overflow-y:auto;}
+  .filter-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;color:var(--ink-soft);font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .filter-item:hover{background:var(--col-bg);}
+  .filter-item .ic{display:flex;width:15px;height:15px;flex-shrink:0;}
+  .filter-item .ic svg{width:15px;height:15px;}
+  .filter-item .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .filter-item .cnt{margin-left:auto;background:var(--col-bg);color:var(--ink-faint);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;flex-shrink:0;}
+  .filter-item.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700;}
+  .filter-item.active .cnt{background:rgba(30,122,68,.14);color:var(--accent-text);}
+  .side-note{font-size:11.5px;color:var(--ink-faint);padding:6px 10px;}
+
+  .sidebar-bottom{margin-top:auto;padding-top:14px;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:2px;}
+  .side-action{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;color:var(--ink-soft);font-size:12.5px;font-weight:600;cursor:pointer;background:none;border:none;text-align:left;width:100%;}
+  .side-action svg{width:15px;height:15px;flex-shrink:0;}
+  .side-action:hover{background:var(--col-bg);color:var(--ink);}
+  .side-action.danger:hover{background:var(--danger-soft);color:var(--danger-text);}
+
+  /* MAIN */
+  .main{flex:1;min-width:0;padding:24px 26px 10px;display:flex;flex-direction:column;}
+  .topbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  h1{font-size:23px;font-weight:700;margin:0;letter-spacing:-.01em;}
+  .top-sub{font-size:12px;color:var(--ink-faint);margin-top:3px;}
+  .top-spacer{flex:1;}
+  .top-search{position:relative;}
+  .top-search input{width:208px;background:var(--col-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px 9px 32px;font-family:'Inter';font-size:13px;color:var(--ink);}
+  .top-search input:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .top-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--ink-faint);}
+  select.sortsel{appearance:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 30px 9px 12px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;font-family:'Inter';
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239C9789' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 11px center;}
+  .btn-new{
+    background:var(--black);color:#fff;border:none;border-radius:10px;padding:10px 16px;
+    font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;
+    box-shadow:0 1px 2px rgba(28,27,24,.25), 0 4px 10px -4px rgba(28,27,24,.35);
+  }
+  .btn-new:hover{background:#000;}
+
+  /* STAT BAR */
+  .statbar{
+    display:flex;background:var(--card);border:1px solid rgba(28,27,24,.05);
+    border-radius:18px;margin-bottom:16px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(28,27,24,.04), 0 10px 24px -16px rgba(28,27,24,.22);
+  }
+  .stat-seg{flex:1;padding:14px 18px;border-left:1px solid var(--border-soft);display:flex;align-items:center;gap:12px;min-width:0;}
+  .stat-seg:first-child{border-left:none;}
+  .stat-ico{
+    width:34px;height:34px;border-radius:10px;background:var(--black);color:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    box-shadow:0 1px 2px rgba(28,27,24,.25), inset 0 1px 0 rgba(255,255,255,.10);
+  }
+  .stat-ico svg{width:15px;height:15px;}
+  .stat-label{font-size:11.5px;color:var(--ink-soft);margin-bottom:2px;white-space:nowrap;}
+  .stat-row{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;}
+  .stat-num{font-size:18px;font-weight:700;letter-spacing:-.01em;}
+  .badge-pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .badge-pill.good{background:var(--accent-soft);color:var(--accent-text);}
+  .badge-pill.bad{background:var(--danger-soft);color:var(--danger-text);}
+  .badge-pill.warn{background:var(--warn-soft);color:var(--warn-text);}
+
+  /* BOARD */
+  .board-scroll{flex:1;overflow-x:auto;padding-bottom:20px;}
+  .board{display:flex;gap:14px;align-items:flex-start;min-width:max-content;}
+  .col{
+    width:292px;flex-shrink:0;background:var(--col-bg);border-radius:18px;padding:12px;
+    display:flex;flex-direction:column;gap:9px;min-height:240px;
+    box-shadow:inset 0 0 0 1px rgba(28,27,24,.025);
+  }
+  .col.green{background:var(--col-green-bg);box-shadow:inset 0 0 0 1px rgba(47,174,100,.10);}
+  .col-head{padding:3px 4px 5px;}
+  .col-head-top{display:flex;align-items:center;gap:7px;}
+  .col-title{font-weight:700;font-size:13.5px;}
+  .col-count{background:var(--card);border:1px solid var(--border);color:var(--ink-soft);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;}
+  .col-sub{font-size:11px;color:var(--ink-faint);font-weight:600;margin-top:4px;}
+
+  .card{
+    position:relative;background:var(--card);border:1px solid rgba(28,27,24,.05);
+    border-radius:14px;padding:13px;cursor:pointer;
+    transition:transform .14s ease, box-shadow .14s ease;
+  }
+  .card.flat{background:rgba(255,255,255,.6);box-shadow:none;border-color:rgba(28,27,24,.045);}
+  .card.raised{box-shadow:0 1px 2px rgba(28,27,24,.06), 0 6px 14px -6px rgba(28,27,24,.16), 0 18px 32px -20px rgba(28,27,24,.24);}
+  .card:hover{transform:translateY(-2px);
+    box-shadow:0 1px 2px rgba(28,27,24,.07), 0 8px 18px -6px rgba(28,27,24,.18), 0 22px 40px -22px rgba(28,27,24,.28);}
+  .card-top{display:flex;gap:10px;align-items:flex-start;padding-right:20px;}
+  .avatar{
+    width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em;
+    box-shadow:0 1px 2px rgba(28,27,24,.18), inset 0 -1px 2px rgba(0,0,0,.10);
+  }
+  .card-name{font-weight:700;font-size:13px;line-height:1.32;}
+  .card-sub{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .card-tag{display:inline-block;background:var(--col-bg);color:var(--ink-soft);font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin-top:6px;}
+
+  .card-prog{display:flex;align-items:center;gap:8px;margin-top:11px;}
+  .card-prog-track{flex:1;height:6px;border-radius:99px;background:rgba(28,27,24,.08);overflow:hidden;cursor:ew-resize;}
+  .card-prog-fill{height:100%;border-radius:99px;background:var(--ink-faint);}
+  .card-prog-fill.on{background:var(--accent);}
+  .card-prog-fill.late{background:var(--danger);}
+  .card-prog-val{font-size:11px;font-weight:700;color:var(--ink-soft);width:30px;text-align:right;font-variant-numeric:tabular-nums;}
+
+  .card-fin{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:11px;padding-top:10px;border-top:1px solid var(--border-soft);}
+  .fin-lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;}
+  .fin-val{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .fin-val.good{color:var(--accent-text);}
+  .fin-val.warn{color:var(--warn-text);}
+  .fin-val.bad{color:var(--danger-text);}
+
+  .card-meta{display:flex;align-items:center;gap:6px;margin-top:11px;}
+  .time-badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
+  .time-badge svg{width:10px;height:10px;}
+  .time-badge.ok{background:var(--col-bg);color:var(--ink-soft);}
+  .time-badge.warn{background:var(--warn-soft);color:var(--warn-text);}
+  .time-badge.bad{background:var(--danger-soft);color:var(--danger-text);}
+  .time-badge.good{background:var(--accent-soft);color:var(--accent-text);}
+
+  .alert-box{display:flex;gap:7px;background:var(--warn-soft);border-radius:10px;padding:9px 10px;margin-top:9px;font-size:11px;color:var(--warn-text);line-height:1.45;}
+  .alert-box.danger{background:var(--danger-soft);color:var(--danger-text);}
+  .alert-box svg{width:13px;height:13px;flex-shrink:0;margin-top:1px;}
+
+  .card-del{
+    position:absolute;top:11px;right:11px;color:var(--ink-faint);
+    width:15px;height:15px;opacity:0;transition:opacity .12s;
+  }
+  .card:hover .card-del{opacity:1;}
+  .card-del:hover{color:var(--danger);}
+
+  .col-empty{text-align:center;font-size:11px;color:var(--ink-faint);padding:24px 10px;border:1px dashed rgba(28,27,24,.10);border-radius:12px;}
+
+  .board-empty{padding:70px 20px;text-align:center;width:100%;}
+  .board-empty h3{font-size:15.5px;margin:0 0 7px;font-weight:700;}
+  .board-empty p{font-size:13px;color:var(--ink-soft);margin:0 0 18px;}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(28,27,24,.38);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;overflow-y:auto;padding:30px 0;}
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--card);border-radius:20px;width:452px;max-width:92vw;padding:24px;
+    border:1px solid rgba(0,0,0,.05);margin:auto;
+    box-shadow:0 24px 60px -20px rgba(28,27,24,.45), 0 4px 12px rgba(28,27,24,.12);
+  }
+  .modal h2{font-size:18px;margin:0 0 16px;font-weight:700;}
+  .modal .section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:700;margin:18px 0 10px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
+  .field input,.field select{width:100%;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:9px 11px;font-family:'Inter';font-size:13px;color:var(--ink);}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .type-toggle{display:flex;gap:5px;background:var(--col-bg);border:1px solid var(--border);border-radius:10px;padding:3px;}
+  .type-opt{flex:1;border:none;background:transparent;border-radius:8px;padding:8px 8px;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;font-family:'Inter';white-space:nowrap;}
+  .type-opt.active{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(28,27,24,.08);}
+  .field-hint{font-size:11px;color:var(--ink-faint);margin-top:6px;}
+  .card-tag.recurring{background:#E7EEFB;color:#2A5FA8;}
+
+  .metric-row{display:grid;grid-template-columns:1fr 1fr 90px 30px;gap:8px;margin-bottom:8px;align-items:center;}
+  .metric-row input{width:100%;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12.5px;color:var(--ink);}
+  .metric-row input:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .metric-remove{width:30px;height:30px;border-radius:8px;border:none;background:var(--col-bg);color:var(--ink-faint);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;flex-shrink:0;}
+  .metric-remove:hover{background:var(--danger-soft);color:var(--danger-text);}
+  .metric-add{display:flex;align-items:center;gap:6px;background:none;border:1px dashed var(--border);color:var(--accent-text);font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:9px;cursor:pointer;width:100%;justify-content:center;margin-top:2px;}
+  .metric-add:hover{background:var(--accent-soft);border-color:transparent;}
+  @media(max-width:480px){
+    .metric-row{grid-template-columns:1fr 1fr;row-gap:6px;}
+    .metric-row .mr-name{grid-column:1 / -1;}
+    .metric-row .metric-remove{justify-self:end;}
+  }
+  .todo-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .todo-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+  .todo-row input[type="text"]{flex:1;min-width:0;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12.5px;color:var(--ink);}
+  .todo-row input[type="text"]:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .todo-row.done input[type="text"]{text-decoration:line-through;color:var(--ink-faint);}
+  .todo-add{display:flex;align-items:center;gap:6px;background:none;border:1px dashed var(--border);color:var(--accent-text);font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:9px;cursor:pointer;width:100%;justify-content:center;margin-top:2px;}
+  .todo-add:hover{background:var(--accent-soft);border-color:transparent;}
+  .card-todo{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink-soft);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-soft);}
+  .card-todo.all-done{color:var(--accent-text);}
+  .card-todo svg{width:13px;height:13px;flex-shrink:0;}
+  .calc-box{background:var(--col-bg);border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-top:4px;}
+  .calc-line{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);padding:4px 0;}
+  .calc-line b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;}
+  .calc-line.total{border-top:1px solid var(--border);margin-top:5px;padding-top:9px;color:var(--ink);font-weight:700;}
+  .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+  .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--ink-soft);border-radius:9px;padding:9px 15px;font-weight:600;font-size:13px;cursor:pointer;}
+  .btn-secondary:hover{background:var(--col-bg);}
+  .btn-primary{background:var(--black);border:none;color:#fff;border-radius:9px;padding:9px 17px;font-weight:600;font-size:13px;cursor:pointer;}
+  .btn-primary:hover{background:#000;}
+  .btn-delete-text{background:none;border:none;color:var(--danger);font-size:12.5px;font-weight:600;cursor:pointer;}
+
+  /* CONFIRM */
+  .confirm{background:var(--card);border-radius:18px;width:376px;max-width:90vw;padding:22px;margin:auto;box-shadow:0 24px 60px -20px rgba(28,27,24,.45);}
+  .confirm h3{font-size:15.5px;margin:0 0 8px;font-weight:700;}
+  .confirm p{font-size:13px;color:var(--ink-soft);margin:0 0 20px;line-height:1.5;}
+  .confirm-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .btn-danger{background:var(--danger);border:none;color:#fff;border-radius:9px;padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;}
+
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:#fff;font-size:13px;font-weight:600;padding:11px 18px;border-radius:11px;z-index:80;opacity:0;transition:.24s;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* MOBILE FILTER TRIGGER + SLIDE-IN SIDEBAR */
+  .mobile-filter-btn{display:none;}
+  .sidebar-backdrop{display:none;}
+
+  @media(max-width:900px){
+    .shell{padding:0;}
+    .app{border-radius:0;min-height:100vh;box-shadow:none;border:none;}
+    .main{padding:14px 14px 10px;}
+
+    /* sidebar becomes a slide-in panel instead of vanishing */
+    .sidebar{
+      position:fixed;top:0;left:0;bottom:0;z-index:70;
+      width:82vw;max-width:300px;
+      background:var(--card);
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:12px 0 32px rgba(28,27,24,.25);
+      overflow-y:auto;
+    }
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-backdrop{
+      display:none;position:fixed;inset:0;background:rgba(28,27,24,.4);z-index:65;
+    }
+    .sidebar-backdrop.show{display:block;}
+    .sidebar-close{
+      display:flex;align-items:center;justify-content:center;
+      width:32px;height:32px;border-radius:9px;border:1px solid var(--border);
+      background:var(--card);color:var(--ink-soft);margin-left:auto;cursor:pointer;flex-shrink:0;
+    }
+    .sidebar-close svg{width:15px;height:15px;}
+
+    .mobile-filter-btn{
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      width:38px;height:38px;border-radius:10px;border:1px solid var(--border);
+      background:var(--card);color:var(--ink-soft);cursor:pointer;flex-shrink:0;position:relative;
+    }
+    .mobile-filter-btn svg{width:16px;height:16px;}
+    .mobile-filter-btn .dot{
+      position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;
+      background:var(--accent);display:none;
+    }
+    .mobile-filter-btn.has-filter .dot{display:block;}
+
+    h1{font-size:20px;}
+    .topbar{gap:8px;}
+    .top-sub{display:none;}
+    .top-search{order:3;flex:1 1 100%;}
+    .top-search input{width:100%;}
+    .sortsel{display:none;}
+    .btn-new span.label{display:none;}
+    .btn-new{padding:10px 13px;}
+
+    .statbar{flex-wrap:wrap;border-radius:14px;}
+    .stat-seg{flex:1 1 50%;border-left:none;border-top:1px solid var(--border-soft);padding:11px 13px;}
+    .stat-seg:nth-child(1),.stat-seg:nth-child(2){border-top:none;}
+    .stat-seg:nth-child(odd){border-right:1px solid var(--border-soft);}
+    .stat-ico{width:28px;height:28px;}
+    .stat-num{font-size:16px;}
+
+    .col{width:82vw;max-width:320px;}
+
+    /* no hover on touch: always show delete + skip lift animation */
+    .card-del{opacity:1;}
+    .card:hover{transform:none;box-shadow:0 1px 2px rgba(28,27,24,.06);}
+    .card.raised:hover{box-shadow:0 6px 14px -6px rgba(28,27,24,.16), 0 18px 32px -20px rgba(28,27,24,.24);}
+
+    .modal{padding:18px;border-radius:16px;}
+    .field-row{grid-template-columns:1fr;}
+  }
+
+  @media(hover:none){
+    .card-del{opacity:1;}
+  }
+
+  @media(max-width:420px){
+    .col{width:88vw;}
+    .modal{width:100%;}
+  }
+
+  @media(prefers-reduced-motion:reduce){ *{transition:none !important;} .card:hover{transform:none;} }
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="app">
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <div class="brand-name">Project Board</div>
+        <div class="brand-sub">Digital Marketing &amp; Data</div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Tutup filter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="side-label">Status <span class="clear" id="clearStatus" style="display:none;">reset</span></div>
+    <div class="filter-list" id="statusFilters"></div>
+
+    <div class="side-label">Business unit <span class="clear" id="clearBU" style="display:none;">reset</span></div>
+    <div class="filter-list scroll" id="buFilters"></div>
+
+    <div class="sidebar-bottom">
+      <button class="side-action" id="exportBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4"/><path d="M4 17v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+        Download backup
+      </button>
+      <button class="side-action" id="importBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V8m0 0l-4 4m4-4l4 4"/><path d="M4 6V4a1 1 0 011-1h14a1 1 0 011 1v2"/></svg>
+        Restore dari file
+      </button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="side-action danger" id="resetBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>
+        Hapus semua data
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Project Board</h1>
+        <div class="top-sub" id="topSub"></div>
+      </div>
+      <div class="top-spacer"></div>
+      <button class="mobile-filter-btn" id="mobileFilterBtn" aria-label="Buka filter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span class="dot"></span>
+      </button>
+      <div class="top-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Cari project, PIC, BU..." aria-label="Cari project">
+      </div>
+      <select class="sortsel" id="sortSel" aria-label="Urutkan">
+        <option value="target">Target terdekat</option>
+        <option value="revenue">Revenue tertinggi</option>
+        <option value="margin">Margin terendah</option>
+        <option value="progress">Progress tertinggi</option>
+      </select>
+      <button class="btn-new" id="addBtn">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="label">Project baru</span>
+      </button>
+    </div>
+
+    <div class="statbar" id="statBar"></div>
+
+    <div class="board-scroll">
+      <div class="board" id="board"></div>
+    </div>
+  </main>
+
+</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="modalTitle">Project baru</h2>
+
+    <div class="field">
+      <label for="f_name">Nama project</label>
+      <input type="text" id="f_name" placeholder="mis. TVC Ramadan Campaign">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="f_bu">Business unit</label>
+        <input type="text" id="f_bu" placeholder="mis. TAM, DSO, OLX" list="buList">
+        <datalist id="buList"></datalist>
+      </div>
+      <div class="field">
+        <label for="f_service">Type of service</label>
+        <input type="text" id="f_service" placeholder="e.g. Digital Commercial Video" list="serviceList">
+        <datalist id="serviceList"></datalist>
+      </div>
+    </div>
+    <div class="field">
+      <label for="f_pic">PIC</label>
+      <input type="text" id="f_pic" placeholder="Nama PIC" list="picList">
+      <datalist id="picList"></datalist>
+    </div>
+
+    <div class="field">
+      <label>Project type</label>
+      <div class="type-toggle" id="typeToggle">
+        <button type="button" class="type-opt active" data-type="onetime">One-time</button>
+        <button type="button" class="type-opt" data-type="recurring">Recurring (monthly)</button>
+      </div>
+    </div>
+    <div class="field" id="targetOnetimeWrap">
+      <label for="f_target">Target date</label>
+      <input type="date" id="f_target">
+    </div>
+    <div class="field" id="targetRecurringWrap" style="display:none;">
+      <label for="f_recur_day">Recurs on day of month</label>
+      <input type="number" id="f_recur_day" min="1" max="31" placeholder="e.g. 1">
+      <div class="field-hint" id="recurHint"></div>
+    </div>
+
+    <div class="field">
+      <label for="f_progress">Progress: <span id="f_progress_label">0</span>%</label>
+      <input type="range" id="f_progress" min="0" max="100" value="0" style="width:100%;accent-color:#2FAE64;">
+    </div>
+
+    <div class="section-label">Financial</div>
+    <div class="field-row">
+      <div class="field">
+        <label for="f_revenue">Revenue (Rp)</label>
+        <input type="number" id="f_revenue" placeholder="0" min="0" step="100000">
+      </div>
+      <div class="field">
+        <label for="f_cor">Cost of revenue (Rp)</label>
+        <input type="number" id="f_cor" placeholder="0" min="0" step="100000">
+      </div>
+    </div>
+    <div class="field">
+      <label for="f_manhour">Manhour cost (Rp)</label>
+      <input type="number" id="f_manhour" placeholder="0" min="0" step="100000">
+    </div>
+
+    <div class="calc-box">
+      <div class="calc-line"><span>Gross profit margin</span><b id="cGpm">Rp 0</b></div>
+      <div class="calc-line"><span>Total cost</span><b id="cCost">Rp 0</b></div>
+      <div class="calc-line total"><span>Net profit</span><b id="cNet">Rp 0</b></div>
+      <div class="calc-line"><span>Net margin</span><b id="cPct">0%</b></div>
+    </div>
+
+    <div class="section-label">Performance metrics <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(optional, add as many as needed)</span></div>
+    <datalist id="metricList">
+      <option>Qty</option>
+      <option>Reach</option>
+      <option>Impression</option>
+      <option>Engagement Rate</option>
+      <option>Register Rate</option>
+      <option>Conversion Rate</option>
+      <option>CTR</option>
+      <option>Views</option>
+    </datalist>
+    <datalist id="unitList">
+      <option>Absolute Number</option>
+      <option>Percentage</option>
+    </datalist>
+    <div id="metricRows"></div>
+    <button type="button" class="metric-add" id="addMetricRow">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Add metric
+    </button>
+
+    <div class="section-label">To-do list <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(optional, e.g. kontrak, migrasi sistem, approval grand design)</span></div>
+    <div id="todoRows"></div>
+    <button type="button" class="todo-add" id="addTodoRow">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Add to-do
+    </button>
+
+    <div class="modal-actions">
+      <button class="btn-delete-text" id="modalDelete" style="visibility:hidden;">Hapus project</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="modalCancel">Batal</button>
+        <button class="btn-primary" id="modalSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="confirm" role="alertdialog" aria-modal="true">
+    <h3 id="cfTitle">Konfirmasi</h3>
+    <p id="cfBody"></p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" id="cfCancel">Batal</button>
+      <button class="btn-danger" id="cfOk">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const STORAGE_KEY = 'dmd-project-tracker-data';
+
+const AVATAR_PALETTE = ['#2FA79B','#4C7EF3','#8B5CF6','#E8558B','#F0973A','#E2574C','#38A169','#5B6EF5'];
+function avatarColor(seed){
+  let h = 0;
+  for(let i=0;i<seed.length;i++) h = (h*31 + seed.charCodeAt(i)) % 997;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+}
+function initials(name){
+  const p = (name || '?').trim().split(/\s+/);
+  return (p.length === 1 ? p[0].slice(0,2) : p[0][0] + p[1][0]).toUpperCase();
+}
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function seedData(){
+  const t = (m,d) => `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const oneTime = (extra) => ({type:'onetime', recurDay:null, cycleKey:null, todos:[], ...extra});
+  const td = (text, done) => ({id: uid(), text, done: !!done});
+  return [
+    oneTime({id:uid(), name:'TVC Ramadan Campaign',          bu:'TAM',           service:'Digital Commercial Video',          pic:'Dimas', target:t(10,10), progress:65,  revenue:85000000, cor:32000000, manhour:5200000, metrics:[{name:'Views', unit:'Absolute Number', value:850000}, {name:'Engagement Rate', unit:'Percentage', value:4.8}], todos:[td('Kontrak sudah ditandatangani', true), td('Approval grand design', true), td('Final delivery ke klien', false)]}),
+    oneTime({id:uid(), name:'Golf Charity Event Recap',      bu:'Lexus Menteng', service:'Event Documentation Video',         pic:'Sari',  target:t(9,20),  progress:100, revenue:38000000, cor:15000000, manhour:2600000, metrics:[{name:'Engagement Rate', unit:'Percentage', value:6.4}], todos:[td('Kontrak sudah ditandatangani', true), td('Approval grand design', true)]}),
+    oneTime({id:uid(), name:'New SUV Line Review',           bu:'DSO',           service:'Product Review PK (Real Shot)',     pic:'Bayu',  target:t(10,2),  progress:20,  revenue:22000000, cor:9500000,  manhour:1800000, metrics:[], todos:[td('Kontrak sudah ditandatangani', false), td('Approval grand design', false)]}),
+    oneTime({id:uid(), name:'Spare Parts Animated Explainer',bu:'BSO',           service:'Product Review PK (Animation)',     pic:'Nadia', target:t(11,5),  progress:0,   revenue:18000000, cor:7000000,  manhour:1400000, metrics:[]}),
+    oneTime({id:uid(), name:'Q4 Catalog Photoshoot',         bu:'OLX',           service:'Photoshoot Session',               pic:'Rizal', target:t(10,8),  progress:80,  revenue:27000000, cor:11000000, manhour:2100000, metrics:[{name:'Qty', unit:'Absolute Number', value:240}]}),
+    oneTime({id:uid(), name:'Sub-brand Logo Refresh',        bu:'HSO',           service:'Logo',                             pic:'Wulan', target:t(10,15), progress:40,  revenue:15000000, cor:4000000,  manhour:2600000, metrics:[]}),
+    oneTime({id:uid(), name:'Brand Guideline v2',            bu:'ADI Internal',  service:'Brand Guideline',                  pic:'Oka',   target:t(10,30), progress:55,  revenue:32000000, cor:9000000,  manhour:6100000, metrics:[]}),
+    oneTime({id:uid(), name:'Year-End Campaign Strategy',    bu:'TSO',           service:'Creative Campaign Strategy',       pic:'Fira',  target:t(11,25), progress:10,  revenue:60000000, cor:14000000, manhour:8300000, metrics:[]}),
+    oneTime({id:uid(), name:'Finance Product Explainer',     bu:'TAF',           service:'Digital Commercial Video',         pic:'Dimas', target:t(9,22),  progress:15,  revenue:47000000, cor:19000000, manhour:3200000, metrics:[{name:'Register Rate', unit:'Percentage', value:3.1}, {name:'Qty', unit:'Absolute Number', value:1200}]}),
+    // Recurring example: same deliverable every month, due on the 1st, resets automatically each new month.
+    {id:uid(), name:'Monthly Performance & Data Report', bu:'LSO', service:'Data & Performance Report', pic:'Sari', type:'recurring', recurDay:1, cycleKey:currentCycleKey(), target:null, progress:35, revenue:31000000, cor:13000000, manhour:2400000, metrics:[], todos:[td('Migrasi sistem sudah beres', true), td('Approval grand design', false)]}
+  ];
+}
+
+let data = load();
+let filterStatus = 'all';
+let filterBU = null;
+let searchTerm = '';
+let sortMode = 'target';
+let editingId = null;
+let confirmAction = null;
+
+// Migrates an item saved before multi-metric support (single metricName/metricUnit/metricValue)
+// into the current shape (metrics: [{name, unit, value}]). Safe to run on already-migrated items.
+function migrateItem(it){
+  if(!Array.isArray(it.metrics)){
+    const metrics = [];
+    if(it.metricName){
+      metrics.push({name: it.metricName, unit: it.metricUnit || '', value: it.metricValue != null ? it.metricValue : null});
+    }
+    it.metrics = metrics;
+  }
+  if(!it.type) it.type = 'onetime';
+  if(!Array.isArray(it.todos)) it.todos = [];
+  return it;
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(Array.isArray(p)) return p.map(migrateItem);
+    }
+  }catch(e){}
+  const seeded = seedData();
+  save(seeded);
+  return seeded;
+}
+function save(d){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+  catch(e){ toast('Gagal menyimpan ke storage browser'); }
+}
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function daysDiff(target){
+  const t = new Date(target + 'T00:00:00'), n = new Date(todayStr() + 'T00:00:00');
+  return Math.round((t - n) / 86400000);
+}
+function currentCycleKey(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function clampDayInMonth(day, year, monthIndex){
+  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+  return Math.min(Math.max(1, day || 1), lastDay);
+}
+// For a recurring project this returns THIS MONTH's due date (auto-advances every month);
+// for a one-time project it just returns the stored target date.
+function effectiveTarget(item){
+  if(item.type !== 'recurring') return item.target;
+  const now = new Date();
+  const day = clampDayInMonth(item.recurDay, now.getFullYear(), now.getMonth());
+  const d = new Date(now.getFullYear(), now.getMonth(), day);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+// Auto-resets a recurring project's progress when the calendar month has rolled over
+// since it was last touched, so each month starts as a fresh cycle.
+function ensureCycles(){
+  const ck = currentCycleKey();
+  let changed = 0;
+  data.forEach(it => {
+    if(it.type === 'recurring' && it.cycleKey !== ck){
+      it.progress = 0;
+      it.cycleKey = ck;
+      changed++;
+    }
+  });
+  if(changed){ save(data); toast(`${changed} recurring project mulai siklus bulan baru`); }
+}
+function getStatus(item){
+  if(item.progress >= 100) return 'done';
+  if(effectiveTarget(item) < todayStr()) return 'over';
+  if(item.progress > 0) return 'track';
+  return 'new';
+}
+function fmtDate(str){
+  return new Date(str + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+}
+function fin(item){
+  const revenue = +item.revenue || 0, cor = +item.cor || 0, manhour = +item.manhour || 0;
+  const gpm = revenue - cor, totalCost = cor + manhour, netProfit = revenue - totalCost;
+  return {revenue, cor, manhour, gpm, totalCost, netProfit, netPct: revenue ? netProfit/revenue*100 : 0};
+}
+function fmtRp(n, compact){
+  const sign = n < 0 ? '-' : '', abs = Math.abs(n);
+  if(compact){
+    if(abs >= 1e9) return sign + 'Rp ' + (abs/1e9).toFixed(2).replace('.', ',') + ' M';
+    if(abs >= 1e6) return sign + 'Rp ' + (abs/1e6).toFixed(1).replace('.', ',') + ' Jt';
+  }
+  return sign + 'Rp ' + abs.toLocaleString('id-ID');
+}
+function marginClass(pct){ return pct < 10 ? 'bad' : pct < 20 ? 'warn' : 'good'; }
+function fmtMetricEntry(m){
+  if(!m.name) return '';
+  const isPct = /%|percent/i.test(m.unit || '');
+  const val = +m.value || 0;
+  const valStr = isPct
+    ? val.toLocaleString('id-ID', {maximumFractionDigits:2}) + '%'
+    : val.toLocaleString('id-ID');
+  return `${m.name}: ${valStr}`;
+}
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+const COLUMNS = [
+  {key:'new',   title:'Belum Mulai', green:false},
+  {key:'track', title:'On Track',    green:false},
+  {key:'over',  title:'Overdue',     green:false},
+  {key:'done',  title:'Selesai',     green:true}
+];
+const STATUS_LABEL = {all:'Semua project', new:'Belum mulai', track:'On track', over:'Overdue', done:'Selesai'};
+
+function applyFilters(list){
+  const q = searchTerm.trim().toLowerCase();
+  return list.filter(d => {
+    if(filterStatus !== 'all' && getStatus(d) !== filterStatus) return false;
+    if(filterBU && d.bu !== filterBU) return false;
+    if(q && !(d.name + ' ' + d.pic + ' ' + d.bu + ' ' + d.service).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function sortList(list){
+  const a = [...list];
+  if(sortMode === 'target')        a.sort((x,y) => effectiveTarget(x).localeCompare(effectiveTarget(y)));
+  else if(sortMode === 'revenue')  a.sort((x,y) => (y.revenue||0) - (x.revenue||0));
+  else if(sortMode === 'margin')   a.sort((x,y) => fin(x).netPct - fin(y).netPct);
+  else if(sortMode === 'progress') a.sort((x,y) => y.progress - x.progress);
+  return a;
+}
+
+function renderStatBar(){
+  const v = applyFilters(data);
+  let rev = 0, gpm = 0, net = 0;
+  v.forEach(d => { const f = fin(d); rev += f.revenue; gpm += f.gpm; net += f.netProfit; });
+  const netPct = rev ? net/rev*100 : 0;
+  const gpmPct = rev ? gpm/rev*100 : 0;
+  const over   = v.filter(d => getStatus(d) === 'over').length;
+  const atRisk = v.filter(d => getStatus(d) === 'track' && daysDiff(effectiveTarget(d)) <= 3).length;
+  const attention = over + atRisk;
+
+  const segs = [
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
+     l:'Project', n:v.length, b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+     l:'Revenue', n:fmtRp(rev, true), b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>',
+     l:'Gross profit margin', n:fmtRp(gpm, true), b:rev ? {c:'good', t:gpmPct.toFixed(0) + '%'} : null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+     l:'Net profit', n:fmtRp(net, true), b:rev ? {c:marginClass(netPct), t:netPct.toFixed(1) + '%'} : null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+     l:'Butuh atensi', n:attention, b:attention > 0 ? {c:'bad', t:over + ' overdue'} : {c:'good', t:'aman'}}
+  ];
+
+  document.getElementById('statBar').innerHTML = segs.map(s => `
+    <div class="stat-seg">
+      <div class="stat-ico">${s.i}</div>
+      <div style="min-width:0;">
+        <div class="stat-label">${s.l}</div>
+        <div class="stat-row">
+          <div class="stat-num num">${s.n}</div>
+          ${s.b ? `<span class="badge-pill ${s.b.c}">${s.b.t}</span>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+
+  const parts = [STATUS_LABEL[filterStatus]];
+  if(filterBU) parts.push(filterBU);
+  if(searchTerm.trim()) parts.push(`"${searchTerm.trim()}"`);
+  document.getElementById('topSub').textContent =
+    parts.join(' · ') + ` — ${v.length} dari ${data.length} project`;
+}
+
+function renderSidebarFilters(){
+  const counts = {all:data.length, new:0, track:0, over:0, done:0};
+  data.forEach(d => counts[getStatus(d)]++);
+
+  const sDefs = [
+    {k:'all',   t:'Semua project', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>'},
+    {k:'new',   t:'Belum mulai',   ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>'},
+    {k:'track', t:'On track',      ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'},
+    {k:'over',  t:'Overdue',       ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>'},
+    {k:'done',  t:'Selesai',       ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>'}
+  ];
+  const sf = document.getElementById('statusFilters');
+  sf.innerHTML = sDefs.map(d => `
+    <button class="filter-item ${filterStatus === d.k ? 'active' : ''}" data-status="${d.k}">
+      <span class="ic">${d.ic}</span><span class="lbl">${d.t}</span><span class="cnt">${counts[d.k]}</span>
+    </button>`).join('');
+  sf.querySelectorAll('[data-status]').forEach(el => {
+    el.onclick = () => { filterStatus = el.dataset.status; renderAll(); };
+  });
+  document.getElementById('clearStatus').style.display = filterStatus === 'all' ? 'none' : 'inline';
+
+  const buCount = {};
+  data.forEach(d => { buCount[d.bu] = (buCount[d.bu] || 0) + 1; });
+  const bus = Object.keys(buCount).sort();
+  const bf = document.getElementById('buFilters');
+  bf.innerHTML = bus.length
+    ? bus.map(bu => `<button class="filter-item ${filterBU === bu ? 'active' : ''}" data-bu="${esc(bu)}"><span class="lbl">${esc(bu)}</span><span class="cnt">${buCount[bu]}</span></button>`).join('')
+    : '<div class="side-note">Belum ada BU</div>';
+  bf.querySelectorAll('[data-bu]').forEach(el => {
+    el.onclick = () => { filterBU = (filterBU === el.dataset.bu) ? null : el.dataset.bu; renderAll(); };
+  });
+  document.getElementById('clearBU').style.display = filterBU ? 'inline' : 'none';
+
+  document.getElementById('buList').innerHTML = bus.map(b => `<option value="${esc(b)}">`).join('');
+  const pics = [...new Set(data.map(d => d.pic).filter(Boolean))].sort();
+  document.getElementById('picList').innerHTML = pics.map(p => `<option value="${esc(p)}">`).join('');
+
+  const usedServices = [...new Set(data.map(d => d.service).filter(Boolean))];
+  const defaultServices = ['Digital Commercial Video','Event Documentation Video','Product Review PK (Real Shot)','Product Review PK (Animation)','Photoshoot Session','Logo','Brand Guideline','Creative Campaign Strategy','Data & Performance Report'];
+  const allServices = [...new Set([...usedServices, ...defaultServices])].sort();
+  document.getElementById('serviceList').innerHTML = allServices.map(s => `<option value="${esc(s)}">`).join('');
+}
+
+function cardHtml(item){
+  const f = fin(item), st = getStatus(item);
+  const effTarget = effectiveTarget(item);
+  const dd = daysDiff(effTarget);
+  let timeBadge = '', alertBox = '';
+
+  if(st === 'done'){
+    timeBadge = `<span class="time-badge good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Selesai ${fmtDate(effTarget)}</span>`;
+  } else if(st === 'over'){
+    timeBadge = `<span class="time-badge bad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${Math.abs(dd)} hari lewat</span>`;
+    alertBox = `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
+  } else if(st === 'track'){
+    timeBadge = `<span class="time-badge ${dd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${dd} hari lagi</span>`;
+    if(dd <= 3){
+      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Deadline ${dd} hari lagi, progress baru ${item.progress}%.</span></div>`;
+    }
+  } else {
+    timeBadge = `<span class="time-badge ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>${fmtDate(effTarget)}</span>`;
+  }
+
+  const thinMargin = f.revenue > 0 && f.netPct < 10;
+  if(thinMargin && st !== 'over'){
+    alertBox += `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg><span>Net margin tipis ${f.netPct.toFixed(1)}%. Cek cost of revenue &amp; manhour.</span></div>`;
+  }
+
+  const needsAttention = st === 'over' || (st === 'track' && dd <= 3) || thinMargin;
+  const elevation = (needsAttention || st === 'done') ? 'raised' : 'flat';
+  const progClass = st === 'over' ? 'late' : item.progress > 0 ? 'on' : '';
+  const metricChips = (item.metrics || [])
+    .map(fmtMetricEntry)
+    .filter(Boolean)
+    .map(s => `<div class="card-tag" style="background:var(--accent-soft);color:var(--accent-text);">${esc(s)}</div>`)
+    .join('');
+
+  const todos = item.todos || [];
+  const todoDone = todos.filter(x => x.done).length;
+  const allTodoDone = todos.length > 0 && todoDone === todos.length;
+  const todoSummary = todos.length ? `<div class="card-todo ${allTodoDone ? 'all-done' : ''}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    ${todoDone}/${todos.length} to-do${allTodoDone ? ' selesai' : ''}
+  </div>` : '';
+
+  return `
+  <div class="card ${elevation}" data-id="${item.id}">
+    <svg class="card-del" data-del="${item.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><title>Hapus</title><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>
+    <div class="card-top">
+      <div class="avatar" style="background:${avatarColor(item.pic || item.name)}" title="${esc(item.pic)}">${initials(item.pic || item.name)}</div>
+      <div style="min-width:0;">
+        <div class="card-name">${esc(item.name)}</div>
+        <div class="card-sub">${esc(item.bu)} · ${esc(item.pic)}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
+          ${item.type === 'recurring' ? `<div class="card-tag recurring">↻ Monthly · day ${item.recurDay}</div>` : ''}
+          ${metricChips}
+        </div>
+      </div>
+    </div>
+    <div class="card-prog">
+      <div class="card-prog-track" data-prog="${item.id}" title="Geser untuk ubah progress">
+        <div class="card-prog-fill ${progClass}" style="width:${item.progress}%"></div>
+      </div>
+      <div class="card-prog-val">${item.progress}%</div>
+    </div>
+    <div class="card-fin">
+      <div><div class="fin-lab">Revenue</div><div class="fin-val">${fmtRp(f.revenue, true)}</div></div>
+      <div><div class="fin-lab">GPM</div><div class="fin-val">${fmtRp(f.gpm, true)}</div></div>
+      <div style="text-align:right;"><div class="fin-lab">Net</div><div class="fin-val ${marginClass(f.netPct)}">${fmtRp(f.netProfit, true)} · ${f.netPct.toFixed(0)}%</div></div>
+    </div>
+    <div class="card-meta">${timeBadge}</div>
+    ${todoSummary}
+    ${alertBox}
+  </div>`;
+}
+
+function renderBoard(){
+  const board = document.getElementById('board');
+
+  if(!data.length){
+    board.innerHTML = `<div class="board-empty">
+      <h3>Belum ada project</h3>
+      <p>Mulai dengan menambah project pertama, atau restore dari file backup.</p>
+      <button class="btn-new" style="margin:0 auto;" id="emptyAdd">Tambah project</button>
+    </div>`;
+    document.getElementById('emptyAdd').onclick = () => openModal(null);
+    return;
+  }
+
+  const filtered = sortList(applyFilters(data));
+  if(!filtered.length){
+    board.innerHTML = `<div class="board-empty">
+      <h3>Tidak ada hasil</h3>
+      <p>Filter dan pencarian sekarang gak cocok sama project manapun.</p>
+      <button class="btn-secondary" id="resetFilters">Reset semua filter</button>
+    </div>`;
+    document.getElementById('resetFilters').onclick = () => {
+      filterStatus = 'all'; filterBU = null; searchTerm = '';
+      document.getElementById('searchInput').value = '';
+      renderAll();
+    };
+    return;
+  }
+
+  board.innerHTML = COLUMNS.map(col => {
+    const items = filtered.filter(d => getStatus(d) === col.key);
+    const rev = items.reduce((s,d) => s + fin(d).revenue, 0);
+    const net = items.reduce((s,d) => s + fin(d).netProfit, 0);
+    let sub = '';
+    if(items.length){
+      if(col.key === 'done')       sub = `${fmtRp(rev, true)} revenue · ${fmtRp(net, true)} net`;
+      else if(col.key === 'over')  sub = `${fmtRp(rev, true)} tertahan`;
+      else if(col.key === 'track') sub = `avg ${Math.round(items.reduce((s,d) => s + d.progress, 0)/items.length)}% · ${fmtRp(rev, true)}`;
+      else                         sub = `${fmtRp(rev, true)} pipeline`;
+    }
+    return `
+    <div class="col ${col.green ? 'green' : ''}">
+      <div class="col-head">
+        <div class="col-head-top">
+          <div class="col-title">${col.title}</div>
+          <span class="col-count">${items.length}</span>
+        </div>
+        ${sub ? `<div class="col-sub">${sub}</div>` : ''}
+      </div>
+      ${items.length ? items.map(cardHtml).join('') : '<div class="col-empty">Kosong</div>'}
+    </div>`;
+  }).join('');
+
+  board.querySelectorAll('.card').forEach(card => {
+    card.onclick = (e) => {
+      if(e.target.closest('[data-del]') || e.target.closest('[data-prog]')) return;
+      openModal(card.dataset.id);
+    };
+  });
+
+  board.querySelectorAll('[data-del]').forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const item = data.find(d => d.id === el.dataset.del);
+      if(!item) return;
+      askConfirm('Hapus project?', `"${item.name}" akan dihapus permanen. Aksi ini gak bisa dibatalkan.`, () => {
+        data = data.filter(d => d.id !== el.dataset.del);
+        save(data); renderAll(); toast('Project dihapus');
+      });
+    };
+  });
+
+  board.querySelectorAll('[data-prog]').forEach(track => {
+    let dragging = false;
+    const setFrom = (e) => {
+      const r = track.getBoundingClientRect();
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      const pct = Math.max(0, Math.min(100, Math.round((x - r.left)/r.width*100)));
+      const item = data.find(d => d.id === track.dataset.prog);
+      if(!item) return;
+      item.progress = pct;
+      track.querySelector('.card-prog-fill').style.width = pct + '%';
+      track.parentElement.querySelector('.card-prog-val').textContent = pct + '%';
+    };
+    const stop = () => { if(dragging){ dragging = false; save(data); renderAll(); } };
+    track.onmousedown = (e) => { e.stopPropagation(); e.preventDefault(); dragging = true; setFrom(e); };
+    track.onclick = (e) => e.stopPropagation();
+    track.addEventListener('touchstart', (e) => { dragging = true; setFrom(e); }, {passive:true});
+    track.addEventListener('touchmove', (e) => { if(dragging) setFrom(e); }, {passive:true});
+    track.addEventListener('touchend', stop);
+    window.addEventListener('mousemove', (e) => { if(dragging) setFrom(e); });
+    window.addEventListener('mouseup', stop);
+  });
+}
+
+function renderAll(){
+  ensureCycles();
+  renderSidebarFilters();
+  renderStatBar();
+  renderBoard();
+  const mfb = document.getElementById('mobileFilterBtn');
+  if(mfb) mfb.classList.toggle('has-filter', filterStatus !== 'all' || !!filterBU);
+}
+
+/* MOBILE SIDEBAR (slide-in panel) */
+const sidebarEl = document.getElementById('sidebar');
+const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+function openSidebar(){ sidebarEl.classList.add('open'); sidebarBackdrop.classList.add('show'); }
+function closeSidebar(){ sidebarEl.classList.remove('open'); sidebarBackdrop.classList.remove('show'); }
+document.getElementById('mobileFilterBtn').onclick = openSidebar;
+document.getElementById('sidebarClose').onclick = closeSidebar;
+sidebarBackdrop.onclick = closeSidebar;
+// auto-close the panel once a filter is picked on mobile
+sidebarEl.addEventListener('click', (e) => {
+  if(window.innerWidth <= 900 && (e.target.closest('[data-status]') || e.target.closest('[data-bu]'))){
+    setTimeout(closeSidebar, 150);
+  }
+});
+
+/* CONFIRM */
+const cfOverlay = document.getElementById('confirmOverlay');
+function askConfirm(title, body, onOk){
+  document.getElementById('cfTitle').textContent = title;
+  document.getElementById('cfBody').textContent = body;
+  confirmAction = onOk;
+  cfOverlay.classList.add('show');
+  setTimeout(() => document.getElementById('cfCancel').focus(), 40);
+}
+function closeConfirm(){ cfOverlay.classList.remove('show'); confirmAction = null; }
+document.getElementById('cfCancel').onclick = closeConfirm;
+cfOverlay.onclick = (e) => { if(e.target === cfOverlay) closeConfirm(); };
+document.getElementById('cfOk').onclick = () => {
+  const fn = confirmAction;
+  closeConfirm();
+  if(fn) fn();
+};
+
+/* BACKUP */
+document.getElementById('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `project-board-backup-${todayStr()}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`${data.length} project di-backup`);
+};
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importFile').onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      if(!Array.isArray(parsed)) throw new Error('bukan array');
+      const clean = parsed.map(it => {
+        const isRecurring = it.type === 'recurring';
+        return {
+          id: it.id || uid(),
+          name: String(it.name || 'Untitled Project'),
+          bu: String(it.bu || 'Lainnya'),
+          service: String(it.service || 'Lainnya'),
+          pic: String(it.pic || '-'),
+          type: isRecurring ? 'recurring' : 'onetime',
+          target: isRecurring ? null : (/^\d{4}-\d{2}-\d{2}$/.test(it.target) ? it.target : todayStr()),
+          recurDay: isRecurring ? Math.min(31, Math.max(1, Number(it.recurDay) || 1)) : null,
+          cycleKey: isRecurring ? (it.cycleKey || currentCycleKey()) : null,
+          progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
+          revenue: Math.max(0, Number(it.revenue) || 0),
+          cor: Math.max(0, Number(it.cor) || 0),
+          manhour: Math.max(0, Number(it.manhour) || 0),
+          metrics: Array.isArray(it.metrics)
+            ? it.metrics.map(m => ({
+                name: String((m && m.name) || ''),
+                unit: String((m && m.unit) || ''),
+                value: (m && m.value != null && m.value !== '') ? Number(m.value) : null
+              })).filter(m => m.name)
+            : (it.metricName ? [{name:String(it.metricName), unit:String(it.metricUnit||''), value: it.metricValue != null ? Number(it.metricValue) : null}] : []),
+          todos: Array.isArray(it.todos)
+            ? it.todos.map(x => ({
+                id: (x && x.id) || uid(),
+                text: String((x && x.text) || ''),
+                done: !!(x && x.done)
+              })).filter(x => x.text)
+            : []
+        };
+      });
+      askConfirm('Restore data?',
+        `${data.length} project yang ada sekarang akan diganti dengan ${clean.length} project dari file. Download backup dulu kalau belum.`,
+        () => {
+          data = clean; save(data);
+          filterStatus = 'all'; filterBU = null; searchTerm = '';
+          document.getElementById('searchInput').value = '';
+          renderAll(); toast(`${clean.length} project di-restore`);
+        });
+    }catch(err){
+      toast('File gak terbaca, pastikan JSON hasil backup');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+};
+document.getElementById('resetBtn').onclick = () => {
+  askConfirm('Hapus semua data?',
+    `Semua ${data.length} project akan dihapus permanen dari browser ini. Download backup dulu kalau masih dibutuhkan.`,
+    () => { data = []; save(data); renderAll(); toast('Semua data dihapus'); });
+};
+
+/* MODAL */
+const overlay = document.getElementById('overlay');
+function updateCalc(){
+  const rev = +document.getElementById('f_revenue').value || 0;
+  const cor = +document.getElementById('f_cor').value || 0;
+  const mh  = +document.getElementById('f_manhour').value || 0;
+  const gpm = rev - cor, cost = cor + mh, net = rev - cost;
+  const pct = rev ? net/rev*100 : 0;
+  document.getElementById('cGpm').textContent  = fmtRp(gpm);
+  document.getElementById('cCost').textContent = fmtRp(cost);
+  document.getElementById('cNet').textContent  = fmtRp(net);
+  const pctEl = document.getElementById('cPct');
+  pctEl.textContent = pct.toFixed(1) + '%';
+  pctEl.style.color = pct < 10 ? 'var(--danger-text)' : pct < 20 ? 'var(--warn-text)' : 'var(--accent-text)';
+}
+let modalType = 'onetime';
+
+function applyTypeUI(type){
+  modalType = type;
+  document.querySelectorAll('#typeToggle .type-opt').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  document.getElementById('targetOnetimeWrap').style.display = type === 'onetime' ? 'block' : 'none';
+  document.getElementById('targetRecurringWrap').style.display = type === 'recurring' ? 'block' : 'none';
+  updateRecurHint();
+}
+function updateRecurHint(){
+  if(modalType !== 'recurring') return;
+  const day = +document.getElementById('f_recur_day').value || 1;
+  const now = new Date();
+  const clamped = clampDayInMonth(day, now.getFullYear(), now.getMonth());
+  const d = new Date(now.getFullYear(), now.getMonth(), clamped);
+  document.getElementById('recurHint').textContent =
+    `Repeats every month · this cycle is due ${d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}. Progress auto-resets to 0% when a new month starts.`;
+}
+document.querySelectorAll('#typeToggle .type-opt').forEach(btn => {
+  btn.onclick = () => applyTypeUI(btn.dataset.type);
+});
+document.getElementById('f_recur_day').oninput = updateRecurHint;
+
+/* PERFORMANCE METRICS (dynamic rows) */
+function metricRowHtml(m){
+  m = m || {name:'', unit:'', value:null};
+  return `<div class="metric-row">
+    <input type="text" class="mr-name" placeholder="e.g. Qty, Engagement Rate" list="metricList" value="${esc(m.name || '')}">
+    <input type="text" class="mr-unit" placeholder="Absolute / %" list="unitList" value="${esc(m.unit || '')}">
+    <input type="number" class="mr-value" placeholder="0" step="0.01" value="${m.value != null ? m.value : ''}">
+    <button type="button" class="metric-remove" aria-label="Remove metric">&times;</button>
+  </div>`;
+}
+function renderMetricRows(metrics){
+  const wrap = document.getElementById('metricRows');
+  const rows = (metrics && metrics.length) ? metrics : [null];
+  wrap.innerHTML = rows.map(metricRowHtml).join('');
+}
+function collectMetrics(){
+  const rows = [...document.querySelectorAll('#metricRows .metric-row')];
+  return rows.map(r => ({
+    name: r.querySelector('.mr-name').value.trim(),
+    unit: r.querySelector('.mr-unit').value.trim(),
+    value: r.querySelector('.mr-value').value === '' ? null : +r.querySelector('.mr-value').value
+  })).filter(m => m.name);
+}
+// Delegated so it keeps working for rows added later via "Add metric"
+document.getElementById('metricRows').addEventListener('click', (e) => {
+  const btn = e.target.closest('.metric-remove');
+  if(!btn) return;
+  const wrap = document.getElementById('metricRows');
+  const row = btn.closest('.metric-row');
+  if(wrap.children.length > 1){
+    row.remove();
+  }else{
+    row.querySelector('.mr-name').value = '';
+    row.querySelector('.mr-unit').value = '';
+    row.querySelector('.mr-value').value = '';
+  }
+});
+document.getElementById('addMetricRow').onclick = () => {
+  document.getElementById('metricRows').insertAdjacentHTML('beforeend', metricRowHtml(null));
+};
+
+/* TO-DO LIST (dynamic rows) */
+function todoRowHtml(t){
+  t = t || {id: uid(), text:'', done:false};
+  return `<div class="todo-row ${t.done ? 'done' : ''}" data-tid="${t.id}">
+    <input type="checkbox" class="tr-done" ${t.done ? 'checked' : ''}>
+    <input type="text" class="tr-text" placeholder="e.g. Kontrak udah belum?" value="${esc(t.text || '')}">
+    <button type="button" class="metric-remove" aria-label="Remove to-do">&times;</button>
+  </div>`;
+}
+function renderTodoRows(todos){
+  const wrap = document.getElementById('todoRows');
+  const rows = (todos && todos.length) ? todos : [null];
+  wrap.innerHTML = rows.map(todoRowHtml).join('');
+}
+function collectTodos(){
+  const rows = [...document.querySelectorAll('#todoRows .todo-row')];
+  return rows.map(r => ({
+    id: r.dataset.tid || uid(),
+    text: r.querySelector('.tr-text').value.trim(),
+    done: r.querySelector('.tr-done').checked
+  })).filter(t => t.text);
+}
+document.getElementById('todoRows').addEventListener('click', (e) => {
+  const btn = e.target.closest('.metric-remove');
+  if(!btn) return;
+  const wrap = document.getElementById('todoRows');
+  const row = btn.closest('.todo-row');
+  if(wrap.children.length > 1){
+    row.remove();
+  }else{
+    row.querySelector('.tr-text').value = '';
+    row.querySelector('.tr-done').checked = false;
+    row.classList.remove('done');
+  }
+});
+document.getElementById('todoRows').addEventListener('change', (e) => {
+  if(!e.target.classList.contains('tr-done')) return;
+  e.target.closest('.todo-row').classList.toggle('done', e.target.checked);
+});
+document.getElementById('addTodoRow').onclick = () => {
+  document.getElementById('todoRows').insertAdjacentHTML('beforeend', todoRowHtml(null));
+};
+
+function openModal(id){
+  editingId = id || null;
+  const it = id ? data.find(d => d.id === id) : null;
+  document.getElementById('modalTitle').textContent = it ? 'Edit project' : 'Project baru';
+  document.getElementById('f_name').value     = it ? it.name : '';
+  document.getElementById('f_bu').value       = it ? it.bu : (filterBU || '');
+  document.getElementById('f_service').value  = it ? it.service : '';
+  document.getElementById('f_pic').value      = it ? it.pic : '';
+  applyTypeUI(it && it.type === 'recurring' ? 'recurring' : 'onetime');
+  document.getElementById('f_target').value    = it && it.type !== 'recurring' ? it.target : todayStr();
+  document.getElementById('f_recur_day').value = it && it.type === 'recurring' ? it.recurDay : 1;
+  updateRecurHint();
+  document.getElementById('f_progress').value = it ? it.progress : 0;
+  document.getElementById('f_progress_label').textContent = it ? it.progress : 0;
+  document.getElementById('f_revenue').value  = it ? it.revenue : '';
+  document.getElementById('f_cor').value      = it ? it.cor : '';
+  document.getElementById('f_manhour').value  = it ? it.manhour : '';
+  renderMetricRows(it ? it.metrics : []);
+  renderTodoRows(it ? it.todos : []);
+  document.getElementById('modalDelete').style.visibility = it ? 'visible' : 'hidden';
+  updateCalc();
+  overlay.classList.add('show');
+  setTimeout(() => document.getElementById('f_name').focus(), 50);
+}
+function closeModal(){ overlay.classList.remove('show'); editingId = null; }
+
+document.getElementById('addBtn').onclick = () => openModal(null);
+document.getElementById('modalCancel').onclick = closeModal;
+overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
+document.getElementById('f_progress').oninput = (e) => {
+  document.getElementById('f_progress_label').textContent = e.target.value;
+};
+['f_revenue','f_cor','f_manhour'].forEach(id => {
+  document.getElementById(id).oninput = updateCalc;
+});
+document.getElementById('modalDelete').onclick = () => {
+  if(!editingId) return;
+  const it = data.find(d => d.id === editingId);
+  const target = editingId;
+  askConfirm('Hapus project?', `"${it.name}" akan dihapus permanen.`, () => {
+    data = data.filter(d => d.id !== target);
+    save(data); closeModal(); renderAll(); toast('Project dihapus');
+  });
+};
+document.getElementById('modalSave').onclick = () => {
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){ document.getElementById('f_name').focus(); toast('Nama project wajib diisi'); return; }
+
+  const it = editingId ? data.find(d => d.id === editingId) : null;
+  const wasRecurring = it && it.type === 'recurring';
+  const nowRecurring = modalType === 'recurring';
+
+  const payload = {
+    name,
+    bu: document.getElementById('f_bu').value.trim() || 'Lainnya',
+    service: document.getElementById('f_service').value,
+    pic: document.getElementById('f_pic').value.trim() || '-',
+    type: modalType,
+    target: nowRecurring ? null : (document.getElementById('f_target').value || todayStr()),
+    recurDay: nowRecurring ? Math.min(31, Math.max(1, +document.getElementById('f_recur_day').value || 1)) : null,
+    cycleKey: nowRecurring ? (wasRecurring ? it.cycleKey : currentCycleKey()) : null,
+    progress: +document.getElementById('f_progress').value,
+    revenue: Math.max(0, +document.getElementById('f_revenue').value || 0),
+    cor: Math.max(0, +document.getElementById('f_cor').value || 0),
+    manhour: Math.max(0, +document.getElementById('f_manhour').value || 0),
+    metrics: collectMetrics(),
+    todos: collectTodos()
+  };
+  if(editingId){
+    Object.assign(data.find(d => d.id === editingId), payload);
+    toast('Project diperbarui');
+  }else{
+    data.push({id:uid(), ...payload});
+    toast('Project ditambahkan');
+  }
+  save(data); closeModal(); renderAll();
+};
+
+document.getElementById('clearStatus').onclick = () => { filterStatus = 'all'; renderAll(); };
+document.getElementById('clearBU').onclick = () => { filterBU = null; renderAll(); };
+document.getElementById('searchInput').oninput = (e) => {
+  searchTerm = e.target.value; renderStatBar(); renderBoard();
+};
+document.getElementById('sortSel').onchange = (e) => { sortMode = e.target.value; renderBoard(); };
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    if(cfOverlay.classList.contains('show')) closeConfirm();
+    else if(overlay.classList.contains('show')) closeModal();
+    else if(sidebarEl.classList.contains('open')) closeSidebar();
+  }
+  if((e.metaKey || e.ctrlKey) && e.key === 'Enter' && overlay.classList.contains('show')){
+    document.getElementById('modalSave').click();
+  }
+  if(e.key === '/' && !overlay.classList.contains('show') && !cfOverlay.classList.contains('show')
+     && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT'){
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+});
+
+renderAll();
+</script>
+</body>
+</html>
