@@ -278,8 +278,10 @@
   .mh-calc-row input{width:56px;text-align:center;padding:8px 6px;}
   .mh-calc-row .btn-secondary{padding:8px 12px;font-size:12px;flex-shrink:0;}
   .modal.readonly .mh-calc-row{display:none;}
-  .catalog-row{grid-template-columns:118px 1fr 76px 96px 30px;}
-  .catalog-row .cat-cost{text-align:center;font-size:11px;font-weight:800;color:var(--accent-text);white-space:nowrap;}
+  .catalog-row{grid-template-columns:52px 1fr 64px 88px 26px;}
+  .catalog-row .cat-category{padding-left:8px;padding-right:2px;text-align:center;text-transform:uppercase;}
+  .catalog-row .cat-hours{padding-left:6px;padding-right:2px;}
+  .catalog-row .cat-cost{text-align:center;font-size:10.5px;font-weight:800;color:var(--accent-text);white-space:nowrap;}
   .catalog-group-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);margin:16px 0 7px;}
   .catalog-group-label:first-child{margin-top:0;}
   @media(max-width:480px){
@@ -786,7 +788,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.01';
+const APP_VERSION = '0.02';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
 
@@ -806,7 +808,7 @@ function initFirebase(){
       const val = snap.val();
       if(val && Array.isArray(val.items)){
         data = val.items.map(migrateItem);
-        if(Array.isArray(val.catalog)) catalogData = val.catalog;
+        if(Array.isArray(val.catalog)) catalogData = val.catalog.map(it => ({...it, category: migrateCatalogCategory(it.category)}));
         if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
         try{
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -852,7 +854,14 @@ const STORAGE_KEY = 'dmd-project-tracker-data';
 const CATALOG_KEY = 'dmd-project-tracker-catalog';
 // Preset categories shown first (in this order) whenever they have items;
 // admin can still type any other category freeform via the datalist.
-const CATALOG_CATEGORIES = ['Creative Production', 'Performance Marketing'];
+const CATALOG_CATEGORIES = ['CR', 'PM'];
+// Migrates category strings from before the CR/PM abbreviation, so anything
+// already saved (locally or on a teammate's browser via cloud sync) lines up
+// with the new preset codes instead of showing up as a stray custom category.
+const CATALOG_CATEGORY_MIGRATE = {'Creative Production':'CR', 'Performance Marketing':'PM'};
+function migrateCatalogCategory(cat){
+  return CATALOG_CATEGORY_MIGRATE[cat] || cat;
+}
 // Orders a {categoryName: [...]} map: known categories first (in CATALOG_CATEGORIES
 // order), then custom categories A-Z, then the uncategorized bucket last.
 function orderCategories(groups, uncategorizedLabel){
@@ -865,15 +874,15 @@ function loadCatalog(){
     const raw = localStorage.getItem(CATALOG_KEY);
     if(raw){
       const p = JSON.parse(raw);
-      if(p && Array.isArray(p.items)) return {rate: +p.rate || 99000, items: p.items};
+      if(p && Array.isArray(p.items)) return {rate: +p.rate || 99000, items: p.items.map(it => ({...it, category: migrateCatalogCategory(it.category)}))};
     }
   }catch(e){}
   return {
     rate: 99000,
     items: [
-      {id: 'cat-1', name:'Socmed Static', hours:5, category:'Creative Production'},
-      {id: 'cat-2', name:'Socmed Video/Reels', hours:10, category:'Creative Production'},
-      {id: 'cat-3', name:'Data & Performance Report', hours:8, category:'Performance Marketing'}
+      {id: 'cat-1', name:'Socmed Static', hours:5, category:'CR'},
+      {id: 'cat-2', name:'Socmed Video/Reels', hours:10, category:'CR'},
+      {id: 'cat-3', name:'Data & Performance Report', hours:8, category:'PM'}
     ]
   };
 }
@@ -1802,7 +1811,7 @@ const CATALOG_UNCATEGORIZED = 'Tanpa kategori';
 function catalogRowHtml(c){
   c = c || {id: uid(), name:'', hours:null, category:''};
   return `<div class="metric-row catalog-row" data-cid="${c.id}">
-    <input type="text" class="cat-category" placeholder="Kategori" list="catalogCategoryList" value="${esc(c.category || '')}">
+    <input type="text" class="cat-category" placeholder="CR" list="catalogCategoryList" maxlength="6" value="${esc(c.category || '')}">
     <input type="text" class="cat-name" placeholder="mis. Socmed Static" value="${esc(c.name || '')}">
     <input type="number" class="cat-hours" placeholder="Jam/unit" min="0" step="0.5" value="${c.hours != null ? c.hours : ''}">
     <span class="cat-cost">Rp 0</span>
