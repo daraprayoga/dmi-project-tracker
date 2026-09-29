@@ -259,6 +259,18 @@
     .metric-row .mr-name{grid-column:1 / -1;}
     .metric-row .metric-remove{justify-self:end;}
   }
+  .progress-row{display:grid;grid-template-columns:1fr 52px 10px 52px 40px 30px;gap:6px;margin-bottom:8px;align-items:center;}
+  .progress-row input{width:100%;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 6px;font-family:'Inter';font-size:12px;color:var(--ink);text-align:center;}
+  .progress-row input.pr-label{text-align:left;padding:8px 10px;}
+  .progress-row input:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .progress-row .pr-sep{text-align:center;color:var(--ink-faint);font-size:12px;}
+  .progress-row .pr-pct{text-align:center;font-size:11px;font-weight:800;color:var(--accent-text);}
+  @media(max-width:480px){
+    .progress-row{grid-template-columns:1fr 1fr 1fr;row-gap:6px;}
+    .progress-row .pr-label{grid-column:1 / -1;}
+    .progress-row .pr-sep{display:none;}
+    .progress-row .metric-remove{justify-self:end;}
+  }
   .todo-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .todo-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
   .todo-row input[type="text"]{flex:1;min-width:0;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12.5px;color:var(--ink);}
@@ -541,17 +553,21 @@
     </div>
 
     <div class="field" id="progressQtyWrap" style="display:none;">
-      <div class="field-row">
-        <div class="field" style="margin-bottom:0;">
-          <label for="f_qty_done">Sudah selesai</label>
-          <input type="number" id="f_qty_done" placeholder="mis. 5" min="0" step="1">
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label for="f_qty_target">Target total</label>
-          <input type="number" id="f_qty_target" placeholder="mis. 10 artikel" min="0" step="1">
-        </div>
-      </div>
-      <div class="field-hint" id="qtyProgressHint">Progress: 0%</div>
+      <div class="field-hint" style="margin-bottom:8px;">Bisa lebih dari satu target, mis. 10 artikel &amp; 1000 session sekaligus.</div>
+      <datalist id="progressLabelList">
+        <option>Artikel</option>
+        <option>Session</option>
+        <option>Konten</option>
+        <option>Video</option>
+        <option>Desain</option>
+        <option>Revisi</option>
+      </datalist>
+      <div id="progressRows"></div>
+      <button type="button" class="metric-add" id="addProgressRow">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+        Add target
+      </button>
+      <div class="field-hint" id="qtyProgressHint" style="margin-top:10px;font-weight:700;">Progress keseluruhan: 0%</div>
     </div>
 
     <div class="section-label">Financial</div>
@@ -738,10 +754,10 @@ function seedData(){
     oneTime({id:uid(), name:'Golf Charity Event Recap',      bu:'Lexus Menteng', service:'Event Documentation Video',         pic:'Sari',  target:t(9,20),  progress:100, revenue:38000000, cor:15000000, manhour:2600000, metrics:[{name:'Engagement Rate', unit:'Percentage', value:6.4}], todos:[td('Kontrak sudah ditandatangani', true), td('Approval grand design', true)]}),
     oneTime({id:uid(), name:'New SUV Line Review',           bu:'DSO',           service:'Product Review PK (Real Shot)',     pic:'Bayu',  target:t(10,2),  progress:20,  revenue:22000000, cor:9500000,  manhour:1800000, metrics:[], todos:[td('Kontrak sudah ditandatangani', false), td('Approval grand design', false)]}),
     oneTime({id:uid(), name:'Spare Parts Animated Explainer',bu:'BSO',           service:'Product Review PK (Animation)',     pic:'Nadia', target:t(11,5),  progress:0,   revenue:18000000, cor:7000000,  manhour:1400000, metrics:[]}),
-    oneTime({id:uid(), name:'Q4 Catalog Photoshoot',         bu:'OLX',           service:'Photoshoot Session',               pic:'Rizal', target:t(10,8),  progress:80,  revenue:27000000, cor:11000000, manhour:2100000, metrics:[{name:'Qty', unit:'Absolute Number', value:240}], progressMode:'qty', qtyDone:240, qtyTarget:300}),
+    oneTime({id:uid(), name:'Q4 Catalog Photoshoot',         bu:'OLX',           service:'Photoshoot Session',               pic:'Rizal', target:t(10,8),  progress:80,  revenue:27000000, cor:11000000, manhour:2100000, metrics:[{name:'Qty', unit:'Absolute Number', value:240}], progressMode:'qty', progressTargets:[{id:uid(), label:'Foto', target:300, done:240}]}),
     oneTime({id:uid(), name:'Sub-brand Logo Refresh',        bu:'HSO',           service:'Logo',                             pic:'Wulan', target:t(10,15), progress:40,  revenue:15000000, cor:4000000,  manhour:2600000, metrics:[]}),
     oneTime({id:uid(), name:'Brand Guideline v2',            bu:'ADI Internal',  service:'Brand Guideline',                  pic:'Oka',   target:t(10,30), progress:55,  revenue:32000000, cor:9000000,  manhour:6100000, metrics:[]}),
-    oneTime({id:uid(), name:'Year-End Campaign Strategy',    bu:'TSO',           service:'Creative Campaign Strategy',       pic:'Fira',  target:t(11,25), progress:10,  revenue:60000000, cor:14000000, manhour:8300000, metrics:[]}),
+    oneTime({id:uid(), name:'Year-End Campaign Strategy',    bu:'TSO',           service:'Creative Campaign Strategy',       pic:'Fira',  target:t(11,25), progress:50,  revenue:60000000, cor:14000000, manhour:8300000, metrics:[], progressMode:'qty', progressTargets:[{id:uid(), label:'Artikel', target:10, done:5}, {id:uid(), label:'Session', target:1000, done:500}]}),
     oneTime({id:uid(), name:'Finance Product Explainer',     bu:'TAF',           service:'Digital Commercial Video',         pic:'Dimas', target:t(9,22),  progress:15,  revenue:47000000, cor:19000000, manhour:3200000, metrics:[{name:'Register Rate', unit:'Percentage', value:3.1}, {name:'Qty', unit:'Absolute Number', value:1200}]}),
     // Recurring example: same deliverable every month, due on the 1st, resets automatically each new month.
     {id:uid(), name:'Monthly Performance & Data Report', bu:'LSO', service:'Data & Performance Report', pic:'Sari', type:'recurring', recurDay:1, cycleKey:currentCycleKey(), target:null, progress:35, revenue:31000000, cor:13000000, manhour:2400000, metrics:[], todos:[td('Migrasi sistem sudah beres', true), td('Approval grand design', false)]}
@@ -759,6 +775,15 @@ let confirmAction = null;
 
 // Migrates an item saved before multi-metric support (single metricName/metricUnit/metricValue)
 // into the current shape (metrics: [{name, unit, value}]). Safe to run on already-migrated items.
+const DEFAULT_TODOS = ['Cost Structure', 'PKS/PO/SPK/CL'];
+function ensureDefaultTodos(todos){
+  todos = Array.isArray(todos) ? todos.slice() : [];
+  DEFAULT_TODOS.forEach(label => {
+    const exists = todos.some(t => (t.text || '').trim().toLowerCase() === label.toLowerCase());
+    if(!exists) todos.push({id: uid(), text: label, done: false});
+  });
+  return todos;
+}
 function migrateItem(it){
   if(!Array.isArray(it.metrics)){
     const metrics = [];
@@ -768,10 +793,14 @@ function migrateItem(it){
     it.metrics = metrics;
   }
   if(!it.type) it.type = 'onetime';
-  if(!Array.isArray(it.todos)) it.todos = [];
+  it.todos = ensureDefaultTodos(it.todos);
   if(it.progressMode !== 'qty') it.progressMode = 'manual';
-  if(it.qtyDone == null) it.qtyDone = null;
-  if(it.qtyTarget == null) it.qtyTarget = null;
+  if(!Array.isArray(it.progressTargets)){
+    // migrate the old single done/target pair into the new multi-target array
+    it.progressTargets = (it.qtyTarget != null && it.qtyTarget !== '')
+      ? [{id: uid(), label: 'Qty', target: Number(it.qtyTarget) || 0, done: Number(it.qtyDone) || 0}]
+      : [];
+  }
   return it;
 }
 function load(){
@@ -782,7 +811,7 @@ function load(){
       if(Array.isArray(p)) return p.map(migrateItem);
     }
   }catch(e){}
-  const seeded = seedData();
+  const seeded = seedData().map(migrateItem);
   save(seeded);
   return seeded;
 }
@@ -1045,7 +1074,9 @@ function cardHtml(item){
       </div>
       <div class="card-prog-val">${item.progress}%</div>
     </div>
-    ${item.progressMode === 'qty' && item.qtyTarget ? `<div class="card-qty-note">${item.qtyDone || 0}/${item.qtyTarget} selesai</div>` : ''}
+    ${item.progressMode === 'qty' && (item.progressTargets || []).length ? `<div class="card-qty-note">${
+      item.progressTargets.map(p => `${p.done || 0}/${p.target || 0} ${esc(p.label || '')}`).join(' &middot; ')
+    }</div>` : ''}
     <div class="card-fin">
       <div><div class="fin-lab">Revenue</div><div class="fin-val">${fmtRp(f.revenue, true)}</div></div>
       <div><div class="fin-lab">GPM</div><div class="fin-val">${fmtRp(f.gpm, true)}</div></div>
@@ -1236,8 +1267,14 @@ document.getElementById('importFile').onchange = (e) => {
           cycleKey: isRecurring ? (it.cycleKey || currentCycleKey()) : null,
           progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
           progressMode: it.progressMode === 'qty' ? 'qty' : 'manual',
-          qtyDone: it.qtyDone != null && it.qtyDone !== '' ? Number(it.qtyDone) : null,
-          qtyTarget: it.qtyTarget != null && it.qtyTarget !== '' ? Number(it.qtyTarget) : null,
+          progressTargets: Array.isArray(it.progressTargets)
+            ? it.progressTargets.map(p => ({
+                id: (p && p.id) || uid(),
+                label: String((p && p.label) || ''),
+                target: (p && p.target != null && p.target !== '') ? Number(p.target) : 0,
+                done: (p && p.done != null && p.done !== '') ? Number(p.done) : 0
+              })).filter(p => p.label)
+            : (it.qtyTarget != null && it.qtyTarget !== '' ? [{id:uid(), label:'Qty', target:Number(it.qtyTarget)||0, done:Number(it.qtyDone)||0}] : []),
           revenue: Math.max(0, Number(it.revenue) || 0),
           cor: Math.max(0, Number(it.cor) || 0),
           manhour: Math.max(0, Number(it.manhour) || 0),
@@ -1248,13 +1285,13 @@ document.getElementById('importFile').onchange = (e) => {
                 value: (m && m.value != null && m.value !== '') ? Number(m.value) : null
               })).filter(m => m.name)
             : (it.metricName ? [{name:String(it.metricName), unit:String(it.metricUnit||''), value: it.metricValue != null ? Number(it.metricValue) : null}] : []),
-          todos: Array.isArray(it.todos)
+          todos: ensureDefaultTodos(Array.isArray(it.todos)
             ? it.todos.map(x => ({
                 id: (x && x.id) || uid(),
                 text: String((x && x.text) || ''),
                 done: !!(x && x.done)
               })).filter(x => x.text)
-            : []
+            : [])
         };
       });
       askConfirm('Restore data?',
@@ -1325,22 +1362,79 @@ function applyProgressUI(mode){
   document.getElementById('progressQtyWrap').style.display = mode === 'qty' ? 'block' : 'none';
   if(mode === 'qty') updateQtyProgress();
 }
-function updateQtyProgress(){
-  const done = +document.getElementById('f_qty_done').value || 0;
-  const target = +document.getElementById('f_qty_target').value || 0;
-  const pct = target > 0 ? Math.max(0, Math.min(100, Math.round((done/target)*100))) : 0;
-  document.getElementById('qtyProgressHint').textContent = target > 0
-    ? `Progress: ${pct}% (${done}/${target})`
-    : 'Isi target total dulu buat ngitung progress-nya';
-  document.getElementById('f_progress').value = pct;
-  document.getElementById('f_progress_label').textContent = pct;
-  return pct;
-}
 document.querySelectorAll('#progressToggle .type-opt').forEach(btn => {
   btn.onclick = () => applyProgressUI(btn.dataset.progmode);
 });
-document.getElementById('f_qty_done').oninput = updateQtyProgress;
-document.getElementById('f_qty_target').oninput = updateQtyProgress;
+
+/* PROGRESS TARGETS (multiple qty-based targets per project) */
+function progressRowHtml(p){
+  p = p || {label:'', target:null, done:null};
+  return `<div class="progress-row">
+    <input type="text" class="pr-label" placeholder="mis. Artikel, Session" list="progressLabelList" value="${esc(p.label || '')}">
+    <input type="number" class="pr-done" placeholder="0" min="0" step="1" value="${p.done != null ? p.done : ''}">
+    <span class="pr-sep">/</span>
+    <input type="number" class="pr-target" placeholder="0" min="0" step="1" value="${p.target != null ? p.target : ''}">
+    <span class="pr-pct">0%</span>
+    <button type="button" class="metric-remove" aria-label="Remove target">&times;</button>
+  </div>`;
+}
+function renderProgressRows(rows){
+  const wrap = document.getElementById('progressRows');
+  const list = (rows && rows.length) ? rows : [null];
+  wrap.innerHTML = list.map(progressRowHtml).join('');
+  updateQtyProgress();
+}
+function collectProgressRows(){
+  const rows = [...document.querySelectorAll('#progressRows .progress-row')];
+  return rows.map(r => ({
+    id: uid(),
+    label: r.querySelector('.pr-label').value.trim(),
+    done: r.querySelector('.pr-done').value === '' ? 0 : +r.querySelector('.pr-done').value,
+    target: r.querySelector('.pr-target').value === '' ? 0 : +r.querySelector('.pr-target').value
+  })).filter(p => p.label);
+}
+function rowPct(done, target){
+  return target > 0 ? Math.max(0, Math.min(100, Math.round((done/target)*100))) : 0;
+}
+function updateQtyProgress(){
+  const rows = [...document.querySelectorAll('#progressRows .progress-row')];
+  const valid = [];
+  rows.forEach(r => {
+    const done = +r.querySelector('.pr-done').value || 0;
+    const target = +r.querySelector('.pr-target').value || 0;
+    const pct = rowPct(done, target);
+    r.querySelector('.pr-pct').textContent = target > 0 ? pct + '%' : '—';
+    if(target > 0) valid.push(pct);
+  });
+  const overall = valid.length ? Math.round(valid.reduce((a,b) => a+b, 0) / valid.length) : 0;
+  document.getElementById('qtyProgressHint').textContent = valid.length
+    ? `Progress keseluruhan: ${overall}% (rata-rata dari ${valid.length} target)`
+    : 'Isi minimal satu target buat ngitung progress-nya';
+  document.getElementById('f_progress').value = overall;
+  document.getElementById('f_progress_label').textContent = overall;
+  return overall;
+}
+document.getElementById('progressRows').addEventListener('input', (e) => {
+  if(e.target.closest('.progress-row')) updateQtyProgress();
+});
+document.getElementById('progressRows').addEventListener('click', (e) => {
+  const btn = e.target.closest('.metric-remove');
+  if(!btn) return;
+  const wrap = document.getElementById('progressRows');
+  const row = btn.closest('.progress-row');
+  if(wrap.children.length > 1){
+    row.remove();
+  }else{
+    row.querySelector('.pr-label').value = '';
+    row.querySelector('.pr-done').value = '';
+    row.querySelector('.pr-target').value = '';
+  }
+  updateQtyProgress();
+});
+document.getElementById('addProgressRow').onclick = () => {
+  document.getElementById('progressRows').insertAdjacentHTML('beforeend', progressRowHtml(null));
+  updateQtyProgress();
+};
 
 /* PERFORMANCE METRICS (dynamic rows) */
 function metricRowHtml(m){
@@ -1445,14 +1539,13 @@ function openModal(id){
   updateRecurHint();
   document.getElementById('f_progress').value = it ? it.progress : 0;
   document.getElementById('f_progress_label').textContent = it ? it.progress : 0;
-  document.getElementById('f_qty_done').value   = it && it.qtyDone != null ? it.qtyDone : '';
-  document.getElementById('f_qty_target').value = it && it.qtyTarget != null ? it.qtyTarget : '';
+  renderProgressRows(it ? it.progressTargets : []);
   applyProgressUI(it && it.progressMode === 'qty' ? 'qty' : 'manual');
   document.getElementById('f_revenue').value  = it ? it.revenue : '';
   document.getElementById('f_cor').value      = it ? it.cor : '';
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
   renderMetricRows(it ? it.metrics : []);
-  renderTodoRows(it ? it.todos : []);
+  renderTodoRows(it ? ensureDefaultTodos(it.todos) : ensureDefaultTodos([]));
   document.getElementById('modalDelete').style.visibility = it ? 'visible' : 'hidden';
   updateCalc();
   overlay.classList.add('show');
@@ -1497,14 +1590,13 @@ document.getElementById('modalSave').onclick = () => {
     recurDay: nowRecurring ? Math.min(31, Math.max(1, +document.getElementById('f_recur_day').value || 1)) : null,
     cycleKey: nowRecurring ? (wasRecurring ? it.cycleKey : currentCycleKey()) : null,
     progressMode: progressMode,
-    qtyDone: progressMode === 'qty' ? (+document.getElementById('f_qty_done').value || 0) : null,
-    qtyTarget: progressMode === 'qty' ? (+document.getElementById('f_qty_target').value || 0) : null,
+    progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
     progress: progressMode === 'qty' ? updateQtyProgress() : +document.getElementById('f_progress').value,
     revenue: Math.max(0, +document.getElementById('f_revenue').value || 0),
     cor: Math.max(0, +document.getElementById('f_cor').value || 0),
     manhour: Math.max(0, +document.getElementById('f_manhour').value || 0),
     metrics: collectMetrics(),
-    todos: collectTodos()
+    todos: ensureDefaultTodos(collectTodos())
   };
   if(editingId){
     Object.assign(data.find(d => d.id === editingId), payload);
