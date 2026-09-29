@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DMD Project Board</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%8A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -67,11 +68,11 @@
 
   /* SIDEBAR */
   .sidebar{width:238px;flex-shrink:0;border-right:1px solid var(--border-soft);padding:20px 14px;display:flex;flex-direction:column;}
-  .brand{display:flex;align-items:center;gap:9px;padding:4px 6px 14px;}
-  .brand-mark{width:28px;height:28px;border-radius:8px;background:var(--black);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:6px;flex-shrink:0;}
+  .brand{display:flex;align-items:flex-start;gap:9px;padding:4px 6px 14px;}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:var(--black);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:6px;flex-shrink:0;margin-top:1px;}
   .brand-mark span{background:#fff;border-radius:1px;}
   .brand-name{font-weight:700;font-size:14.5px;line-height:1.2;}
-  .brand-sub{font-size:10.5px;color:var(--ink-faint);font-weight:500;margin-top:1px;}
+  .brand-sub{font-size:10.5px;color:var(--ink-faint);font-weight:500;margin-top:4px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;row-gap:5px;}
   .sidebar-close{display:none;}
 
   .side-label{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:16px 10px 7px;display:flex;align-items:center;}
@@ -271,6 +272,20 @@
     .progress-row .pr-sep{display:none;}
     .progress-row .metric-remove{justify-self:end;}
   }
+  .mh-calc-row{display:flex;gap:6px;align-items:center;margin-top:8px;}
+  .mh-calc-row select,.mh-calc-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12px;color:var(--ink);}
+  .mh-calc-row select{flex:1;min-width:0;}
+  .mh-calc-row input{width:56px;text-align:center;padding:8px 6px;}
+  .mh-calc-row .btn-secondary{padding:8px 12px;font-size:12px;flex-shrink:0;}
+  .modal.readonly .mh-calc-row{display:none;}
+  .catalog-row{grid-template-columns:1fr 90px 100px 30px;}
+  .catalog-row .cat-cost{text-align:center;font-size:11px;font-weight:800;color:var(--accent-text);white-space:nowrap;}
+  @media(max-width:480px){
+    .catalog-row{grid-template-columns:1fr 1fr;row-gap:6px;}
+    .catalog-row .cat-name{grid-column:1 / -1;}
+    .catalog-row .cat-cost{text-align:left;}
+    .catalog-row .metric-remove{justify-self:end;}
+  }
   .todo-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
   .todo-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
   .todo-row input[type="text"]{flex:1;min-width:0;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12.5px;color:var(--ink);}
@@ -283,7 +298,7 @@
   .card-todo svg{width:13px;height:13px;flex-shrink:0;}
 
   /* Admin mode / view-only gating */
-  .admin-badge{display:inline-flex;align-items:center;background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 6px;border-radius:5px;vertical-align:middle;margin-left:4px;}
+  .admin-badge{display:inline-flex;align-items:center;background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.05em;line-height:1.6;padding:3px 8px;border-radius:6px;}
   .side-hint{font-size:10.5px;color:var(--ink-faint);padding:2px 10px 10px;}
   body.is-admin .side-hint{color:var(--accent-text);}
   #adminToggleBtn svg{color:var(--ink-faint);}
@@ -417,7 +432,7 @@
       <div class="brand-mark"><span></span><span></span><span></span><span></span></div>
       <div>
         <div class="brand-name">Project Board</div>
-        <div class="brand-sub">Digital Marketing &amp; Data <span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
+        <div class="brand-sub"><span>Digital Marketing &amp; Data</span><span class="admin-badge" id="adminBadge" style="display:none;">ADMIN</span></div>
       </div>
       <button class="sidebar-close" id="sidebarClose" aria-label="Tutup filter">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -432,6 +447,11 @@
       <div class="filter-list scroll" id="buFilters"></div>
     </div>
 
+    <div class="side-label">Jenis layanan <span class="clear" id="clearService" style="display:none;">reset</span></div>
+    <div class="scroll-fade-wrap">
+      <div class="filter-list scroll" id="serviceFilters"></div>
+    </div>
+
     <div class="sidebar-bottom">
       <div class="admin-card" id="adminCard">
         <button class="admin-login-btn" id="adminToggleBtn">
@@ -439,6 +459,14 @@
           <span id="adminToggleLabel">Login admin (PIN)</span>
         </button>
         <div class="side-hint" id="syncHint">Mode lihat &middot; sync belum aktif</div>
+      </div>
+
+      <div class="side-label" style="padding-top:10px;">Referensi</div>
+      <div class="data-box">
+        <button class="side-action" id="catalogBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          Katalog layanan &amp; rate manhour
+        </button>
       </div>
 
       <div class="side-label" style="padding-top:10px;">Save &amp; restore data</div>
@@ -619,6 +647,11 @@
     <div class="field">
       <label for="f_manhour">Manhour cost (Rp)</label>
       <input type="number" id="f_manhour" placeholder="0" min="0" step="100000">
+      <div class="mh-calc-row admin-only">
+        <select id="mhCalcService"><option value="">Hitung dari katalog layanan...</option></select>
+        <input type="number" id="mhCalcQty" placeholder="Qty" min="0" step="1" value="1">
+        <button type="button" class="btn-secondary" id="mhCalcApply">Isi</button>
+      </div>
     </div>
 
     <div class="calc-box">
@@ -681,6 +714,34 @@
   </div>
 </div>
 
+<div class="overlay" id="catalogOverlay">
+  <div class="modal" id="catalogModal" style="max-width:560px;">
+    <h2 style="margin:0 0 4px;font-size:18px;">📋 Katalog layanan</h2>
+    <p style="margin:0 0 16px;font-size:12.5px;color:var(--ink-faint);line-height:1.5;">Simpen jam kerja standar tiap jenis layanan di sini. Nanti manhour cost project bisa ke-hitung otomatis dari jam × rate ini.</p>
+    <div class="modal-readonly-hint" id="catalogReadonlyHint" style="display:none;">Mode lihat aja &middot; login admin buat edit.</div>
+
+    <div class="field">
+      <label for="f_catalog_rate">Rate per manhour (Rp/jam)</label>
+      <input type="number" id="f_catalog_rate" min="0" step="1000" placeholder="99000">
+    </div>
+
+    <div class="side-label" style="padding:2px 0 8px;">Daftar layanan</div>
+    <div id="catalogRows"></div>
+    <button type="button" class="todo-add admin-only" id="catalogAddBtn">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Tambah layanan
+    </button>
+
+    <div class="modal-actions">
+      <div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="catalogCancel">Tutup</button>
+        <button class="btn-primary admin-only" id="catalogSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="adminOverlay">
   <div class="confirm" role="alertdialog" aria-modal="true">
     <h3>🔒 Admin login</h3>
@@ -732,7 +793,12 @@ function initFirebase(){
       const val = snap.val();
       if(val && Array.isArray(val.items)){
         data = val.items.map(migrateItem);
-        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+        if(Array.isArray(val.catalog)) catalogData = val.catalog;
+        if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
+        try{
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          saveCatalog();
+        }catch(e){}
         renderAll();
       } else if(isAdmin){
         pushToCloud();
@@ -752,7 +818,7 @@ function initFirebase(){
 }
 function pushToCloud(){
   if(!cloudReady || !boardRef) return;
-  boardRef.set({items: data, updatedAt: Date.now()}).catch(e => {
+  boardRef.set({items: data, catalog: catalogData, catalogRate: catalogRate, updatedAt: Date.now()}).catch(e => {
     console.error(e);
     toast('Gagal sync ke cloud');
   });
@@ -770,6 +836,30 @@ function updateSyncHint(){
 }
 
 const STORAGE_KEY = 'dmd-project-tracker-data';
+const CATALOG_KEY = 'dmd-project-tracker-catalog';
+function loadCatalog(){
+  try{
+    const raw = localStorage.getItem(CATALOG_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p && Array.isArray(p.items)) return {rate: +p.rate || 99000, items: p.items};
+    }
+  }catch(e){}
+  return {
+    rate: 99000,
+    items: [
+      {id: 'cat-1', name:'Socmed Static', hours:5},
+      {id: 'cat-2', name:'Socmed Video/Reels', hours:10},
+      {id: 'cat-3', name:'Data & Performance Report', hours:8}
+    ]
+  };
+}
+function saveCatalog(){
+  try{ localStorage.setItem(CATALOG_KEY, JSON.stringify({rate: catalogRate, items: catalogData})); }catch(e){}
+}
+const initialCatalog = loadCatalog();
+let catalogRate = initialCatalog.rate;
+let catalogData = initialCatalog.items;
 
 const AVATAR_PALETTE = ['#2FA79B','#4C7EF3','#8B5CF6','#E8558B','#F0973A','#E2574C','#38A169','#5B6EF5'];
 function avatarColor(seed){
@@ -806,6 +896,7 @@ function seedData(){
 let isAdmin = sessionStorage.getItem('dmd-admin') === '1';
 let filterStatus = 'all';
 let filterBU = null;
+let filterService = null;
 let searchTerm = '';
 let sortMode = 'target';
 let editingId = null;
@@ -905,7 +996,23 @@ function effectiveTarget(item){
   }
   const day = clampDayInMonth(item.recurDay, refYear, refMonth);
   const d = new Date(refYear, refMonth, day);
+  return ymd(d);
+}
+function ymd(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+// Next upcoming monthly due date on/after today (used for display once this
+// cycle's own due date has already passed, so the badge doesn't show a stale
+// negative countdown for a still-active contract).
+function nextRecurDate(item){
+  const now = new Date();
+  let y = now.getFullYear(), m = now.getMonth();
+  let candidate = ymd(new Date(y, m, clampDayInMonth(item.recurDay, y, m)));
+  if(candidate < todayStr()){
+    m += 1; if(m > 11){ m = 0; y += 1; }
+    candidate = ymd(new Date(y, m, clampDayInMonth(item.recurDay, y, m)));
+  }
+  return candidate;
 }
 function contractEnded(item){
   return item.type === 'recurring' && !!item.contractEnd && todayStr() > item.contractEnd;
@@ -926,14 +1033,23 @@ function ensureCycles(){
   if(changed){ save(data); toast(`${changed} recurring project mulai siklus bulan baru`); }
 }
 function getStatus(item){
-  if(contractEnded(item)) return 'done';
   if(item.progress >= 100) return 'done';
+  if(item.type === 'recurring'){
+    // Recurring/retainer projects run on an ongoing contract: a single month's
+    // cycle date passing doesn't make the whole engagement "overdue" — only
+    // the contract itself ending without the final cycle done does.
+    if(contractEnded(item)) return 'over';
+    return item.progress > 0 ? 'track' : 'new';
+  }
   if(effectiveTarget(item) < todayStr()) return 'over';
   if(item.progress > 0) return 'track';
   return 'new';
 }
 function fmtDate(str){
   return new Date(str + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+}
+function fmtDateY(str){
+  return new Date(str + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
 }
 function fin(item){
   const revenue = +item.revenue || 0, cor = +item.cor || 0, manhour = +item.manhour || 0;
@@ -980,6 +1096,7 @@ function applyFilters(list){
   return list.filter(d => {
     if(filterStatus !== 'all' && getStatus(d) !== filterStatus) return false;
     if(filterBU && d.bu !== filterBU) return false;
+    if(filterService && d.service !== filterService) return false;
     if(q && !(d.name + ' ' + d.pic + ' ' + d.bu + ' ' + d.service).toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1006,7 +1123,7 @@ function renderStatBar(){
   const segs = [
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
      l:'Project', n:v.length, b:null},
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><text x="12" y="15.5" font-size="8.5" font-weight="800" fill="currentColor" stroke="none" text-anchor="middle" font-family="Inter,sans-serif">Rp</text></svg>',
      l:'Revenue', n:fmtRp(rev, true), b:null},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>',
      l:'Gross profit margin', n:fmtRp(gpm, true), b:rev ? {c:'good', t:gpmPct.toFixed(0) + '%'} : null},
@@ -1030,6 +1147,7 @@ function renderStatBar(){
 
   const parts = [STATUS_LABEL[filterStatus]];
   if(filterBU) parts.push(filterBU);
+  if(filterService) parts.push(filterService);
   if(searchTerm.trim()) parts.push(`"${searchTerm.trim()}"`);
   document.getElementById('topSub').textContent =
     parts.join(' · ') + ` — ${v.length} dari ${data.length} project`;
@@ -1076,26 +1194,48 @@ function renderSidebarFilters(){
   const defaultServices = ['Digital Commercial Video','Event Documentation Video','Product Review PK (Real Shot)','Product Review PK (Animation)','Photoshoot Session','Logo','Brand Guideline','Creative Campaign Strategy','Data & Performance Report'];
   const allServices = [...new Set([...usedServices, ...defaultServices])].sort();
   document.getElementById('serviceList').innerHTML = allServices.map(s => `<option value="${esc(s)}">`).join('');
+
+  const serviceCount = {};
+  data.forEach(d => { if(d.service) serviceCount[d.service] = (serviceCount[d.service] || 0) + 1; });
+  const usedServicesSorted = Object.keys(serviceCount).sort();
+  const svf = document.getElementById('serviceFilters');
+  svf.innerHTML = usedServicesSorted.length
+    ? usedServicesSorted.map(s => `<button class="filter-item ${filterService === s ? 'active' : ''}" data-service="${esc(s)}"><span class="lbl">${esc(s)}</span><span class="cnt">${serviceCount[s]}</span></button>`).join('')
+    : '<div class="side-note">Belum ada layanan</div>';
+  svf.querySelectorAll('[data-service]').forEach(el => {
+    el.onclick = () => { filterService = (filterService === el.dataset.service) ? null : el.dataset.service; renderAll(); };
+  });
+  document.getElementById('clearService').style.display = filterService ? 'inline' : 'none';
 }
 
 function cardHtml(item){
   const f = fin(item), st = getStatus(item);
   const effTarget = effectiveTarget(item);
   const dd = daysDiff(effTarget);
+  // For a recurring project, once this month's cycle date has passed but the
+  // contract is still active (not 'over'/'done'), show the next upcoming cycle
+  // instead of a stale negative countdown.
+  let dispTarget = effTarget, dispDd = dd;
+  if(item.type === 'recurring' && st !== 'over' && st !== 'done' && dd < 0){
+    dispTarget = nextRecurDate(item);
+    dispDd = daysDiff(dispTarget);
+  }
   let timeBadge = '', alertBox = '';
 
   if(st === 'done'){
     timeBadge = `<span class="time-badge good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Selesai ${fmtDate(effTarget)}</span>`;
   } else if(st === 'over'){
     timeBadge = `<span class="time-badge bad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${Math.abs(dd)} hari lewat</span>`;
-    alertBox = `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
+    alertBox = item.type === 'recurring'
+      ? `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Kontrak berakhir ${Math.abs(dd)} hari lalu, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`
+      : `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
   } else if(st === 'track'){
-    timeBadge = `<span class="time-badge ${dd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${dd} hari lagi</span>`;
-    if(dd <= 3){
-      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Deadline ${dd} hari lagi, progress baru ${item.progress}%.</span></div>`;
+    timeBadge = `<span class="time-badge ${dispDd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${dispDd} hari lagi</span>`;
+    if(dispDd <= 3){
+      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Deadline ${dispDd} hari lagi, progress baru ${item.progress}%.</span></div>`;
     }
   } else {
-    timeBadge = `<span class="time-badge ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>${fmtDate(effTarget)}</span>`;
+    timeBadge = `<span class="time-badge ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>${fmtDate(dispTarget)}</span>`;
   }
 
   const thinMargin = f.revenue > 0 && f.netPct < 10;
@@ -1130,7 +1270,7 @@ function cardHtml(item){
         <div class="card-sub">${esc(item.bu)} · ${esc(item.pic)}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
-          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDate(item.contractEnd) : '↻ Monthly · day ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDate(item.contractEnd) : '')}</div>` : ''}
+          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDateY(item.contractEnd) : '↻ Monthly · day ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDateY(item.contractEnd) : '')}</div>` : ''}
           ${item.isPaidMarketing ? `<div class="card-tag" style="background:#FBF1D3;color:#8A6D1F;">Paid Ads · Fee ${item.serviceFeePct}%</div>` : ''}
           ${metricChips}
         </div>
@@ -1262,7 +1402,7 @@ function renderAll(){
   renderStatBar();
   renderBoard();
   const mfb = document.getElementById('mobileFilterBtn');
-  if(mfb) mfb.classList.toggle('has-filter', filterStatus !== 'all' || !!filterBU);
+  if(mfb) mfb.classList.toggle('has-filter', filterStatus !== 'all' || !!filterBU || !!filterService);
 }
 
 /* MOBILE SIDEBAR (slide-in panel) */
@@ -1275,7 +1415,7 @@ document.getElementById('sidebarClose').onclick = closeSidebar;
 sidebarBackdrop.onclick = closeSidebar;
 // auto-close the panel once a filter is picked on mobile
 sidebarEl.addEventListener('click', (e) => {
-  if(window.innerWidth <= 900 && (e.target.closest('[data-status]') || e.target.closest('[data-bu]'))){
+  if(window.innerWidth <= 900 && (e.target.closest('[data-status]') || e.target.closest('[data-bu]') || e.target.closest('[data-service]'))){
     setTimeout(closeSidebar, 150);
   }
 });
@@ -1623,6 +1763,100 @@ document.getElementById('addTodoRow').onclick = () => {
   document.getElementById('todoRows').insertAdjacentHTML('beforeend', todoRowHtml(null));
 };
 
+/* SERVICE CATALOGUE (jam kerja standar per layanan + rate manhour) */
+function catalogRowHtml(c){
+  c = c || {id: uid(), name:'', hours:null};
+  return `<div class="metric-row catalog-row" data-cid="${c.id}">
+    <input type="text" class="cat-name" placeholder="mis. Socmed Static" value="${esc(c.name || '')}">
+    <input type="number" class="cat-hours" placeholder="Jam/unit" min="0" step="0.5" value="${c.hours != null ? c.hours : ''}">
+    <span class="cat-cost">Rp 0</span>
+    <button type="button" class="metric-remove admin-only" aria-label="Hapus layanan">&times;</button>
+  </div>`;
+}
+function renderCatalogRows(items){
+  const wrap = document.getElementById('catalogRows');
+  const rows = (items && items.length) ? items : [null];
+  wrap.innerHTML = rows.map(catalogRowHtml).join('');
+  updateCatalogCosts();
+}
+function updateCatalogCosts(){
+  const rate = +document.getElementById('f_catalog_rate').value || 0;
+  document.querySelectorAll('#catalogRows .catalog-row').forEach(r => {
+    const hours = +r.querySelector('.cat-hours').value || 0;
+    r.querySelector('.cat-cost').textContent = hours > 0 ? fmtRp(hours * rate) + '/unit' : '—';
+  });
+}
+function collectCatalogRows(){
+  const rows = [...document.querySelectorAll('#catalogRows .catalog-row')];
+  return rows.map(r => ({
+    id: r.dataset.cid || uid(),
+    name: r.querySelector('.cat-name').value.trim(),
+    hours: r.querySelector('.cat-hours').value === '' ? null : +r.querySelector('.cat-hours').value
+  })).filter(c => c.name);
+}
+document.getElementById('catalogRows').addEventListener('input', updateCatalogCosts);
+document.getElementById('f_catalog_rate').addEventListener('input', updateCatalogCosts);
+document.getElementById('catalogRows').addEventListener('click', (e) => {
+  const btn = e.target.closest('.metric-remove');
+  if(!btn || !isAdmin) return;
+  const wrap = document.getElementById('catalogRows');
+  const row = btn.closest('.catalog-row');
+  if(wrap.children.length > 1){
+    row.remove();
+  }else{
+    row.querySelector('.cat-name').value = '';
+    row.querySelector('.cat-hours').value = '';
+  }
+  updateCatalogCosts();
+});
+document.getElementById('catalogAddBtn').onclick = () => {
+  if(!isAdmin) return;
+  document.getElementById('catalogRows').insertAdjacentHTML('beforeend', catalogRowHtml(null));
+  updateCatalogCosts();
+};
+function renderMhCalcOptions(){
+  const sel = document.getElementById('mhCalcService');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Hitung dari katalog layanan...</option>' +
+    catalogData.filter(c => c.name && c.hours != null).map(c => `<option value="${esc(c.id)}">${esc(c.name)} (${c.hours} jam)</option>`).join('');
+  sel.value = current;
+}
+document.getElementById('mhCalcApply').onclick = () => {
+  const sel = document.getElementById('mhCalcService');
+  const cat = catalogData.find(c => c.id === sel.value);
+  if(!cat){ toast('Pilih layanan dari katalog dulu'); return; }
+  const qty = Math.max(0, +document.getElementById('mhCalcQty').value || 0);
+  const cost = Math.round(cat.hours * catalogRate * qty);
+  document.getElementById('f_manhour').value = cost;
+  updateCalc();
+  toast(`Manhour cost diisi: ${cat.hours} jam × ${qty} × ${fmtRp(catalogRate)} = ${fmtRp(cost)}`);
+};
+const catalogOverlay = document.getElementById('catalogOverlay');
+function openCatalogModal(){
+  document.getElementById('f_catalog_rate').value = catalogRate;
+  renderCatalogRows(catalogData);
+  const modalEl = document.getElementById('catalogModal');
+  modalEl.classList.toggle('readonly', !isAdmin);
+  document.getElementById('catalogReadonlyHint').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('catalogCancel').textContent = isAdmin ? 'Batal' : 'Tutup';
+  catalogOverlay.classList.add('show');
+}
+function closeCatalogModal(){ catalogOverlay.classList.remove('show'); }
+document.getElementById('catalogBtn').onclick = openCatalogModal;
+document.getElementById('catalogCancel').onclick = closeCatalogModal;
+catalogOverlay.onclick = (e) => { if(e.target === catalogOverlay) closeCatalogModal(); };
+document.getElementById('catalogSave').onclick = () => {
+  if(!isAdmin) return;
+  catalogRate = Math.max(0, +document.getElementById('f_catalog_rate').value || 0);
+  catalogData = collectCatalogRows();
+  saveCatalog();
+  pushToCloud();
+  renderMhCalcOptions();
+  closeCatalogModal();
+  toast('Katalog layanan disimpan');
+};
+
 function openModal(id){
   if(!id && !isAdmin) return;
   editingId = id || null;
@@ -1649,6 +1883,8 @@ function openModal(id){
   document.getElementById('f_revenue').value  = it ? it.revenue : '';
   document.getElementById('f_cor').value      = it ? it.cor : '';
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
+  renderMhCalcOptions();
+  document.getElementById('mhCalcQty').value = 1;
   document.getElementById('f_cor_pm').value          = it && it.isPaidMarketing ? it.cor : '';
   document.getElementById('f_service_fee_pct').value = it && it.serviceFeePct != null ? it.serviceFeePct : 8;
   document.getElementById('f_pph_pct').value         = it && it.pphPct != null ? it.pphPct : 2;
@@ -1725,6 +1961,7 @@ document.getElementById('modalSave').onclick = () => {
 
 document.getElementById('clearStatus').onclick = () => { filterStatus = 'all'; renderAll(); };
 document.getElementById('clearBU').onclick = () => { filterBU = null; renderAll(); };
+document.getElementById('clearService').onclick = () => { filterService = null; renderAll(); };
 document.getElementById('searchInput').oninput = (e) => {
   searchTerm = e.target.value; renderStatBar(); renderBoard();
 };
@@ -1744,6 +1981,7 @@ document.addEventListener('wheel', (e) => {
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
     if(adminOverlay.classList.contains('show')) adminOverlay.classList.remove('show');
+    else if(catalogOverlay.classList.contains('show')) closeCatalogModal();
     else if(cfOverlay.classList.contains('show')) closeConfirm();
     else if(overlay.classList.contains('show')) closeModal();
     else if(sidebarEl.classList.contains('open')) closeSidebar();
