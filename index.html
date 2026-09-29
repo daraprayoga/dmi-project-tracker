@@ -445,6 +445,13 @@
   .bau-pill.under{background:var(--danger-soft);color:var(--danger-text);}
   .bau-pill.blank{background:var(--col-bg);color:var(--ink-faint);}
   .bau-num{font-variant-numeric:tabular-nums;}
+  .bau-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:0 0 10px;padding:9px 14px;border:1px solid var(--border-soft);border-radius:12px;background:var(--card);font-size:11.5px;color:var(--ink-soft);}
+  .bau-legend .lg-title{font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.04em;font-size:10.5px;}
+  .bau-legend .lg-item{display:inline-flex;align-items:center;gap:6px;}
+  .bau-legend .lg-dot{width:12px;height:12px;border-radius:3px;background:var(--border-soft);flex-shrink:0;}
+  .bau-legend .lg-dot.achieve{background:var(--accent);}
+  .bau-legend .lg-dot.under{background:var(--danger);}
+  .bau-legend .lg-note{margin-left:auto;font-size:11px;opacity:.85;}
   .bau-strip{display:flex;gap:2px;}
   .bau-strip span{width:12px;height:12px;border-radius:3px;background:var(--border-soft);flex-shrink:0;}
   .bau-strip span.achieve{background:var(--accent);}
@@ -636,6 +643,14 @@
       </div>
 
       <div class="statbar" id="bauStatBar"></div>
+
+      <div class="bau-legend" id="bauLegend">
+        <span class="lg-title">Keterangan Jan–Des</span>
+        <span class="lg-item"><span class="lg-dot achieve"></span>Achieve (capaian ≥ 100% target)</span>
+        <span class="lg-item"><span class="lg-dot under"></span>Under Achieve (capaian &lt; 100% target)</span>
+        <span class="lg-item"><span class="lg-dot"></span>Belum ada data (target/actual kosong)</span>
+        <span class="lg-note">1 kotak = 1 bulan, urut Jan sampai Des</span>
+      </div>
 
       <div class="bau-table-wrap">
         <table class="bau-table" id="bauTable"></table>
@@ -1006,7 +1021,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.05';
+const APP_VERSION = '0.06';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
 
@@ -2694,7 +2709,9 @@ function bauMiniStrip(line){
   return MONTH_KEYS.map(mk => {
     const ach = achievementFromPct(computeMonthPct(line, mk));
     const cls = ach === 'Achieve' ? 'achieve' : ach === 'Under Achieve' ? 'under' : '';
-    return `<span class="${cls}" title="${MONTH_LABEL_ID[mk]}"></span>`;
+    const pct = computeMonthPct(line, mk);
+    const tip = pct == null ? `${MONTH_LABEL_ID[mk]}: belum ada data` : `${MONTH_LABEL_ID[mk]}: ${ach} (${Math.round(pct)}%)`;
+    return `<span class="${cls}" title="${tip}"></span>`;
   }).join('');
 }
 function bauAchPill(ach){
