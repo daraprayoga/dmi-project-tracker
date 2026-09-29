@@ -308,9 +308,6 @@
   .admin-badge{display:inline-flex;align-items:center;background:var(--accent);color:#fff;font-size:9px;font-weight:800;letter-spacing:.05em;line-height:1.6;padding:3px 8px;border-radius:6px;}
   .side-hint{font-size:10.5px;color:var(--ink-faint);padding:2px 10px 10px;}
   body.is-admin .side-hint{color:var(--accent-text);}
-  #adminToggleBtn svg{color:var(--ink-faint);}
-  body.is-admin #adminToggleBtn{color:var(--accent-text);}
-  body.is-admin #adminToggleBtn svg{color:var(--accent-text);}
   body:not(.is-admin) .btn-new,
   body:not(.is-admin) .admin-only,
   body:not(.is-admin) .card-del{display:none !important;}
@@ -427,6 +424,54 @@
   }
 
   @media(prefers-reduced-motion:reduce){ *{transition:none !important;} .card:hover{transform:none;} }
+
+  /* VIEW SWITCHER */
+  .view-switch{display:flex;gap:4px;background:var(--col-bg);border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px;}
+  .view-switch button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px 6px;font-family:'Inter';font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
+  .view-switch button.active{background:var(--card);color:var(--accent-text);box-shadow:0 1px 2px rgba(28,27,24,.08);}
+
+  /* BAU PERFORMANCE VIEW */
+  #boardView,#bauView{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
+  #bauView{display:none;}
+  #bauFilterPanel{display:none;}
+  .bau-table-wrap{flex:1;overflow:auto;border:1px solid var(--border-soft);border-radius:16px;background:var(--card);margin-bottom:16px;}
+  table.bau-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.bau-table th{position:sticky;top:0;background:var(--col-bg);color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;z-index:1;}
+  table.bau-table td{padding:10px 12px;border-bottom:1px solid var(--border-soft);vertical-align:top;}
+  table.bau-table tr:last-child td{border-bottom:none;}
+  table.bau-table tr.bau-row:hover{background:var(--col-bg);}
+  .bau-pill{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;display:inline-block;}
+  .bau-pill.achieve{background:var(--accent-soft);color:var(--accent-text);}
+  .bau-pill.under{background:var(--danger-soft);color:var(--danger-text);}
+  .bau-pill.blank{background:var(--col-bg);color:var(--ink-faint);}
+  .bau-num{font-variant-numeric:tabular-nums;}
+  .bau-strip{display:flex;gap:2px;}
+  .bau-strip span{width:12px;height:12px;border-radius:3px;background:var(--border-soft);flex-shrink:0;}
+  .bau-strip span.achieve{background:var(--accent);}
+  .bau-strip span.under{background:var(--danger);}
+  .bau-expand-btn{background:none;border:1px solid var(--border);color:var(--ink-soft);border-radius:8px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .bau-expand-btn svg{width:13px;height:13px;transition:transform .15s;}
+  .bau-expand-btn.open svg{transform:rotate(180deg);}
+  .bau-detail-row td{background:var(--col-bg);padding:14px 16px;}
+  .bau-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:12px;}
+  .bau-detail-grid div b{display:block;font-size:10px;color:var(--ink-faint);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+  .bau-row-actions{display:flex;gap:6px;justify-content:flex-end;}
+  .bau-icon-btn{background:none;border:1px solid var(--border);color:var(--ink-faint);border-radius:8px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .bau-icon-btn:hover{background:var(--col-bg);color:var(--ink);}
+  .bau-icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger-text);}
+  .bau-month-grid{display:grid;grid-template-columns:80px repeat(12,minmax(46px,1fr));gap:4px;align-items:center;margin-bottom:4px;}
+  .bau-month-grid .bmg-lab{font-size:10.5px;font-weight:700;color:var(--ink-faint);}
+  .bau-month-grid input{width:100%;background:var(--col-bg);border:1px solid var(--border);border-radius:7px;padding:6px 4px;font-family:'Inter';font-size:11px;text-align:center;color:var(--ink);}
+  .bau-month-grid input:focus{outline:none;border-color:var(--ink-faint);background:var(--card);}
+  .bau-annot-monthsel{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+  .bau-annot-monthsel button{border:1px solid var(--border);background:var(--card);color:var(--ink-soft);font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer;}
+  .bau-annot-monthsel button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .modal.readonly .bau-annot-monthsel button{pointer-events:none;opacity:.7;}
+  @media(max-width:900px){
+    .bau-table-wrap{overflow-x:auto;}
+    table.bau-table{min-width:900px;}
+    .bau-month-grid{overflow-x:auto;}
+  }
 </style>
 </head>
 <body>
@@ -446,17 +491,52 @@
       </button>
     </div>
 
-    <div class="side-label">Status <span class="clear" id="clearStatus" style="display:none;">reset</span></div>
-    <div class="filter-list" id="statusFilters"></div>
-
-    <div class="side-label">Business unit <span class="clear" id="clearBU" style="display:none;">reset</span></div>
-    <div class="scroll-fade-wrap">
-      <div class="filter-list scroll" id="buFilters"></div>
+    <div class="view-switch" id="viewSwitch">
+      <button type="button" class="active" data-view="board">📋 Board</button>
+      <button type="button" data-view="bau">📈 BAU Performance</button>
     </div>
 
-    <div class="side-label">Jenis layanan <span class="clear" id="clearService" style="display:none;">reset</span></div>
-    <div class="scroll-fade-wrap">
-      <div class="filter-list scroll" id="serviceFilters"></div>
+    <div id="boardFilterPanel">
+      <div class="side-label">Status <span class="clear" id="clearStatus" style="display:none;">reset</span></div>
+      <div class="filter-list" id="statusFilters"></div>
+
+      <div class="side-label">Business unit <span class="clear" id="clearBU" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="buFilters"></div>
+      </div>
+
+      <div class="side-label">Jenis layanan <span class="clear" id="clearService" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="serviceFilters"></div>
+      </div>
+    </div>
+
+    <div id="bauFilterPanel">
+      <div class="side-label">Bulan</div>
+      <div class="filter-list" id="bauMonthFilter"></div>
+
+      <div class="side-label">Business unit <span class="clear" id="bauClearBU" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="bauBuFilters"></div>
+      </div>
+
+      <div class="side-label">Brand <span class="clear" id="bauClearBrand" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="bauBrandFilters"></div>
+      </div>
+
+      <div class="side-label">Scope of work <span class="clear" id="bauClearScope" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="bauScopeFilters"></div>
+      </div>
+
+      <div class="side-label">Metric <span class="clear" id="bauClearMetric" style="display:none;">reset</span></div>
+      <div class="scroll-fade-wrap">
+        <div class="filter-list scroll" id="bauMetricFilters"></div>
+      </div>
+
+      <div class="side-label">Achievement status <span class="clear" id="bauClearAch" style="display:none;">reset</span></div>
+      <div class="filter-list" id="bauAchFilters"></div>
     </div>
 
     <div class="sidebar-bottom">
@@ -497,36 +577,69 @@
   </aside>
 
   <main class="main">
-    <div class="topbar">
-      <div>
-        <h1>Project Board</h1>
-        <div class="top-sub" id="topSub"></div>
+    <div id="boardView">
+      <div class="topbar">
+        <div>
+          <h1>Project Board</h1>
+          <div class="top-sub" id="topSub"></div>
+        </div>
+        <div class="top-spacer"></div>
+        <button class="mobile-filter-btn" id="mobileFilterBtn" aria-label="Buka filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span class="dot"></span>
+        </button>
+        <div class="top-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="searchInput" placeholder="Cari project, PIC, BU..." aria-label="Cari project">
+        </div>
+        <select class="sortsel" id="sortSel" aria-label="Urutkan">
+          <option value="target">Target terdekat</option>
+          <option value="revenue">Revenue tertinggi</option>
+          <option value="margin">Margin terendah</option>
+          <option value="progress">Progress tertinggi</option>
+        </select>
+        <button class="btn-new" id="addBtn">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="label">Project baru</span>
+        </button>
       </div>
-      <div class="top-spacer"></div>
-      <button class="mobile-filter-btn" id="mobileFilterBtn" aria-label="Buka filter">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-        <span class="dot"></span>
-      </button>
-      <div class="top-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="searchInput" placeholder="Cari project, PIC, BU..." aria-label="Cari project">
+
+      <div class="statbar" id="statBar"></div>
+
+      <div class="board-scroll">
+        <div class="board" id="board"></div>
       </div>
-      <select class="sortsel" id="sortSel" aria-label="Urutkan">
-        <option value="target">Target terdekat</option>
-        <option value="revenue">Revenue tertinggi</option>
-        <option value="margin">Margin terendah</option>
-        <option value="progress">Progress tertinggi</option>
-      </select>
-      <button class="btn-new" id="addBtn">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
-        <span class="label">Project baru</span>
-      </button>
     </div>
 
-    <div class="statbar" id="statBar"></div>
+    <div id="bauView">
+      <div class="topbar">
+        <div>
+          <h1>BAU Performance</h1>
+          <div class="top-sub" id="bauTopSub"></div>
+        </div>
+        <div class="top-spacer"></div>
+        <button class="mobile-filter-btn" id="bauMobileFilterBtn" aria-label="Buka filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span class="dot"></span>
+        </button>
+        <div class="top-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="bauSearchInput" placeholder="Cari BU, brand, scope, metric..." aria-label="Cari BAU">
+        </div>
+        <input type="file" id="bauImportFile" accept=".csv" style="display:none;">
+        <button class="btn-secondary admin-only" id="bauImportBtn">Import CSV</button>
+        <button class="btn-secondary" id="bauExportBtn">Export CSV</button>
+        <button class="btn-new admin-only" id="bauAddBtn">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="label">Tambah baris</span>
+        </button>
+      </div>
 
-    <div class="board-scroll">
-      <div class="board" id="board"></div>
+      <div class="statbar" id="bauStatBar"></div>
+
+      <div class="bau-table-wrap">
+        <table class="bau-table" id="bauTable"></table>
+      </div>
     </div>
   </main>
 
@@ -756,6 +869,108 @@
   </div>
 </div>
 
+<div class="overlay" id="bauOverlay">
+  <div class="modal" id="bauModal" style="max-width:640px;">
+    <h2 id="bauModalTitle">Baris BAU baru</h2>
+    <div class="modal-readonly-hint" id="bauModalReadonlyHint" style="display:none;">Mode lihat aja &middot; login admin buat edit.</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="bau_f_bu">Business unit</label>
+        <input type="text" id="bau_f_bu" placeholder="mis. PT Astra International Tbk - DSO" list="bauBuList">
+        <datalist id="bauBuList"></datalist>
+      </div>
+      <div class="field">
+        <label for="bau_f_brand">Brand</label>
+        <input type="text" id="bau_f_brand" placeholder="mis. DSO" list="bauBrandList">
+        <datalist id="bauBrandList"></datalist>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="bau_f_scope">Scope of work</label>
+        <input type="text" id="bau_f_scope" placeholder="mis. Paid Marketing" list="bauScopeList">
+        <datalist id="bauScopeList"></datalist>
+      </div>
+      <div class="field">
+        <label for="bau_f_activity">Detail activity</label>
+        <input type="text" id="bau_f_activity" placeholder="opsional">
+      </div>
+    </div>
+    <div class="field">
+      <label for="bau_f_metric">Metric</label>
+      <select id="bau_f_metric">
+        <option value="Budget">Budget</option>
+        <option value="Leads">Leads</option>
+        <option value="Clicks">Clicks</option>
+        <option value="CPC">CPC</option>
+        <option value="Traffic">Traffic</option>
+        <option value="Lainnya">Lainnya (isi manual)</option>
+      </select>
+    </div>
+    <div class="field" id="bauMetricCustomWrap" style="display:none;">
+      <label for="bau_f_metric_custom">Nama metric</label>
+      <input type="text" id="bau_f_metric_custom" placeholder="mis. Impression">
+    </div>
+    <div class="field">
+      <label>Arah metric</label>
+      <div class="type-toggle" id="bauDirToggle">
+        <button type="button" class="type-opt active" data-dir="higher">Higher is better</button>
+        <button type="button" class="type-opt" data-dir="lower">Lower is better</button>
+      </div>
+      <div class="field-hint">CPC otomatis "lower is better" (makin kecil cost makin bagus). Bisa di-override kalau perlu.</div>
+    </div>
+
+    <div class="section-label">Target &amp; Actual per bulan (2026)</div>
+    <div style="overflow-x:auto;">
+      <div id="bauMonthGridWrap"></div>
+    </div>
+
+    <div class="section-label">Catatan bulanan <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(opsional, pilih bulan buat edit catatan bulan itu)</span></div>
+    <div class="bau-annot-monthsel" id="bauAnnotMonthSel"></div>
+    <div class="field">
+      <label for="bau_f_reasons">Reasons</label>
+      <input type="text" id="bau_f_reasons" placeholder="alasan kalau under achieve">
+    </div>
+    <div class="field">
+      <label for="bau_f_improvement">Improvement plan</label>
+      <input type="text" id="bau_f_improvement" placeholder="rencana perbaikan">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="bau_f_link">Link to document</label>
+        <input type="text" id="bau_f_link" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="bau_f_lastweek">Last week remarks</label>
+        <input type="text" id="bau_f_lastweek" placeholder="remarks minggu lalu">
+      </div>
+    </div>
+    <div class="field">
+      <label for="bau_f_notes">Notes</label>
+      <input type="text" id="bau_f_notes" placeholder="catatan tambahan">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="bau_f_bast">BAST</label>
+        <input type="text" id="bau_f_bast" placeholder="status BAST">
+      </div>
+      <div class="field">
+        <label for="bau_f_invoice">Submit invoice</label>
+        <input type="text" id="bau_f_invoice" placeholder="status invoice">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-delete-text" id="bauModalDelete" style="visibility:hidden;">Hapus baris</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="bauModalCancel">Batal</button>
+        <button class="btn-primary" id="bauModalSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="adminOverlay">
   <div class="confirm" role="alertdialog" aria-modal="true">
     <h3>🔒 Admin login</h3>
@@ -791,7 +1006,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.03';
+const APP_VERSION = '0.05';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
 
@@ -813,11 +1028,16 @@ function initFirebase(){
         data = val.items.map(migrateItem);
         if(Array.isArray(val.catalog)) catalogData = val.catalog.map(it => ({...it, category: migrateCatalogCategory(it.category)}));
         if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
+        // val.bau may be undefined on data pushed by an older client — default to [] so a new
+        // client doesn't choke on a field that doesn't exist yet.
+        bauData = Array.isArray(val.bau) ? val.bau.map(migrateBauLine) : (bauData || []);
         try{
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           saveCatalog();
+          localStorage.setItem(BAU_STORAGE_KEY, JSON.stringify(bauData));
         }catch(e){}
         renderAll();
+        if(typeof currentView !== 'undefined' && currentView === 'bau') renderBauAll();
       } else if(isAdmin){
         pushToCloud();
       }
@@ -836,7 +1056,7 @@ function initFirebase(){
 }
 function pushToCloud(){
   if(!cloudReady || !boardRef) return;
-  boardRef.set({items: data, catalog: catalogData, catalogRate: catalogRate, updatedAt: Date.now()}).catch(e => {
+  boardRef.set({items: data, catalog: catalogData, catalogRate: catalogRate, bau: (typeof bauData !== 'undefined' ? bauData : []), updatedAt: Date.now()}).catch(e => {
     console.error(e);
     toast('Gagal sync ke cloud');
   });
@@ -2074,6 +2294,7 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
     if(adminOverlay.classList.contains('show')) adminOverlay.classList.remove('show');
     else if(catalogOverlay.classList.contains('show')) closeCatalogModal();
+    else if(typeof bauOverlay !== 'undefined' && bauOverlay.classList.contains('show')) closeBauModal();
     else if(cfOverlay.classList.contains('show')) closeConfirm();
     else if(overlay.classList.contains('show')) closeModal();
     else if(sidebarEl.classList.contains('open')) closeSidebar();
@@ -2104,6 +2325,7 @@ document.getElementById('adminToggleBtn').onclick = () => {
     sessionStorage.removeItem('dmd-admin');
     applyAdminUI();
     renderAll();
+    if(typeof currentView !== 'undefined' && currentView === 'bau') renderBauAll();
     toast('Admin mode dimatiin, sekarang mode lihat');
   }else{
     document.getElementById('adminPinInput').value = '';
@@ -2121,6 +2343,7 @@ function tryAdminLogin(){
     adminOverlay.classList.remove('show');
     applyAdminUI();
     renderAll();
+    if(typeof currentView !== 'undefined' && currentView === 'bau') renderBauAll();
     toast('Admin mode aktif — perubahan lo langsung ke-sync ke semua orang');
     pushToCloud();
   }else{
@@ -2131,6 +2354,639 @@ document.getElementById('adminLoginBtn').onclick = tryAdminLogin;
 document.getElementById('adminPinInput').addEventListener('keydown', (e) => {
   if(e.key === 'Enter'){ e.preventDefault(); tryAdminLogin(); }
 });
+
+/* ============================================================
+   BAU PERFORMANCE TRACKER (v0.04)
+   ============================================================
+   Long/tidy CSV (one row per BU+Brand+Scope+Activity+Metric+Month) is
+   modelled here as wide "lines": one row per BU+Brand+Scope+Activity+Metric,
+   with a `months` sub-object holding all 12 months' Target/Actual/annotations.
+*/
+const BAU_STORAGE_KEY = 'dmd-bau-tracker-data';
+const BAU_YEAR = 2026;
+const MONTH_KEYS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const MONTH_LABEL_ID = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'Mei',jun:'Jun',jul:'Jul',aug:'Agu',sep:'Sep',oct:'Okt',nov:'Nov',dec:'Des'};
+const MONTH_LABEL_EN = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
+const METRIC_PRESETS = ['Budget','Leads','Clicks','CPC','Traffic'];
+// "Higher is better" for everything except cost-type metrics like CPC, where
+// beating a cost ceiling (spending less per click) should show well above 100%.
+const METRIC_DIRECTION_DEFAULT = {Budget:'higher', Leads:'higher', Clicks:'higher', CPC:'lower', Traffic:'higher'};
+
+function emptyBauMonth(){
+  return {target:null, actual:null, reasons:'', improvementPlan:'', linkToDocument:'', lastWeekRemarks:'', notes:'', bast:'', submitInvoice:''};
+}
+function emptyBauMonths(){
+  const o = {};
+  MONTH_KEYS.forEach(mk => o[mk] = emptyBauMonth());
+  return o;
+}
+// Mirrors migrateItem/migrateCatalogCategory: fills sane defaults for any
+// missing/malformed field, applied on localStorage load and on Firebase data.
+function migrateBauLine(line){
+  line = line || {};
+  const out = {
+    id: line.id || uid(),
+    businessUnit: String(line.businessUnit || ''),
+    brand: String(line.brand || ''),
+    scopeOfWork: String(line.scopeOfWork || ''),
+    detailActivity: String(line.detailActivity || ''),
+    metric: String(line.metric || ''),
+    metricUnit: String(line.metricUnit || ''),
+    metricDirection: line.metricDirection === 'lower' ? 'lower' : 'higher',
+    documentNumber: String(line.documentNumber || ''),
+    status: String(line.status || ''),
+    bauYear: line.bauYear || BAU_YEAR,
+    months: emptyBauMonths()
+  };
+  const src = (line.months && typeof line.months === 'object') ? line.months : {};
+  MONTH_KEYS.forEach(mk => {
+    const m = src[mk] || {};
+    out.months[mk] = {
+      target: (m.target != null && m.target !== '' && isFinite(+m.target)) ? +m.target : null,
+      actual: (m.actual != null && m.actual !== '' && isFinite(+m.actual)) ? +m.actual : null,
+      reasons: String(m.reasons || ''),
+      improvementPlan: String(m.improvementPlan || ''),
+      linkToDocument: String(m.linkToDocument || ''),
+      lastWeekRemarks: String(m.lastWeekRemarks || ''),
+      notes: String(m.notes || ''),
+      bast: String(m.bast || ''),
+      submitInvoice: String(m.submitInvoice || '')
+    };
+  });
+  return out;
+}
+function loadBau(){
+  try{
+    const raw = localStorage.getItem(BAU_STORAGE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(Array.isArray(p)) return p.map(migrateBauLine);
+    }
+  }catch(e){}
+  return [];
+}
+function saveBau(d){
+  try{ localStorage.setItem(BAU_STORAGE_KEY, JSON.stringify(d)); }
+  catch(e){ toast('Gagal menyimpan data BAU ke storage browser'); }
+  if(isAdmin) pushToCloud();
+}
+let bauData = loadBau();
+
+/* ---- percentage / achievement formulas ---- */
+function computeMonthPct(line, mk){
+  const m = line.months[mk];
+  if(!m) return null;
+  const t = m.target, a = m.actual;
+  if(t == null || a == null) return null;
+  const T = Number(t), A = Number(a);
+  if(!isFinite(T) || !isFinite(A) || T === 0) return null;
+  if(line.metricDirection === 'lower'){
+    if(A === 0) return null;
+    return (T / A) * 100;
+  }
+  return (A / T) * 100;
+}
+function achievementFromPct(pct){
+  if(pct == null || !isFinite(pct)) return null;
+  return pct >= 100 ? 'Achieve' : 'Under Achieve';
+}
+// This is deliberately NOT a reproduction of the source CSV's "Target achievement"
+// column (its formula couldn't be reverse-engineered from the sample data) — it's
+// our own, clearly-labeled figure: a YTD average of the monthly % Progress values
+// across every month that has both target and actual filled in.
+function bauYtdAvg(line){
+  const vals = MONTH_KEYS.map(mk => computeMonthPct(line, mk)).filter(v => v != null && isFinite(v));
+  if(!vals.length) return null;
+  return vals.reduce((a,b) => a+b, 0) / vals.length;
+}
+function bauOverallAchievement(line){ return achievementFromPct(bauYtdAvg(line)); }
+function fmtPct(v){ return v == null ? '—' : v.toFixed(0) + '%'; }
+function fmtBauNum(v){ return (v == null || v === '') ? '' : Number(v).toLocaleString('id-ID'); }
+
+/* ---- CSV parsing (robust: quoted commas, escaped quotes, embedded newlines) ---- */
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  const len = text.length;
+  let i = 0;
+  while(i < len){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if(c === '"'){ inQuotes = true; i++; continue; }
+    if(c === ','){ row.push(field); field = ''; i++; continue; }
+    if(c === '\r'){ i++; continue; }
+    if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += c; i++;
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+function normKey(s){ return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+// Maps by header NAME, not fixed column index, so column order/gaps don't break import.
+function mapBauHeaderField(rawHeader){
+  const h = normKey(rawHeader);
+  if(h.includes('documentnumber')) return 'documentNumber';
+  if(h === 'businessunit') return 'businessUnit';
+  if(h === 'brand') return 'brand';
+  if(h === 'status') return 'status';
+  if(h === 'scopeofwork') return 'scopeOfWork';
+  if(h === 'detailactivity') return 'detailActivity';
+  if(h === 'metrics' || h === 'metric') return 'metric';
+  if(h === 'month') return 'month';
+  if(h === 'target') return 'target';
+  if(h === 'actual') return 'actual';
+  if(h.includes('percentageprogress')) return 'percentageProgress';
+  if(h.includes('targetachievement')) return 'targetAchievement';
+  if(h.includes('achievementstatus')) return 'achievementStatus';
+  if(h === 'reasons') return 'reasons';
+  if(h.includes('improvementplan')) return 'improvementPlan';
+  if(h.includes('linktodocument')) return 'linkToDocument';
+  if(h.includes('lastweekremarks')) return 'lastWeekRemarks';
+  if(h === 'notes') return 'notes';
+  if(h === 'bast') return 'bast';
+  if(h.includes('submitinvoice')) return 'submitInvoice';
+  return null;
+}
+function monthKeyFromLabel(s){
+  const m = String(s || '').trim().toLowerCase().match(/^([a-z]{3})/);
+  return (m && MONTH_KEYS.includes(m[1])) ? m[1] : null;
+}
+function parseBauNumber(v){
+  if(v == null || String(v).trim() === '') return null;
+  const n = Number(String(v).replace(/[, ]/g, ''));
+  return isFinite(n) ? n : null;
+}
+// Groups long/tidy CSV rows into wide BAU lines by (BU, Brand, Scope, Activity, Metric).
+// Tolerant of a trailing empty field or two and of rows shorter than the header.
+function parseBauCsvText(text){
+  const allRows = parseCSV(text).filter(r => r.some(f => String(f || '').trim() !== ''));
+  if(!allRows.length) return {lines: [], rowCount: 0};
+  const fieldOrder = allRows[0].map(mapBauHeaderField);
+  const groups = new Map();
+  let rowCount = 0;
+  allRows.slice(1).forEach(r => {
+    const rec = {};
+    fieldOrder.forEach((key, idx) => { if(key) rec[key] = r[idx] != null ? String(r[idx]).trim() : ''; });
+    if(!rec.businessUnit && !rec.brand && !rec.scopeOfWork && !rec.metric) return;
+    rowCount++;
+    const metricName = rec.metric || '';
+    const groupKey = [rec.businessUnit, rec.brand, rec.scopeOfWork, rec.detailActivity || '', metricName].join('|||');
+    if(!groups.has(groupKey)){
+      groups.set(groupKey, migrateBauLine({
+        businessUnit: rec.businessUnit, brand: rec.brand, scopeOfWork: rec.scopeOfWork,
+        detailActivity: rec.detailActivity, metric: metricName,
+        metricDirection: METRIC_DIRECTION_DEFAULT[metricName] || 'higher',
+        documentNumber: rec.documentNumber, status: rec.status
+      }));
+    }
+    const line = groups.get(groupKey);
+    const mk = monthKeyFromLabel(rec.month);
+    if(mk){
+      line.months[mk] = {
+        target: parseBauNumber(rec.target), actual: parseBauNumber(rec.actual),
+        reasons: rec.reasons || '', improvementPlan: rec.improvementPlan || '',
+        linkToDocument: rec.linkToDocument || '', lastWeekRemarks: rec.lastWeekRemarks || '',
+        notes: rec.notes || '', bast: rec.bast || '', submitInvoice: rec.submitInvoice || ''
+      };
+    }
+  });
+  return {lines: Array.from(groups.values()), rowCount};
+}
+function csvField(v){
+  v = v == null ? '' : String(v);
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function exportBauCsv(){
+  const header = ['Document Number (PO/SPK/CL)','Business Unit','Brand','Status','Scope of Work','Detail Activity','Metrics','Month','Target','Actual','Percentage Progress','Achievement status','Reasons','Improvement Plan','Link to Document','Last Week Remarks','Notes','BAST','Submit Invoice'];
+  const rows = [header];
+  bauData.forEach(line => {
+    MONTH_KEYS.forEach(mk => {
+      const m = line.months[mk];
+      const pct = computeMonthPct(line, mk);
+      rows.push([
+        line.documentNumber || '', line.businessUnit || '', line.brand || '', line.status || '',
+        line.scopeOfWork || '', line.detailActivity || '', line.metric || '', `${MONTH_LABEL_EN[mk]} ${line.bauYear || BAU_YEAR}`,
+        m.target != null ? m.target : '', m.actual != null ? m.actual : '',
+        pct != null ? pct.toFixed(0) + '%' : '', achievementFromPct(pct) || '',
+        m.reasons || '', m.improvementPlan || '', m.linkToDocument || '', m.lastWeekRemarks || '', m.notes || '', m.bast || '', m.submitInvoice || ''
+      ]);
+    });
+  });
+  return rows.map(r => r.map(csvField).join(',')).join('\r\n');
+}
+
+/* ---- view switching ---- */
+let currentView = 'board';
+function switchView(view){
+  currentView = view;
+  document.querySelectorAll('#viewSwitch button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.getElementById('boardView').style.display = view === 'board' ? 'flex' : 'none';
+  document.getElementById('bauView').style.display = view === 'bau' ? 'flex' : 'none';
+  document.getElementById('boardFilterPanel').style.display = view === 'board' ? '' : 'none';
+  document.getElementById('bauFilterPanel').style.display = view === 'bau' ? '' : 'none';
+  if(view === 'bau') renderBauAll();
+}
+document.querySelectorAll('#viewSwitch button').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
+document.getElementById('bauMobileFilterBtn').onclick = openSidebar;
+
+/* ---- filters + rendering ---- */
+let bauFilterMonth = 'all';
+let bauFilterBU = null, bauFilterBrand = null, bauFilterScope = null, bauFilterMetric = null, bauFilterAch = null;
+let bauSearchTerm = '';
+let bauExpandedRows = new Set();
+
+function bauLineAchievement(line){
+  return bauFilterMonth === 'all' ? bauOverallAchievement(line) : achievementFromPct(computeMonthPct(line, bauFilterMonth));
+}
+function applyBauFilters(list){
+  const q = bauSearchTerm.trim().toLowerCase();
+  return list.filter(l => {
+    if(bauFilterBU && l.businessUnit !== bauFilterBU) return false;
+    if(bauFilterBrand && l.brand !== bauFilterBrand) return false;
+    if(bauFilterScope && l.scopeOfWork !== bauFilterScope) return false;
+    if(bauFilterMetric && l.metric !== bauFilterMetric) return false;
+    if(bauFilterAch && bauLineAchievement(l) !== bauFilterAch) return false;
+    if(q && !(l.businessUnit + ' ' + l.brand + ' ' + l.scopeOfWork + ' ' + l.metric + ' ' + l.detailActivity).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function renderBauFilters(){
+  const monthDefs = [{k:'all', t:'Semua bulan'}].concat(MONTH_KEYS.map(mk => ({k:mk, t:MONTH_LABEL_ID[mk]})));
+  const mf = document.getElementById('bauMonthFilter');
+  mf.innerHTML = monthDefs.map(d => `<button class="filter-item ${bauFilterMonth === d.k ? 'active' : ''}" data-month="${d.k}"><span class="lbl">${d.t}</span></button>`).join('');
+  mf.querySelectorAll('[data-month]').forEach(el => { el.onclick = () => { bauFilterMonth = el.dataset.month; renderBauAll(); }; });
+
+  const buCount = {}, brandCount = {}, scopeCount = {}, metricCount = {};
+  bauData.forEach(l => {
+    if(l.businessUnit) buCount[l.businessUnit] = (buCount[l.businessUnit] || 0) + 1;
+    if(l.brand) brandCount[l.brand] = (brandCount[l.brand] || 0) + 1;
+    if(l.scopeOfWork) scopeCount[l.scopeOfWork] = (scopeCount[l.scopeOfWork] || 0) + 1;
+    if(l.metric) metricCount[l.metric] = (metricCount[l.metric] || 0) + 1;
+  });
+  function fillFilterList(elId, counts, current, setFn){
+    const el = document.getElementById(elId);
+    const keys = Object.keys(counts).sort();
+    el.innerHTML = keys.length
+      ? keys.map(k => `<button class="filter-item ${current === k ? 'active' : ''}" data-v="${esc(k)}"><span class="lbl">${esc(k)}</span><span class="cnt">${counts[k]}</span></button>`).join('')
+      : '<div class="side-note">Belum ada data</div>';
+    el.querySelectorAll('[data-v]').forEach(b => { b.onclick = () => { setFn(current === b.dataset.v ? null : b.dataset.v); renderBauAll(); }; });
+  }
+  fillFilterList('bauBuFilters', buCount, bauFilterBU, v => bauFilterBU = v);
+  fillFilterList('bauBrandFilters', brandCount, bauFilterBrand, v => bauFilterBrand = v);
+  fillFilterList('bauScopeFilters', scopeCount, bauFilterScope, v => bauFilterScope = v);
+  fillFilterList('bauMetricFilters', metricCount, bauFilterMetric, v => bauFilterMetric = v);
+  document.getElementById('bauClearBU').style.display = bauFilterBU ? 'inline' : 'none';
+  document.getElementById('bauClearBrand').style.display = bauFilterBrand ? 'inline' : 'none';
+  document.getElementById('bauClearScope').style.display = bauFilterScope ? 'inline' : 'none';
+  document.getElementById('bauClearMetric').style.display = bauFilterMetric ? 'inline' : 'none';
+
+  const af = document.getElementById('bauAchFilters');
+  af.innerHTML = ['Achieve','Under Achieve'].map(k => `<button class="filter-item ${bauFilterAch === k ? 'active' : ''}" data-ach="${esc(k)}"><span class="lbl">${k}</span></button>`).join('');
+  af.querySelectorAll('[data-ach]').forEach(b => { b.onclick = () => { bauFilterAch = (bauFilterAch === b.dataset.ach) ? null : b.dataset.ach; renderBauAll(); }; });
+  document.getElementById('bauClearAch').style.display = bauFilterAch ? 'inline' : 'none';
+
+  document.getElementById('bauBuList').innerHTML = Object.keys(buCount).sort().map(b => `<option value="${esc(b)}">`).join('');
+  document.getElementById('bauBrandList').innerHTML = Object.keys(brandCount).sort().map(b => `<option value="${esc(b)}">`).join('');
+  document.getElementById('bauScopeList').innerHTML = Object.keys(scopeCount).sort().map(b => `<option value="${esc(b)}">`).join('');
+}
+document.getElementById('bauClearBU').onclick = () => { bauFilterBU = null; renderBauAll(); };
+document.getElementById('bauClearBrand').onclick = () => { bauFilterBrand = null; renderBauAll(); };
+document.getElementById('bauClearScope').onclick = () => { bauFilterScope = null; renderBauAll(); };
+document.getElementById('bauClearMetric').onclick = () => { bauFilterMetric = null; renderBauAll(); };
+document.getElementById('bauClearAch').onclick = () => { bauFilterAch = null; renderBauAll(); };
+document.getElementById('bauSearchInput').oninput = (e) => { bauSearchTerm = e.target.value; renderBauStatBar(); renderBauTable(); };
+
+function renderBauStatBar(){
+  const v = applyBauFilters(bauData);
+  let achieve = 0, under = 0, pctSum = 0, pctCount = 0;
+  v.forEach(l => {
+    const ach = bauLineAchievement(l);
+    if(ach === 'Achieve') achieve++; else if(ach === 'Under Achieve') under++;
+    const pct = bauFilterMonth === 'all' ? bauYtdAvg(l) : computeMonthPct(l, bauFilterMonth);
+    if(pct != null){ pctSum += pct; pctCount++; }
+  });
+  const avgPct = pctCount ? pctSum / pctCount : null;
+  const segs = [
+    {l:'Total baris', n: v.length},
+    {l:'Achieve', n: achieve},
+    {l:'Under Achieve', n: under},
+    {l: bauFilterMonth === 'all' ? 'Rata-rata YTD' : `Rata-rata ${MONTH_LABEL_ID[bauFilterMonth]}`, n: fmtPct(avgPct)}
+  ];
+  document.getElementById('bauStatBar').innerHTML = segs.map(s => `
+    <div class="stat-seg">
+      <div style="min-width:0;">
+        <div class="stat-label">${s.l}</div>
+        <div class="stat-row"><div class="stat-num num">${s.n}</div></div>
+      </div>
+    </div>`).join('');
+  const parts = [bauFilterBU, bauFilterBrand, bauFilterScope, bauFilterMetric, bauFilterAch].filter(Boolean);
+  if(bauSearchTerm.trim()) parts.push(`"${bauSearchTerm.trim()}"`);
+  document.getElementById('bauTopSub').textContent =
+    (parts.length ? parts.join(' · ') + ' — ' : '') + `${v.length} dari ${bauData.length} baris · ${bauFilterMonth === 'all' ? 'Semua bulan' : MONTH_LABEL_ID[bauFilterMonth]}`;
+}
+function bauMiniStrip(line){
+  return MONTH_KEYS.map(mk => {
+    const ach = achievementFromPct(computeMonthPct(line, mk));
+    const cls = ach === 'Achieve' ? 'achieve' : ach === 'Under Achieve' ? 'under' : '';
+    return `<span class="${cls}" title="${MONTH_LABEL_ID[mk]}"></span>`;
+  }).join('');
+}
+function bauAchPill(ach){
+  return ach === 'Achieve' ? '<span class="bau-pill achieve">Achieve</span>'
+    : ach === 'Under Achieve' ? '<span class="bau-pill under">Under Achieve</span>'
+    : '<span class="bau-pill blank">—</span>';
+}
+function renderBauTable(){
+  const tbl = document.getElementById('bauTable');
+  if(!bauData.length){
+    tbl.innerHTML = `<tbody><tr><td style="padding:60px 20px;text-align:center;">
+      <h3 style="font-size:15.5px;margin:0 0 7px;font-weight:700;">Belum ada data BAU</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 18px;">${isAdmin ? 'Import CSV tracker BAU, atau tambah baris manual.' : 'Menunggu admin mengisi data BAU Performance.'}</p>
+      ${isAdmin ? '<button class="btn-new" style="margin:0 auto;" id="bauEmptyAdd">Tambah baris</button>' : ''}
+    </td></tr></tbody>`;
+    const btn = document.getElementById('bauEmptyAdd');
+    if(btn) btn.onclick = () => openBauModal(null);
+    return;
+  }
+  const filtered = applyBauFilters(bauData).sort((a,b) => (a.businessUnit+a.brand+a.scopeOfWork+a.metric).localeCompare(b.businessUnit+b.brand+b.scopeOfWork+b.metric));
+  if(!filtered.length){
+    tbl.innerHTML = `<tbody><tr><td style="padding:60px 20px;text-align:center;">
+      <h3 style="font-size:15.5px;margin:0 0 7px;font-weight:700;">Tidak ada hasil</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 18px;">Filter dan pencarian sekarang gak cocok sama baris manapun.</p>
+      <button class="btn-secondary" id="bauResetFilters">Reset semua filter</button>
+    </td></tr></tbody>`;
+    document.getElementById('bauResetFilters').onclick = () => {
+      bauFilterBU = null; bauFilterBrand = null; bauFilterScope = null; bauFilterMetric = null; bauFilterAch = null; bauSearchTerm = '';
+      document.getElementById('bauSearchInput').value = '';
+      renderBauAll();
+    };
+    return;
+  }
+
+  const showMonth = bauFilterMonth !== 'all';
+  const head = showMonth
+    ? `<tr><th>Business Unit</th><th>Brand</th><th>Scope of Work</th><th>Detail Activity</th><th>Metric</th><th>Target</th><th>Actual</th><th>% Progress</th><th>Rata-rata YTD</th><th>Status</th><th></th>${isAdmin ? '<th></th>' : ''}</tr>`
+    : `<tr><th>Business Unit</th><th>Brand</th><th>Scope of Work</th><th>Detail Activity</th><th>Metric</th><th>Rata-rata YTD</th><th>Status</th><th>Jan&ndash;Des</th>${isAdmin ? '<th></th>' : ''}</tr>`;
+  const colspan = showMonth ? (isAdmin ? 11 : 10) : (isAdmin ? 9 : 8);
+
+  const actionsCell = (id) => isAdmin ? `<td class="bau-row-actions">
+      <button class="bau-icon-btn" data-bau-edit="${id}" title="Edit"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+      <button class="bau-icon-btn danger" data-bau-del="${id}" title="Hapus"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></button>
+    </td>` : '';
+
+  const bodyRows = filtered.map(line => {
+    const ytd = bauYtdAvg(line);
+    const idCells = `<td>${esc(line.businessUnit)}</td><td>${esc(line.brand)}</td><td>${esc(line.scopeOfWork)}</td><td>${esc(line.detailActivity)}</td><td>${esc(line.metric)}</td>`;
+    if(showMonth){
+      const m = line.months[bauFilterMonth];
+      const pct = computeMonthPct(line, bauFilterMonth);
+      const ach = achievementFromPct(pct);
+      const expanded = bauExpandedRows.has(line.id);
+      const row = `<tr class="bau-row" data-bau-row="${line.id}">
+        ${idCells}
+        <td class="bau-num">${fmtBauNum(m.target)}</td><td class="bau-num">${fmtBauNum(m.actual)}</td><td class="bau-num">${fmtPct(pct)}</td><td class="bau-num">${fmtPct(ytd)}</td>
+        <td>${bauAchPill(ach)}</td>
+        <td><button class="bau-expand-btn ${expanded ? 'open' : ''}" data-bau-expand="${line.id}" title="Detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button></td>
+        ${actionsCell(line.id)}
+      </tr>`;
+      const detail = expanded ? `<tr class="bau-detail-row"><td colspan="${colspan}"><div class="bau-detail-grid">
+        <div><b>Reasons</b>${esc(m.reasons) || '—'}</div>
+        <div><b>Improvement Plan</b>${esc(m.improvementPlan) || '—'}</div>
+        <div><b>Link to Document</b>${m.linkToDocument ? `<a href="${esc(m.linkToDocument)}" target="_blank" rel="noopener">${esc(m.linkToDocument)}</a>` : '—'}</div>
+        <div><b>Last Week Remarks</b>${esc(m.lastWeekRemarks) || '—'}</div>
+        <div><b>Notes</b>${esc(m.notes) || '—'}</div>
+        <div><b>BAST</b>${esc(m.bast) || '—'}</div>
+        <div><b>Submit Invoice</b>${esc(m.submitInvoice) || '—'}</div>
+      </div></td></tr>` : '';
+      return row + detail;
+    }
+    return `<tr class="bau-row" data-bau-row="${line.id}">
+      ${idCells}
+      <td class="bau-num">${fmtPct(ytd)}</td><td>${bauAchPill(bauOverallAchievement(line))}</td>
+      <td><div class="bau-strip">${bauMiniStrip(line)}</div></td>
+      ${actionsCell(line.id)}
+    </tr>`;
+  }).join('');
+
+  tbl.innerHTML = `<thead>${head}</thead><tbody>${bodyRows}</tbody>`;
+  tbl.querySelectorAll('[data-bau-expand]').forEach(b => {
+    b.onclick = () => {
+      const id = b.dataset.bauExpand;
+      if(bauExpandedRows.has(id)) bauExpandedRows.delete(id); else bauExpandedRows.add(id);
+      renderBauTable();
+    };
+  });
+  tbl.querySelectorAll('[data-bau-edit]').forEach(b => { b.onclick = (e) => { e.stopPropagation(); openBauModal(b.dataset.bauEdit); }; });
+  tbl.querySelectorAll('[data-bau-del]').forEach(b => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      if(!isAdmin) return;
+      const line = bauData.find(l => l.id === b.dataset.bauDel);
+      if(!line) return;
+      askConfirm('Hapus baris BAU?', `Baris "${line.businessUnit} · ${line.brand} · ${line.metric}" akan dihapus permanen.`, () => {
+        bauData = bauData.filter(l => l.id !== b.dataset.bauDel);
+        saveBau(bauData); renderBauAll(); toast('Baris BAU dihapus');
+      });
+    };
+  });
+  if(isAdmin){
+    tbl.querySelectorAll('.bau-row').forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.onclick = (e) => {
+        if(e.target.closest('[data-bau-edit],[data-bau-del],[data-bau-expand]')) return;
+        openBauModal(tr.dataset.bauRow);
+      };
+    });
+  }
+}
+function renderBauAll(){
+  renderBauFilters();
+  renderBauStatBar();
+  renderBauTable();
+}
+
+/* ---- CSV import / export ---- */
+document.getElementById('bauImportBtn').onclick = () => {
+  if(!isAdmin){ toast('Login admin dulu buat import CSV'); return; }
+  document.getElementById('bauImportFile').click();
+};
+document.getElementById('bauImportFile').onchange = (e) => {
+  if(!isAdmin) return;
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const parsed = parseBauCsvText(String(ev.target.result));
+      if(!parsed.lines.length){ toast('Gak ada baris valid ke-detect di file CSV ini'); e.target.value = ''; return; }
+      const doReplace = confirm(
+        `Ketemu ${parsed.lines.length} baris BAU (dari ${parsed.rowCount} baris data di CSV).\n\n` +
+        `OK = ganti semua data BAU yang ada sekarang dengan data dari file ini.\n` +
+        `Batal = gabungkan ke data yang sudah ada (baris dengan BU + Brand + Scope + Activity + Metric yang sama akan ditimpa).`
+      );
+      if(doReplace){
+        bauData = parsed.lines;
+      }else{
+        const key = l => [l.businessUnit, l.brand, l.scopeOfWork, l.detailActivity, l.metric].join('|||');
+        const map = new Map(bauData.map(l => [key(l), l]));
+        parsed.lines.forEach(l => map.set(key(l), l));
+        bauData = Array.from(map.values());
+      }
+      saveBau(bauData); renderBauAll();
+      toast(`Import selesai: ${parsed.lines.length} baris BAU dari ${parsed.rowCount} baris CSV`);
+    }catch(err){
+      console.error(err);
+      toast('File CSV gak kebaca, cek formatnya');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+};
+document.getElementById('bauExportBtn').onclick = () => {
+  const csv = exportBauCsv();
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `bau-performance-${BAU_YEAR}-${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`${bauData.length} baris BAU di-export ke CSV`);
+};
+
+/* ---- BAU add/edit modal ---- */
+const bauOverlay = document.getElementById('bauOverlay');
+let editingBauId = null;
+let bauModalMonths = null;
+let bauAnnotMonth = 'jan';
+let bauModalDir = 'higher';
+
+function applyBauDirUI(dir){
+  bauModalDir = dir;
+  document.querySelectorAll('#bauDirToggle .type-opt').forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+}
+document.querySelectorAll('#bauDirToggle .type-opt').forEach(btn => { btn.onclick = () => applyBauDirUI(btn.dataset.dir); });
+document.getElementById('bau_f_metric').onchange = (e) => {
+  const v = e.target.value;
+  document.getElementById('bauMetricCustomWrap').style.display = v === 'Lainnya' ? 'block' : 'none';
+  if(v !== 'Lainnya') applyBauDirUI(METRIC_DIRECTION_DEFAULT[v] || 'higher');
+};
+
+function renderBauMonthGrid(){
+  const wrap = document.getElementById('bauMonthGridWrap');
+  const header = `<div class="bau-month-grid"><div class="bmg-lab"></div>${MONTH_KEYS.map(mk => `<div class="bmg-lab" style="text-align:center;">${MONTH_LABEL_ID[mk]}</div>`).join('')}</div>`;
+  const targetRow = `<div class="bau-month-grid"><div class="bmg-lab">Target</div>${MONTH_KEYS.map(mk => `<input type="number" step="any" data-bau-target="${mk}" value="${bauModalMonths[mk].target != null ? bauModalMonths[mk].target : ''}">`).join('')}</div>`;
+  const actualRow = `<div class="bau-month-grid"><div class="bmg-lab">Actual</div>${MONTH_KEYS.map(mk => `<input type="number" step="any" data-bau-actual="${mk}" value="${bauModalMonths[mk].actual != null ? bauModalMonths[mk].actual : ''}">`).join('')}</div>`;
+  wrap.innerHTML = header + targetRow + actualRow;
+  wrap.querySelectorAll('[data-bau-target]').forEach(inp => {
+    inp.oninput = () => { bauModalMonths[inp.dataset.bauTarget].target = inp.value === '' ? null : Number(inp.value); };
+  });
+  wrap.querySelectorAll('[data-bau-actual]').forEach(inp => {
+    inp.oninput = () => { bauModalMonths[inp.dataset.bauActual].actual = inp.value === '' ? null : Number(inp.value); };
+  });
+}
+function renderBauAnnotMonthSel(){
+  const wrap = document.getElementById('bauAnnotMonthSel');
+  wrap.innerHTML = MONTH_KEYS.map(mk => `<button type="button" class="${bauAnnotMonth === mk ? 'active' : ''}" data-annot-month="${mk}">${MONTH_LABEL_ID[mk]}</button>`).join('');
+  wrap.querySelectorAll('[data-annot-month]').forEach(b => {
+    b.onclick = () => {
+      saveAnnotFieldsToModel();
+      bauAnnotMonth = b.dataset.annotMonth;
+      renderBauAnnotMonthSel();
+      loadAnnotFieldsFromModel();
+    };
+  });
+}
+function loadAnnotFieldsFromModel(){
+  const m = bauModalMonths[bauAnnotMonth];
+  document.getElementById('bau_f_reasons').value = m.reasons || '';
+  document.getElementById('bau_f_improvement').value = m.improvementPlan || '';
+  document.getElementById('bau_f_link').value = m.linkToDocument || '';
+  document.getElementById('bau_f_lastweek').value = m.lastWeekRemarks || '';
+  document.getElementById('bau_f_notes').value = m.notes || '';
+  document.getElementById('bau_f_bast').value = m.bast || '';
+  document.getElementById('bau_f_invoice').value = m.submitInvoice || '';
+}
+function saveAnnotFieldsToModel(){
+  const m = bauModalMonths[bauAnnotMonth];
+  m.reasons = document.getElementById('bau_f_reasons').value.trim();
+  m.improvementPlan = document.getElementById('bau_f_improvement').value.trim();
+  m.linkToDocument = document.getElementById('bau_f_link').value.trim();
+  m.lastWeekRemarks = document.getElementById('bau_f_lastweek').value.trim();
+  m.notes = document.getElementById('bau_f_notes').value.trim();
+  m.bast = document.getElementById('bau_f_bast').value.trim();
+  m.submitInvoice = document.getElementById('bau_f_invoice').value.trim();
+}
+function openBauModal(id){
+  if(!id && !isAdmin) return;
+  editingBauId = id || null;
+  const line = id ? bauData.find(l => l.id === id) : null;
+  bauModalMonths = line ? JSON.parse(JSON.stringify(line.months)) : emptyBauMonths();
+  bauAnnotMonth = 'jan';
+  const modalEl = document.getElementById('bauModal');
+  modalEl.classList.toggle('readonly', !isAdmin);
+  document.getElementById('bauModalReadonlyHint').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('bauModalCancel').textContent = isAdmin ? 'Batal' : 'Tutup';
+  document.getElementById('bauModalTitle').textContent = isAdmin ? (line ? 'Edit baris BAU' : 'Baris BAU baru') : (line ? `${line.businessUnit} · ${line.metric}` : 'Baris BAU baru');
+  document.getElementById('bau_f_bu').value = line ? line.businessUnit : '';
+  document.getElementById('bau_f_brand').value = line ? line.brand : '';
+  document.getElementById('bau_f_scope').value = line ? line.scopeOfWork : '';
+  document.getElementById('bau_f_activity').value = line ? line.detailActivity : '';
+  const metricSel = document.getElementById('bau_f_metric');
+  const isPreset = line && METRIC_PRESETS.includes(line.metric);
+  metricSel.value = line ? (isPreset ? line.metric : 'Lainnya') : 'Budget';
+  document.getElementById('bau_f_metric_custom').value = (line && !isPreset) ? line.metric : '';
+  document.getElementById('bauMetricCustomWrap').style.display = metricSel.value === 'Lainnya' ? 'block' : 'none';
+  applyBauDirUI(line ? line.metricDirection : (METRIC_DIRECTION_DEFAULT[metricSel.value] || 'higher'));
+  renderBauMonthGrid();
+  renderBauAnnotMonthSel();
+  loadAnnotFieldsFromModel();
+  document.getElementById('bauModalDelete').style.visibility = line ? 'visible' : 'hidden';
+  bauOverlay.classList.add('show');
+  setTimeout(() => document.getElementById('bau_f_bu').focus(), 50);
+}
+function closeBauModal(){ bauOverlay.classList.remove('show'); editingBauId = null; }
+document.getElementById('bauAddBtn').onclick = () => openBauModal(null);
+document.getElementById('bauModalCancel').onclick = closeBauModal;
+bauOverlay.onclick = (e) => { if(e.target === bauOverlay) closeBauModal(); };
+document.getElementById('bauModalDelete').onclick = () => {
+  if(!editingBauId || !isAdmin) return;
+  const line = bauData.find(l => l.id === editingBauId);
+  const target = editingBauId;
+  askConfirm('Hapus baris BAU?', `Baris "${line.businessUnit} · ${line.metric}" akan dihapus permanen.`, () => {
+    bauData = bauData.filter(l => l.id !== target);
+    saveBau(bauData); closeBauModal(); renderBauAll(); toast('Baris BAU dihapus');
+  });
+};
+document.getElementById('bauModalSave').onclick = () => {
+  if(!isAdmin) return;
+  const bu = document.getElementById('bau_f_bu').value.trim();
+  if(!bu){ document.getElementById('bau_f_bu').focus(); toast('Business unit wajib diisi'); return; }
+  saveAnnotFieldsToModel();
+  const metricSelVal = document.getElementById('bau_f_metric').value;
+  const metric = metricSelVal === 'Lainnya' ? (document.getElementById('bau_f_metric_custom').value.trim() || 'Lainnya') : metricSelVal;
+  const payload = {
+    businessUnit: bu,
+    brand: document.getElementById('bau_f_brand').value.trim(),
+    scopeOfWork: document.getElementById('bau_f_scope').value.trim(),
+    detailActivity: document.getElementById('bau_f_activity').value.trim(),
+    metric, metricDirection: bauModalDir,
+    months: bauModalMonths
+  };
+  if(editingBauId){
+    Object.assign(bauData.find(l => l.id === editingBauId), payload);
+    toast('Baris BAU diperbarui');
+  }else{
+    bauData.push(migrateBauLine({id: uid(), ...payload}));
+    toast('Baris BAU ditambahkan');
+  }
+  saveBau(bauData); closeBauModal(); renderBauAll();
+};
 
 applyAdminUI();
 initFirebase();
