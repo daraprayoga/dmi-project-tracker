@@ -539,6 +539,17 @@
       <label for="f_recur_day">Recurs on day of month</label>
       <input type="number" id="f_recur_day" min="1" max="31" placeholder="e.g. 1">
       <div class="field-hint" id="recurHint"></div>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="f_contract_start">Kontrak mulai</label>
+          <input type="date" id="f_contract_start">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="f_contract_end">Kontrak sampai</label>
+          <input type="date" id="f_contract_end">
+        </div>
+      </div>
+      <div class="field-hint">Kosongkan "sampai" kalau kontraknya belum ada tanggal berakhir. Project ini tetap muncul tiap bulan sampai tanggal itu lewat.</div>
     </div>
 
     <div class="field">
@@ -834,6 +845,11 @@ function migrateItem(it){
     if(it.serviceFeePct == null) it.serviceFeePct = 8;
     if(it.pphPct == null) it.pphPct = 2;
   }
+  if(it.type !== 'recurring'){ it.contractStart = null; it.contractEnd = null; }
+  else{
+    if(it.contractStart === undefined) it.contractStart = null;
+    if(it.contractEnd === undefined) it.contractEnd = null;
+  }
   return it;
 }
 function load(){
@@ -871,21 +887,37 @@ function clampDayInMonth(day, year, monthIndex){
   return Math.min(Math.max(1, day || 1), lastDay);
 }
 // For a recurring project this returns THIS MONTH's due date (auto-advances every month);
-// for a one-time project it just returns the stored target date.
+// for a one-time project it just returns the stored target date. Once the contract's end
+// date has passed, it freezes on that end date instead of continuing to advance; before
+// the contract's start date, it points at the first cycle in the start month instead of
+// the current month.
 function effectiveTarget(item){
   if(item.type !== 'recurring') return item.target;
-  const now = new Date();
-  const day = clampDayInMonth(item.recurDay, now.getFullYear(), now.getMonth());
-  const d = new Date(now.getFullYear(), now.getMonth(), day);
+  const today = todayStr();
+  if(item.contractEnd && today > item.contractEnd) return item.contractEnd;
+  let refYear, refMonth;
+  if(item.contractStart && today < item.contractStart){
+    const start = new Date(item.contractStart + 'T00:00:00');
+    refYear = start.getFullYear(); refMonth = start.getMonth();
+  }else{
+    const now = new Date();
+    refYear = now.getFullYear(); refMonth = now.getMonth();
+  }
+  const day = clampDayInMonth(item.recurDay, refYear, refMonth);
+  const d = new Date(refYear, refMonth, day);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function contractEnded(item){
+  return item.type === 'recurring' && !!item.contractEnd && todayStr() > item.contractEnd;
+}
 // Auto-resets a recurring project's progress when the calendar month has rolled over
-// since it was last touched, so each month starts as a fresh cycle.
+// since it was last touched, so each month starts as a fresh cycle. Stops cycling once
+// the contract has ended, freezing its last state.
 function ensureCycles(){
   const ck = currentCycleKey();
   let changed = 0;
   data.forEach(it => {
-    if(it.type === 'recurring' && it.cycleKey !== ck){
+    if(it.type === 'recurring' && it.cycleKey !== ck && !contractEnded(it)){
       it.progress = 0;
       it.cycleKey = ck;
       changed++;
@@ -894,6 +926,7 @@ function ensureCycles(){
   if(changed){ save(data); toast(`${changed} recurring project mulai siklus bulan baru`); }
 }
 function getStatus(item){
+  if(contractEnded(item)) return 'done';
   if(item.progress >= 100) return 'done';
   if(effectiveTarget(item) < todayStr()) return 'over';
   if(item.progress > 0) return 'track';
@@ -1097,7 +1130,7 @@ function cardHtml(item){
         <div class="card-sub">${esc(item.bu)} · ${esc(item.pic)}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
-          ${item.type === 'recurring' ? `<div class="card-tag recurring">↻ Monthly · day ${item.recurDay}</div>` : ''}
+          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDate(item.contractEnd) : '↻ Monthly · day ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDate(item.contractEnd) : '')}</div>` : ''}
           ${item.isPaidMarketing ? `<div class="card-tag" style="background:#FBF1D3;color:#8A6D1F;">Paid Ads · Fee ${item.serviceFeePct}%</div>` : ''}
           ${metricChips}
         </div>
@@ -1299,6 +1332,8 @@ document.getElementById('importFile').onchange = (e) => {
           type: isRecurring ? 'recurring' : 'onetime',
           target: isRecurring ? null : (/^\d{4}-\d{2}-\d{2}$/.test(it.target) ? it.target : todayStr()),
           recurDay: isRecurring ? Math.min(31, Math.max(1, Number(it.recurDay) || 1)) : null,
+          contractStart: isRecurring && /^\d{4}-\d{2}-\d{2}$/.test(it.contractStart) ? it.contractStart : null,
+          contractEnd: isRecurring && /^\d{4}-\d{2}-\d{2}$/.test(it.contractEnd) ? it.contractEnd : null,
           cycleKey: isRecurring ? (it.cycleKey || currentCycleKey()) : null,
           progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
           progressMode: it.progressMode === 'qty' ? 'qty' : 'manual',
@@ -1604,6 +1639,8 @@ function openModal(id){
   applyTypeUI(it && it.type === 'recurring' ? 'recurring' : 'onetime');
   document.getElementById('f_target').value    = it && it.type !== 'recurring' ? it.target : todayStr();
   document.getElementById('f_recur_day').value = it && it.type === 'recurring' ? it.recurDay : 1;
+  document.getElementById('f_contract_start').value = it && it.contractStart ? it.contractStart : '';
+  document.getElementById('f_contract_end').value   = it && it.contractEnd ? it.contractEnd : '';
   updateRecurHint();
   document.getElementById('f_progress').value = it ? it.progress : 0;
   document.getElementById('f_progress_label').textContent = it ? it.progress : 0;
@@ -1661,6 +1698,8 @@ document.getElementById('modalSave').onclick = () => {
     type: modalType,
     target: nowRecurring ? null : (document.getElementById('f_target').value || todayStr()),
     recurDay: nowRecurring ? Math.min(31, Math.max(1, +document.getElementById('f_recur_day').value || 1)) : null,
+    contractStart: nowRecurring ? (document.getElementById('f_contract_start').value || null) : null,
+    contractEnd: nowRecurring ? (document.getElementById('f_contract_end').value || null) : null,
     cycleKey: nowRecurring ? (wasRecurring ? it.cycleKey : currentCycleKey()) : null,
     progressMode: progressMode,
     progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
@@ -1690,6 +1729,17 @@ document.getElementById('searchInput').oninput = (e) => {
   searchTerm = e.target.value; renderStatBar(); renderBoard();
 };
 document.getElementById('sortSel').onchange = (e) => { sortMode = e.target.value; renderBoard(); };
+
+// Stop mouse-wheel scroll from silently bumping number-input values up/down.
+// Also blur immediately so a scroll gesture that passes over the field
+// doesn't leave it "armed" for the next wheel tick.
+document.addEventListener('wheel', (e) => {
+  const el = document.activeElement;
+  if(el && el.tagName === 'INPUT' && el.type === 'number'){
+    e.preventDefault();
+    el.blur();
+  }
+}, { passive: false });
 
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
