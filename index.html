@@ -652,6 +652,11 @@
         <input type="number" id="mhCalcQty" placeholder="Qty" min="0" step="1" value="1">
         <button type="button" class="btn-secondary" id="mhCalcApply">Isi</button>
       </div>
+      <div class="mh-calc-row admin-only">
+        <input type="number" id="mhCalcHours" placeholder="Atau isi total jam kerja" min="0" step="0.5" style="flex:1;width:auto;text-align:left;">
+        <button type="button" class="btn-secondary" id="mhCalcHoursApply">Isi</button>
+      </div>
+      <div class="field-hint admin-only" id="mhCalcRateHint"></div>
     </div>
 
     <div class="calc-box">
@@ -1032,6 +1037,17 @@ function ensureCycles(){
   });
   if(changed){ save(data); toast(`${changed} recurring project mulai siklus bulan baru`); }
 }
+// True once there's any real sign of work — not just the progress bar, but
+// filled-in performance metrics or checked-off to-dos too. Otherwise a
+// project where someone logged real numbers (views, qty done, etc.) via
+// Performance Metrics but never touched the progress slider/qty rows would
+// wrongly sit in "Belum mulai".
+function hasActivity(item){
+  if(item.progress > 0) return true;
+  if((item.metrics || []).some(m => m.value != null && m.value !== 0)) return true;
+  if((item.todos || []).some(t => t.done)) return true;
+  return false;
+}
 function getStatus(item){
   if(item.progress >= 100) return 'done';
   if(item.type === 'recurring'){
@@ -1039,10 +1055,10 @@ function getStatus(item){
     // cycle date passing doesn't make the whole engagement "overdue" — only
     // the contract itself ending without the final cycle done does.
     if(contractEnded(item)) return 'over';
-    return item.progress > 0 ? 'track' : 'new';
+    return hasActivity(item) ? 'track' : 'new';
   }
   if(effectiveTarget(item) < todayStr()) return 'over';
-  if(item.progress > 0) return 'track';
+  if(hasActivity(item)) return 'track';
   return 'new';
 }
 function fmtDate(str){
@@ -1821,6 +1837,8 @@ function renderMhCalcOptions(){
   sel.innerHTML = '<option value="">Hitung dari katalog layanan...</option>' +
     catalogData.filter(c => c.name && c.hours != null).map(c => `<option value="${esc(c.id)}">${esc(c.name)} (${c.hours} jam)</option>`).join('');
   sel.value = current;
+  const hint = document.getElementById('mhCalcRateHint');
+  if(hint) hint.textContent = `Rate saat ini: ${fmtRp(catalogRate)}/jam — bisa diubah di Katalog layanan`;
 }
 document.getElementById('mhCalcApply').onclick = () => {
   const sel = document.getElementById('mhCalcService');
@@ -1831,6 +1849,14 @@ document.getElementById('mhCalcApply').onclick = () => {
   document.getElementById('f_manhour').value = cost;
   updateCalc();
   toast(`Manhour cost diisi: ${cat.hours} jam × ${qty} × ${fmtRp(catalogRate)} = ${fmtRp(cost)}`);
+};
+document.getElementById('mhCalcHoursApply').onclick = () => {
+  const hours = Math.max(0, +document.getElementById('mhCalcHours').value || 0);
+  if(!hours){ toast('Isi total jam kerja dulu'); return; }
+  const cost = Math.round(hours * catalogRate);
+  document.getElementById('f_manhour').value = cost;
+  updateCalc();
+  toast(`Manhour cost diisi: ${hours} jam × ${fmtRp(catalogRate)} = ${fmtRp(cost)}`);
 };
 const catalogOverlay = document.getElementById('catalogOverlay');
 function openCatalogModal(){
@@ -1885,6 +1911,7 @@ function openModal(id){
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
   renderMhCalcOptions();
   document.getElementById('mhCalcQty').value = 1;
+  document.getElementById('mhCalcHours').value = '';
   document.getElementById('f_cor_pm').value          = it && it.isPaidMarketing ? it.cor : '';
   document.getElementById('f_service_fee_pct').value = it && it.serviceFeePct != null ? it.serviceFeePct : 8;
   document.getElementById('f_pph_pct').value         = it && it.pphPct != null ? it.pphPct : 2;
