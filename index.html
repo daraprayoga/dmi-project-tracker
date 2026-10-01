@@ -249,7 +249,6 @@
   .type-opt{flex:1;border:none;background:transparent;border-radius:8px;padding:8px 8px;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;font-family:'Inter';white-space:nowrap;}
   .type-opt.active{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(28,27,24,.08);}
   .field-hint{font-size:11px;color:var(--ink-faint);margin-top:6px;}
-  .card-tag.recurring{background:var(--info-soft);color:var(--info-text);}
 
   .metric-row{display:grid;grid-template-columns:1fr 1fr 90px 30px;gap:8px;margin-bottom:8px;align-items:center;}
   .metric-row input{width:100%;background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12.5px;color:var(--ink);}
@@ -688,32 +687,10 @@
       <datalist id="picList"></datalist>
     </div>
 
-    <div class="field">
-      <label>Project type</label>
-      <div class="type-toggle" id="typeToggle">
-        <button type="button" class="type-opt active" data-type="onetime">One-time</button>
-        <button type="button" class="type-opt" data-type="recurring">Recurring (monthly)</button>
-      </div>
-    </div>
     <div class="field" id="targetOnetimeWrap">
-      <label for="f_target">Target date</label>
+      <label for="f_target">Target selesai</label>
       <input type="date" id="f_target">
-    </div>
-    <div class="field" id="targetRecurringWrap" style="display:none;">
-      <label for="f_recur_day">Berulang tiap tanggal berapa</label>
-      <input type="number" id="f_recur_day" min="1" max="31" placeholder="mis. 1">
-      <div class="field-hint" id="recurHint"></div>
-      <div class="field-row" style="margin-top:10px;">
-        <div class="field" style="margin-bottom:0;">
-          <label for="f_contract_start">Kontrak mulai</label>
-          <input type="date" id="f_contract_start">
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label for="f_contract_end">Kontrak sampai</label>
-          <input type="date" id="f_contract_end">
-        </div>
-      </div>
-      <div class="field-hint">Kosongkan "sampai" kalau kontraknya belum ada tanggal berakhir. Project ini tetap muncul tiap bulan sampai tanggal itu lewat.</div>
+      <div class="field-hint">Semua project one-time. Kalau layanannya jalan tiap bulan, isi nilai total periode (nilai bulanan × jumlah bulan) dan taruh target di akhir periode.</div>
     </div>
 
     <div class="field">
@@ -798,8 +775,8 @@
     <div class="calc-box">
       <div class="calc-line" id="cRevLine" style="display:none;"><span>Revenue (auto)</span><b id="cRev">Rp 0</b></div>
       <div class="calc-line" id="cFeeLine" style="display:none;"><span>Service fee</span><b id="cFee">Rp 0</b></div>
-      <div class="calc-line" id="cPphLine" style="display:none;"><span>PPh dipotong client</span><b id="cPph">Rp 0</b></div>
-      <div class="calc-line" id="cNetFeeLine" style="display:none;"><span>Net fee diterima (cash)</span><b id="cNetFee">Rp 0</b></div>
+      <div class="calc-line" id="cPphLine" style="display:none;"><span>PPh (dari CoR + fee)</span><b id="cPph">Rp 0</b></div>
+      <div class="calc-line" id="cNetFeeLine" style="display:none;"><span>Fee + PPh di luar CoR</span><b id="cNetFee">Rp 0</b></div>
       <div class="calc-line"><span>Gross profit margin</span><b id="cGpm">Rp 0</b></div>
       <div class="calc-line"><span>Total cost</span><b id="cCost">Rp 0</b></div>
       <div class="calc-line total"><span>Net profit</span><b id="cNet">Rp 0</b></div>
@@ -1021,9 +998,12 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.07';
+const APP_VERSION = '0.10';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
-let db = null, boardRef = null, cloudReady = false, suppressNextPush = false;
+let db = null, boardRef = null, cloudReady = false;
+// Blocks every push until the first cloud snapshot has landed, so stale local data
+// (seed data, an old browser, a month-rollover reset) can never overwrite the cloud.
+let cloudSynced = false;
 
 function initFirebase(){
   if(!firebaseConfig.apiKey){
@@ -1039,8 +1019,12 @@ function initFirebase(){
     updateSyncHint();
     boardRef.on('value', snap => {
       const val = snap.val();
-      if(val && Array.isArray(val.items)){
-        data = val.items.map(migrateItem);
+      const firstSnap = !cloudSynced;
+      cloudSynced = true;
+      if(val && (Array.isArray(val.items) || val.updatedAt)){
+        // RTDB drops empty arrays, so a board with every project deleted arrives
+        // without `items`; treat that as an empty board, not as "no data".
+        data = (Array.isArray(val.items) ? val.items : []).map(migrateItem);
         if(Array.isArray(val.catalog)) catalogData = val.catalog.map(it => ({...it, category: migrateCatalogCategory(it.category)}));
         if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
         // val.bau may be undefined on data pushed by an older client — default to [] so a new
@@ -1053,7 +1037,7 @@ function initFirebase(){
         }catch(e){}
         renderAll();
         if(typeof currentView !== 'undefined' && currentView === 'bau') renderBauAll();
-      } else if(isAdmin){
+      } else if(isAdmin && firstSnap){
         pushToCloud();
       }
       updateSyncHint();
@@ -1070,7 +1054,7 @@ function initFirebase(){
   }
 }
 function pushToCloud(){
-  if(!cloudReady || !boardRef) return;
+  if(!cloudReady || !boardRef || !cloudSynced) return;
   boardRef.set({items: data, catalog: catalogData, catalogRate: catalogRate, bau: (typeof bauData !== 'undefined' ? bauData : []), updatedAt: Date.now()}).catch(e => {
     console.error(e);
     toast('Gagal sync ke cloud');
@@ -1148,7 +1132,7 @@ function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&l
 
 function seedData(){
   const t = (m,d) => `2026-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  const oneTime = (extra) => ({type:'onetime', recurDay:null, cycleKey:null, todos:[], ...extra});
+  const oneTime = (extra) => ({type:'onetime', todos:[], ...extra});
   const td = (text, done) => ({id: uid(), text, done: !!done});
   return [
     oneTime({id:uid(), name:'TVC Ramadan Campaign',          bu:'TAM',           service:'Digital Commercial Video',          pic:'Dimas', target:t(10,10), progress:65,  revenue:85000000, cor:32000000, manhour:5200000, metrics:[{name:'Views', unit:'Absolute Number', value:850000}, {name:'Engagement Rate', unit:'Percentage', value:4.8}], todos:[td('Kontrak sudah ditandatangani', true), td('Approval grand design', true), td('Final delivery ke klien', false)]}),
@@ -1160,8 +1144,7 @@ function seedData(){
     oneTime({id:uid(), name:'Brand Guideline v2',            bu:'ADI Internal',  service:'Brand Guideline',                  pic:'Oka',   target:t(10,30), progress:55,  revenue:32000000, cor:9000000,  manhour:6100000, metrics:[]}),
     oneTime({id:uid(), name:'Year-End Campaign Strategy',    bu:'TSO',           service:'Creative Campaign Strategy',       pic:'Fira',  target:t(11,25), progress:50,  revenue:60000000, cor:14000000, manhour:8300000, metrics:[], progressMode:'qty', progressTargets:[{id:uid(), label:'Artikel', target:10, done:5}, {id:uid(), label:'Session', target:1000, done:500}]}),
     oneTime({id:uid(), name:'Finance Product Explainer',     bu:'TAF',           service:'Digital Commercial Video',         pic:'Dimas', target:t(9,22),  progress:15,  revenue:47000000, cor:19000000, manhour:3200000, metrics:[{name:'Register Rate', unit:'Percentage', value:3.1}, {name:'Qty', unit:'Absolute Number', value:1200}]}),
-    // Recurring example: same deliverable every month, due on the 1st, resets automatically each new month.
-    {id:uid(), name:'Monthly Performance & Data Report', bu:'LSO', service:'Data & Performance Report', pic:'Sari', type:'recurring', recurDay:1, cycleKey:currentCycleKey(), target:null, progress:35, revenue:31000000, cor:13000000, manhour:2400000, metrics:[], todos:[td('Migrasi sistem sudah beres', true), td('Approval grand design', false)]}
+    oneTime({id:uid(), name:'Monthly Performance & Data Report', bu:'LSO', service:'Data & Performance Report', pic:'Sari', target:t(12,31), progress:35, revenue:31000000, cor:13000000, manhour:2400000, metrics:[], todos:[td('Migrasi sistem sudah beres', true), td('Approval grand design', false)]})
   ];
 }
 
@@ -1193,7 +1176,15 @@ function migrateItem(it){
     }
     it.metrics = metrics;
   }
-  if(!it.type) it.type = 'onetime';
+  // Recurring sudah dihapus: semua project one-time. Project lama yang recurring diubah jadi one-time
+  // dengan target di akhir kontrak (atau 31 Des tahun ini kalau kontraknya gak punya tanggal berakhir).
+  const okDate = x => /^\d{4}-\d{2}-\d{2}$/.test(x || '');
+  if(it.type === 'recurring' && !okDate(it.target)){
+    it.target = okDate(it.contractEnd) ? it.contractEnd : `${new Date().getFullYear()}-12-31`;
+  }
+  it.type = 'onetime';
+  delete it.recurDay; delete it.cycleKey; delete it.contractStart; delete it.contractEnd;
+  if(!okDate(it.target)) it.target = todayStr();
   it.todos = ensureDefaultTodos(it.todos);
   if(it.progressMode !== 'qty') it.progressMode = 'manual';
   if(!Array.isArray(it.progressTargets)){
@@ -1207,11 +1198,6 @@ function migrateItem(it){
   else{
     if(it.serviceFeePct == null) it.serviceFeePct = 8;
     if(it.pphPct == null) it.pphPct = 2;
-  }
-  if(it.type !== 'recurring'){ it.contractStart = null; it.contractEnd = null; }
-  else{
-    if(it.contractStart === undefined) it.contractStart = null;
-    if(it.contractEnd === undefined) it.contractEnd = null;
   }
   return it;
 }
@@ -1241,69 +1227,6 @@ function daysDiff(target){
   const t = new Date(target + 'T00:00:00'), n = new Date(todayStr() + 'T00:00:00');
   return Math.round((t - n) / 86400000);
 }
-function currentCycleKey(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-}
-function clampDayInMonth(day, year, monthIndex){
-  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
-  return Math.min(Math.max(1, day || 1), lastDay);
-}
-// For a recurring project this returns THIS MONTH's due date (auto-advances every month);
-// for a one-time project it just returns the stored target date. Once the contract's end
-// date has passed, it freezes on that end date instead of continuing to advance; before
-// the contract's start date, it points at the first cycle in the start month instead of
-// the current month.
-function effectiveTarget(item){
-  if(item.type !== 'recurring') return item.target;
-  const today = todayStr();
-  if(item.contractEnd && today > item.contractEnd) return item.contractEnd;
-  let refYear, refMonth;
-  if(item.contractStart && today < item.contractStart){
-    const start = new Date(item.contractStart + 'T00:00:00');
-    refYear = start.getFullYear(); refMonth = start.getMonth();
-  }else{
-    const now = new Date();
-    refYear = now.getFullYear(); refMonth = now.getMonth();
-  }
-  const day = clampDayInMonth(item.recurDay, refYear, refMonth);
-  const d = new Date(refYear, refMonth, day);
-  return ymd(d);
-}
-function ymd(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-// Next upcoming monthly due date on/after today (used for display once this
-// cycle's own due date has already passed, so the badge doesn't show a stale
-// negative countdown for a still-active contract).
-function nextRecurDate(item){
-  const now = new Date();
-  let y = now.getFullYear(), m = now.getMonth();
-  let candidate = ymd(new Date(y, m, clampDayInMonth(item.recurDay, y, m)));
-  if(candidate < todayStr()){
-    m += 1; if(m > 11){ m = 0; y += 1; }
-    candidate = ymd(new Date(y, m, clampDayInMonth(item.recurDay, y, m)));
-  }
-  return candidate;
-}
-function contractEnded(item){
-  return item.type === 'recurring' && !!item.contractEnd && todayStr() > item.contractEnd;
-}
-// Auto-resets a recurring project's progress when the calendar month has rolled over
-// since it was last touched, so each month starts as a fresh cycle. Stops cycling once
-// the contract has ended, freezing its last state.
-function ensureCycles(){
-  const ck = currentCycleKey();
-  let changed = 0;
-  data.forEach(it => {
-    if(it.type === 'recurring' && it.cycleKey !== ck && !contractEnded(it)){
-      it.progress = 0;
-      it.cycleKey = ck;
-      changed++;
-    }
-  });
-  if(changed){ save(data); toast(`${changed} recurring project mulai siklus bulan baru`); }
-}
 // True once there's any real sign of work — not just the progress bar, but
 // filled-in performance metrics or checked-off to-dos too. Otherwise a
 // project where someone logged real numbers (views, qty done, etc.) via
@@ -1317,14 +1240,7 @@ function hasActivity(item){
 }
 function getStatus(item){
   if(item.progress >= 100) return 'done';
-  if(item.type === 'recurring'){
-    // Recurring/retainer projects run on an ongoing contract: a single month's
-    // cycle date passing doesn't make the whole engagement "overdue" — only
-    // the contract itself ending without the final cycle done does.
-    if(contractEnded(item)) return 'over';
-    return hasActivity(item) ? 'track' : 'new';
-  }
-  if(effectiveTarget(item) < todayStr()) return 'over';
+  if(item.target < todayStr()) return 'over';
   if(hasActivity(item)) return 'track';
   return 'new';
 }
@@ -1386,7 +1302,7 @@ function applyFilters(list){
 }
 function sortList(list){
   const a = [...list];
-  if(sortMode === 'target')        a.sort((x,y) => effectiveTarget(x).localeCompare(effectiveTarget(y)));
+  if(sortMode === 'target')        a.sort((x,y) => (x.target || '').localeCompare(y.target || ''));
   else if(sortMode === 'revenue')  a.sort((x,y) => (y.revenue||0) - (x.revenue||0));
   else if(sortMode === 'margin')   a.sort((x,y) => fin(x).netPct - fin(y).netPct);
   else if(sortMode === 'progress') a.sort((x,y) => y.progress - x.progress);
@@ -1400,7 +1316,7 @@ function renderStatBar(){
   const netPct = rev ? net/rev*100 : 0;
   const gpmPct = rev ? gpm/rev*100 : 0;
   const over   = v.filter(d => getStatus(d) === 'over').length;
-  const atRisk = v.filter(d => getStatus(d) === 'track' && daysDiff(effectiveTarget(d)) <= 3).length;
+  const atRisk = v.filter(d => getStatus(d) === 'track' && daysDiff(d.target) <= 3).length;
   const attention = over + atRisk;
 
   const segs = [
@@ -1493,29 +1409,20 @@ function renderSidebarFilters(){
 
 function cardHtml(item){
   const f = fin(item), st = getStatus(item);
-  const effTarget = effectiveTarget(item);
+  const effTarget = item.target;
   const dd = daysDiff(effTarget);
-  // For a recurring project, once this month's cycle date has passed but the
-  // contract is still active (not 'over'/'done'), show the next upcoming cycle
-  // instead of a stale negative countdown.
-  let dispTarget = effTarget, dispDd = dd;
-  if(item.type === 'recurring' && st !== 'over' && st !== 'done' && dd < 0){
-    dispTarget = nextRecurDate(item);
-    dispDd = daysDiff(dispTarget);
-  }
+  const dispTarget = effTarget, dispDd = dd;
   let timeBadge = '', alertBox = '';
 
   if(st === 'done'){
     timeBadge = `<span class="time-badge good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Selesai ${fmtDate(effTarget)}</span>`;
   } else if(st === 'over'){
     timeBadge = `<span class="time-badge bad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${Math.abs(dd)} hari lewat</span>`;
-    alertBox = item.type === 'recurring'
-      ? `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Kontrak berakhir ${Math.abs(dd)} hari lalu, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`
-      : `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
+    alertBox = `<div class="alert-box danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>Lewat target ${Math.abs(dd)} hari, progress ${item.progress}%. ${fmtRp(f.revenue, true)} tertahan.</span></div>`;
   } else if(st === 'track'){
-    timeBadge = `<span class="time-badge ${dispDd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${item.type === 'recurring' ? `Siklus ${fmtDate(dispTarget)} · ` : ''}${dispDd} hari lagi</span>`;
+    timeBadge = `<span class="time-badge ${dispDd <= 3 ? 'warn' : 'ok'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>${dispDd} hari lagi</span>`;
     if(dispDd <= 3){
-      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>${item.type === 'recurring' ? `Siklus bulanan ini tutup ${dispDd} hari lagi (${fmtDate(dispTarget)}), progress bulan ini baru ${item.progress}%. Kontrak masih jalan${item.contractEnd ? ' sampai ' + fmtDateY(item.contractEnd) : ''}.` : `Deadline ${dispDd} hari lagi, progress baru ${item.progress}%.`}</span></div>`;
+      alertBox = `<div class="alert-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Deadline ${dispDd} hari lagi, progress baru ${item.progress}%.</span></div>`;
     }
   } else {
     timeBadge = `<span class="time-badge ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>${fmtDate(dispTarget)}</span>`;
@@ -1553,7 +1460,6 @@ function cardHtml(item){
         <div class="card-sub">${esc(item.bu)} · ${esc(item.pic)}</div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div class="card-tag">${esc(item.service || 'Uncategorized')}</div>
-          ${item.type === 'recurring' ? `<div class="card-tag recurring">${contractEnded(item) ? '↻ Kontrak berakhir ' + fmtDateY(item.contractEnd) : '↻ Bulanan · tiap tanggal ' + item.recurDay + (item.contractEnd ? ' · s/d ' + fmtDateY(item.contractEnd) : '')}</div>` : ''}
           ${item.isPaidMarketing ? `<div class="card-tag" style="background:var(--warn-soft);color:var(--warn-text);">Paid Ads · Fee ${item.serviceFeePct}%</div>` : ''}
           ${metricChips}
         </div>
@@ -1680,7 +1586,6 @@ function renderBoard(){
 }
 
 function renderAll(){
-  ensureCycles();
   renderSidebarFilters();
   renderStatBar();
   renderBoard();
@@ -1745,19 +1650,18 @@ document.getElementById('importFile').onchange = (e) => {
       const parsed = JSON.parse(ev.target.result);
       if(!Array.isArray(parsed)) throw new Error('bukan array');
       const clean = parsed.map(it => {
-        const isRecurring = it.type === 'recurring';
+        const okDate = x => /^\d{4}-\d{2}-\d{2}$/.test(x || '');
+        // Recurring sudah dihapus: project recurring di file lama diubah jadi one-time (target = akhir kontrak, atau 31 Des tahun ini).
+        const rawTarget = okDate(it.target) ? it.target
+          : (it.type === 'recurring' ? (okDate(it.contractEnd) ? it.contractEnd : `${new Date().getFullYear()}-12-31`) : todayStr());
         return {
           id: it.id || uid(),
           name: String(it.name || 'Untitled Project'),
           bu: String(it.bu || 'Lainnya'),
           service: String(it.service || 'Lainnya'),
           pic: String(it.pic || '-'),
-          type: isRecurring ? 'recurring' : 'onetime',
-          target: isRecurring ? null : (/^\d{4}-\d{2}-\d{2}$/.test(it.target) ? it.target : todayStr()),
-          recurDay: isRecurring ? Math.min(31, Math.max(1, Number(it.recurDay) || 1)) : null,
-          contractStart: isRecurring && /^\d{4}-\d{2}-\d{2}$/.test(it.contractStart) ? it.contractStart : null,
-          contractEnd: isRecurring && /^\d{4}-\d{2}-\d{2}$/.test(it.contractEnd) ? it.contractEnd : null,
-          cycleKey: isRecurring ? (it.cycleKey || currentCycleKey()) : null,
+          type: 'onetime',
+          target: rawTarget,
           progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
           progressMode: it.progressMode === 'qty' ? 'qty' : 'manual',
           progressTargets: Array.isArray(it.progressTargets)
@@ -1832,13 +1736,15 @@ function updateCalc(){
     cor = +document.getElementById('f_cor_pm').value || 0;
     const feePct = +document.getElementById('f_service_fee_pct').value || 0;
     const pphPct = +document.getElementById('f_pph_pct').value || 0;
+    // Revenue = (CoR + service fee) lalu ditambah PPh % dari angka tersebut (berurutan, bukan dijumlah).
     const fee = cor * feePct / 100;
-    const pph = fee * pphPct / 100;
-    rev = cor + fee;
+    const afterFee = cor + fee;
+    const pph = afterFee * pphPct / 100;
+    rev = afterFee + pph;
     document.getElementById('cRev').textContent = fmtRp(rev);
     document.getElementById('cFee').textContent = fmtRp(fee);
     document.getElementById('cPph').textContent = fmtRp(pph);
-    document.getElementById('cNetFee').textContent = fmtRp(fee - pph);
+    document.getElementById('cNetFee').textContent = fmtRp(fee + pph);
   }else{
     rev = +document.getElementById('f_revenue').value || 0;
     cor = +document.getElementById('f_cor').value || 0;
@@ -1857,29 +1763,6 @@ function updateCalc(){
 ['f_cor_pm','f_service_fee_pct','f_pph_pct'].forEach(id => {
   document.getElementById(id).oninput = updateCalc;
 });
-let modalType = 'onetime';
-
-function applyTypeUI(type){
-  modalType = type;
-  document.querySelectorAll('#typeToggle .type-opt').forEach(b => b.classList.toggle('active', b.dataset.type === type));
-  document.getElementById('targetOnetimeWrap').style.display = type === 'onetime' ? 'block' : 'none';
-  document.getElementById('targetRecurringWrap').style.display = type === 'recurring' ? 'block' : 'none';
-  updateRecurHint();
-}
-function updateRecurHint(){
-  if(modalType !== 'recurring') return;
-  const day = +document.getElementById('f_recur_day').value || 1;
-  const now = new Date();
-  const clamped = clampDayInMonth(day, now.getFullYear(), now.getMonth());
-  const d = new Date(now.getFullYear(), now.getMonth(), clamped);
-  document.getElementById('recurHint').textContent =
-    `Berulang tiap bulan · siklus ini jatuh tempo ${d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}. Progress otomatis reset ke 0% begitu bulan baru mulai.`;
-}
-document.querySelectorAll('#typeToggle .type-opt').forEach(btn => {
-  btn.onclick = () => applyTypeUI(btn.dataset.type);
-});
-document.getElementById('f_recur_day').oninput = updateRecurHint;
-
 let progressMode = 'manual';
 function applyProgressUI(mode){
   progressMode = mode;
@@ -2196,12 +2079,7 @@ function openModal(id){
   document.getElementById('f_bu').value       = it ? it.bu : (filterBU || '');
   document.getElementById('f_service').value  = it ? it.service : '';
   document.getElementById('f_pic').value      = it ? it.pic : '';
-  applyTypeUI(it && it.type === 'recurring' ? 'recurring' : 'onetime');
-  document.getElementById('f_target').value    = it && it.type !== 'recurring' ? it.target : todayStr();
-  document.getElementById('f_recur_day').value = it && it.type === 'recurring' ? it.recurDay : 1;
-  document.getElementById('f_contract_start').value = it && it.contractStart ? it.contractStart : '';
-  document.getElementById('f_contract_end').value   = it && it.contractEnd ? it.contractEnd : '';
-  updateRecurHint();
+  document.getElementById('f_target').value = it && it.target ? it.target : todayStr();
   document.getElementById('f_progress').value = it ? it.progress : 0;
   document.getElementById('f_progress_label').textContent = it ? it.progress : 0;
   renderProgressRows(it ? it.progressTargets : []);
@@ -2249,8 +2127,6 @@ document.getElementById('modalSave').onclick = () => {
   if(!name){ document.getElementById('f_name').focus(); toast('Nama project wajib diisi'); return; }
 
   const it = editingId ? data.find(d => d.id === editingId) : null;
-  const wasRecurring = it && it.type === 'recurring';
-  const nowRecurring = modalType === 'recurring';
   const calc = updateCalc();
 
   const payload = {
@@ -2258,12 +2134,8 @@ document.getElementById('modalSave').onclick = () => {
     bu: document.getElementById('f_bu').value.trim() || 'Lainnya',
     service: document.getElementById('f_service').value,
     pic: document.getElementById('f_pic').value.trim() || '-',
-    type: modalType,
-    target: nowRecurring ? null : (document.getElementById('f_target').value || todayStr()),
-    recurDay: nowRecurring ? Math.min(31, Math.max(1, +document.getElementById('f_recur_day').value || 1)) : null,
-    contractStart: nowRecurring ? (document.getElementById('f_contract_start').value || null) : null,
-    contractEnd: nowRecurring ? (document.getElementById('f_contract_end').value || null) : null,
-    cycleKey: nowRecurring ? (wasRecurring ? it.cycleKey : currentCycleKey()) : null,
+    type: 'onetime',
+    target: document.getElementById('f_target').value || todayStr(),
     progressMode: progressMode,
     progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
     progress: progressMode === 'qty' ? updateQtyProgress() : +document.getElementById('f_progress').value,
@@ -2575,7 +2447,7 @@ function parseBauCsvText(text){
 }
 function csvField(v){
   v = v == null ? '' : String(v);
-  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
 }
 function exportBauCsv(){
   const header = ['Document Number (PO/SPK/CL)','Business Unit','Brand','Status','Scope of Work','Detail Activity','Metrics','Month','Target','Actual','Percentage Progress','Achievement status','Reasons','Improvement Plan','Link to Document','Last Week Remarks','Notes','BAST','Submit Invoice'];
@@ -2867,7 +2739,7 @@ document.getElementById('bauImportFile').onchange = (e) => {
 };
 document.getElementById('bauExportBtn').onclick = () => {
   const csv = exportBauCsv();
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `bau-performance-${BAU_YEAR}-${todayStr()}.csv`;
