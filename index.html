@@ -198,9 +198,13 @@
   .card-prog-val{font-size:11px;font-weight:700;color:var(--ink-soft);width:30px;text-align:right;font-variant-numeric:tabular-nums;}
   .card-qty-note{font-size:10.5px;color:var(--ink-faint);margin-top:6px;margin-bottom:2px;}
 
-  .card-fin{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:11px;padding-top:10px;border-top:1px solid var(--border-soft);}
+  .card-fin{display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;align-items:start;column-gap:10px;margin-top:11px;padding-top:10px;border-top:1px solid var(--border-soft);}
   .fin-lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;}
-  .fin-val{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .fin-val{font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .fin-pct{font-size:10.5px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .fin-pct.good{color:var(--accent-text);}
+  .fin-pct.warn{color:var(--warn-text);}
+  .fin-pct.bad{color:var(--danger-text);}
   .fin-val.good{color:var(--accent-text);}
   .fin-val.warn{color:var(--warn-text);}
   .fin-val.bad{color:var(--danger-text);}
@@ -998,7 +1002,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.11';
+const APP_VERSION = '0.12';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1500,7 +1504,7 @@ function cardHtml(item){
     <div class="card-fin">
       <div><div class="fin-lab">Revenue</div><div class="fin-val">${fmtRp(f.revenue, true)}</div></div>
       <div><div class="fin-lab">GPM</div><div class="fin-val">${fmtRp(f.gpm, true)}</div></div>
-      <div style="text-align:right;"><div class="fin-lab">Net</div><div class="fin-val ${marginClass(f.netPct)}">${fmtRp(f.netProfit, true)} · ${f.netPct.toFixed(0)}%</div></div>
+      <div style="text-align:right;"><div class="fin-lab">Net</div><div class="fin-val ${marginClass(f.netPct)}">${fmtRp(f.netProfit, true)}</div><div class="fin-pct ${marginClass(f.netPct)}">${f.netPct.toFixed(0)}% margin</div></div>
     </div>
     <div class="card-meta">${timeBadge}</div>
     ${todoSummary}
