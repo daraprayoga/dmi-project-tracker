@@ -998,12 +998,15 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.10';
+const APP_VERSION = '0.11';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
 // (seed data, an old browser, a month-rollover reset) can never overwrite the cloud.
 let cloudSynced = false;
+// Jumlah penulisan ke cloud yang belum dikonfirmasi server. Selama > 0, snapshot yang masuk diabaikan,
+// supaya edit yang baru disimpan gak ketimpa data lama (mis. pas server nolak tulis dan Firebase balikin nilai lama).
+let pendingWrites = 0, syncErr = false;
 
 function initFirebase(){
   if(!firebaseConfig.apiKey){
@@ -1020,6 +1023,7 @@ function initFirebase(){
     boardRef.on('value', snap => {
       const val = snap.val();
       const firstSnap = !cloudSynced;
+      if(pendingWrites > 0 && !firstSnap){ updateSyncHint(); return; }
       cloudSynced = true;
       if(val && (Array.isArray(val.items) || val.updatedAt)){
         // RTDB drops empty arrays, so a board with every project deleted arrives
@@ -1055,10 +1059,27 @@ function initFirebase(){
 }
 function pushToCloud(){
   if(!cloudReady || !boardRef || !cloudSynced) return;
-  boardRef.set({items: data, catalog: catalogData, catalogRate: catalogRate, bau: (typeof bauData !== 'undefined' ? bauData : []), updatedAt: Date.now()}).catch(e => {
-    console.error(e);
-    toast('Gagal sync ke cloud');
-  });
+  let payload;
+  try{
+    // Lewat JSON dulu: undefined dibuang dan NaN/Infinity jadi null. Firebase melempar error kalau nemu nilai begini,
+    // dan error itu dulu bisa bikin proses simpan berhenti sebelum modal nutup dan board ke-render ulang.
+    payload = JSON.parse(JSON.stringify({
+      items: data, catalog: catalogData,
+      catalogRate: Number.isFinite(+catalogRate) ? +catalogRate : 99000,
+      bau: (typeof bauData !== 'undefined' ? bauData : []),
+      updatedAt: Date.now()
+    }));
+  }catch(e){ console.error(e); toast('Gagal menyiapkan data sync: ' + e.message, 7000); return; }
+  pendingWrites++;
+  const ok = () => { pendingWrites = Math.max(0, pendingWrites - 1); if(pendingWrites === 0){ syncErr = false; updateSyncHint(); } };
+  const fail = (e) => {
+    pendingWrites = Math.max(0, pendingWrites - 1);
+    syncErr = true; updateSyncHint();
+    console.error('RTDB write gagal', e);
+    toast('Gagal sync ke cloud: ' + ((e && (e.code || e.message)) || e) + '. Perubahan terakhir cuma ada di browser ini.', 8000);
+  };
+  try{ Promise.resolve(boardRef.set(payload)).then(ok, fail); }
+  catch(e){ fail(e); }
 }
 function updateSyncHint(){
   const el = document.getElementById('syncHint');
@@ -1067,6 +1088,8 @@ function updateSyncHint(){
     el.textContent = isAdmin ? 'Admin mode · sync belum di-setup' : 'Mode lihat · sync belum di-setup';
   }else if(!cloudReady){
     el.textContent = 'Gagal connect ke cloud';
+  }else if(syncErr){
+    el.textContent = 'Gagal tulis ke cloud · cek rules Firebase';
   }else{
     el.textContent = isAdmin ? 'Admin mode · live sync aktif' : 'Mode lihat · live sync aktif';
   }
@@ -1274,12 +1297,12 @@ function fmtMetricEntry(m){
   return `${m.name}: ${valStr}`;
 }
 
-function toast(msg){
+function toast(msg, ms){
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+  el._t = setTimeout(() => el.classList.remove('show'), ms || 2600);
 }
 
 const COLUMNS = [
