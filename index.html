@@ -158,6 +158,17 @@
 
   /* BOARD */
   .board-scroll{flex:1;overflow-x:auto;padding-bottom:20px;}
+  /* v0.13: tiap kolom scroll sendiri, header nempel di atas */
+  .col{max-height:calc(100vh - 230px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;}
+  /* v0.13: mode ringkas */
+  body.compact .card{padding:9px 11px;}
+  body.compact .card-tag,body.compact .alert-box,body.compact .card-todo,body.compact .card-qty-note{display:none;}
+  body.compact .card-prog{margin-top:7px;}
+  body.compact .card-fin{margin-top:7px;padding-top:7px;}
+  body.compact .card-meta{margin-top:6px;}
+  .view-toggle{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);flex-shrink:0;}
+  .view-toggle button{border:0;background:transparent;padding:9px 11px;font:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;}
+  .view-toggle button.on{background:var(--ink);color:#fff;}
   .board{display:flex;gap:14px;align-items:flex-start;min-width:max-content;}
   .col{
     width:292px;flex-shrink:0;background:var(--col-bg);border-radius:18px;padding:12px;
@@ -165,7 +176,7 @@
     box-shadow:inset 0 0 0 1px rgba(28,27,24,.025);
   }
   .col.green{background:var(--col-done-bg);box-shadow:inset 0 0 0 1px rgba(247,144,33,.14);}
-  .col-head{padding:3px 4px 5px;}
+  .col-head{position:sticky;top:-12px;z-index:2;background:inherit;margin:-12px -12px 0;padding:12px 16px 7px;border-radius:18px 18px 0 0;}
   .col-head-top{display:flex;align-items:center;gap:7px;}
   .col-title{font-weight:700;font-size:13.5px;}
   .col-count{background:var(--card);border:1px solid var(--border);color:var(--ink-soft);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;}
@@ -608,6 +619,10 @@
           <option value="margin">Margin terendah</option>
           <option value="progress">Progress tertinggi</option>
         </select>
+        <div class="view-toggle" id="viewToggle" role="group" aria-label="Tampilan kartu">
+          <button type="button" data-v="detail">Detail</button>
+          <button type="button" data-v="compact">Ringkas</button>
+        </div>
         <button class="btn-new" id="addBtn">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
           <span class="label">Project baru</span>
@@ -1002,7 +1017,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.12';
+const APP_VERSION = '0.13';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -2191,6 +2206,20 @@ document.getElementById('clearService').onclick = () => { filterService = null; 
 document.getElementById('searchInput').oninput = (e) => {
   searchTerm = e.target.value; renderStatBar(); renderBoard();
 };
+(function(){
+  const KEY='bmd-card-view';
+  function apply(v){
+    document.body.classList.toggle('compact', v==='compact');
+    document.querySelectorAll('#viewToggle button').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
+  }
+  let v='detail';
+  try{ v = localStorage.getItem(KEY)==='compact' ? 'compact' : 'detail'; }catch(e){}
+  apply(v);
+  document.querySelectorAll('#viewToggle button').forEach(b=>b.onclick=()=>{
+    apply(b.dataset.v);
+    try{ localStorage.setItem(KEY,b.dataset.v); }catch(e){}
+  });
+})();
 document.getElementById('sortSel').onchange = (e) => { sortMode = e.target.value; renderBoard(); };
 
 // Stop mouse-wheel scroll from silently bumping number-input values up/down.
