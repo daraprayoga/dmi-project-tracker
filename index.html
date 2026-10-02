@@ -160,6 +160,27 @@
   .board-scroll{flex:1;overflow-x:auto;padding-bottom:20px;}
   /* v0.13: tiap kolom scroll sendiri, header nempel di atas */
   .col{max-height:calc(100vh - 230px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;}
+
+  /* v0.14: dropdown filter BU + Layanan */
+  .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-6px 0 14px;}
+  .dd{position:relative;}
+  .dd-trigger{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card);font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink-soft);}
+  .dd-trigger:hover{background:var(--col-bg);}
+  .dd-k{font-weight:500;color:var(--ink-faint);}
+  .dd-v{font-weight:700;color:var(--ink);max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dd-chev{transition:transform .15s;flex-shrink:0;}
+  .dd.open .dd-chev{transform:rotate(180deg);}
+  .dd.active .dd-trigger{background:var(--accent-soft);border-color:transparent;}
+  .dd.active .dd-v{color:var(--accent-text);}
+  .dd-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:40;min-width:240px;max-width:320px;max-height:320px;overflow-y:auto;padding:6px;background:var(--card);border-radius:16px;box-shadow:0 1px 2px rgba(28,27,24,.06),0 12px 32px -8px rgba(28,27,24,.22);border:1px solid var(--border-soft);}
+  .dd.open .dd-menu{display:block;}
+  .dd-menu .dd-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:13px;font-weight:500;color:var(--ink);text-align:left;cursor:pointer;}
+  .dd-menu .dd-item:hover{background:var(--col-bg);}
+  .dd-menu .dd-item.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700;}
+  .dd-menu .dd-item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dd-menu .dd-item .cnt{background:var(--col-bg);color:var(--ink-faint);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;}
+  .dd-reset{border:0;background:transparent;color:var(--accent-text);font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:6px 8px;}
+  @media(max-width:900px){.filter-row{margin-top:0}.dd{flex:1 1 calc(50% - 4px);}.dd-trigger{width:100%;}.dd-v{flex:1;text-align:left;max-width:none;}.dd-menu{min-width:100%;}.dd:nth-child(2) .dd-menu{left:auto;right:0;}}
   /* v0.13: mode ringkas */
   body.compact .card{padding:9px 11px;}
   body.compact .card-tag,body.compact .alert-box,body.compact .card-todo,body.compact .card-qty-note{display:none;}
@@ -520,16 +541,6 @@
     <div id="boardFilterPanel">
       <div class="side-label">Status <span class="clear" id="clearStatus" style="display:none;">reset</span></div>
       <div class="filter-list" id="statusFilters"></div>
-
-      <div class="side-label">Business unit <span class="clear" id="clearBU" style="display:none;">reset</span></div>
-      <div class="scroll-fade-wrap">
-        <div class="filter-list scroll" id="buFilters"></div>
-      </div>
-
-      <div class="side-label">Jenis layanan <span class="clear" id="clearService" style="display:none;">reset</span></div>
-      <div class="scroll-fade-wrap">
-        <div class="filter-list scroll" id="serviceFilters"></div>
-      </div>
     </div>
 
     <div id="bauFilterPanel">
@@ -627,6 +638,18 @@
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
           <span class="label">Project baru</span>
         </button>
+      </div>
+
+      <div class="filter-row" id="filterRow">
+        <div class="dd" id="ddBU">
+          <button type="button" class="dd-trigger" data-dd="ddBU" aria-haspopup="true" aria-expanded="false"><span class="dd-k">Business unit</span><span class="dd-v" id="ddBUval">Semua</span><svg class="dd-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu" id="buFilters"></div>
+        </div>
+        <div class="dd" id="ddSvc">
+          <button type="button" class="dd-trigger" data-dd="ddSvc" aria-haspopup="true" aria-expanded="false"><span class="dd-k">Layanan</span><span class="dd-v" id="ddSvcVal">Semua</span><svg class="dd-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu" id="serviceFilters"></div>
+        </div>
+        <button type="button" class="dd-reset" id="clearDD" style="display:none;">Reset</button>
       </div>
 
       <div class="statbar" id="statBar"></div>
@@ -1017,7 +1040,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.13';
+const APP_VERSION = '0.14';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1419,13 +1442,13 @@ function renderSidebarFilters(){
   data.forEach(d => { buCount[d.bu] = (buCount[d.bu] || 0) + 1; });
   const bus = Object.keys(buCount).sort();
   const bf = document.getElementById('buFilters');
-  bf.innerHTML = bus.length
-    ? bus.map(bu => `<button class="filter-item ${filterBU === bu ? 'active' : ''}" data-bu="${esc(bu)}"><span class="lbl">${esc(bu)}</span><span class="cnt">${buCount[bu]}</span></button>`).join('')
-    : '<div class="side-note">Belum ada BU</div>';
+  bf.innerHTML = `<button class="dd-item ${!filterBU ? 'active' : ''}" data-bu=""><span class="lbl">Semua BU</span><span class="cnt">${data.length}</span></button>`
+    + bus.map(bu => `<button class="dd-item ${filterBU === bu ? 'active' : ''}" data-bu="${esc(bu)}"><span class="lbl">${esc(bu)}</span><span class="cnt">${buCount[bu]}</span></button>`).join('');
   bf.querySelectorAll('[data-bu]').forEach(el => {
-    el.onclick = () => { filterBU = (filterBU === el.dataset.bu) ? null : el.dataset.bu; renderAll(); };
+    el.onclick = () => { filterBU = el.dataset.bu || null; closeDD(); renderAll(); };
   });
-  document.getElementById('clearBU').style.display = filterBU ? 'inline' : 'none';
+  document.getElementById('ddBUval').textContent = filterBU || 'Semua';
+  document.getElementById('ddBU').classList.toggle('active', !!filterBU);
 
   document.getElementById('buList').innerHTML = bus.map(b => `<option value="${esc(b)}">`).join('');
   const pics = [...new Set(data.map(d => d.pic).filter(Boolean))].sort();
@@ -1440,13 +1463,14 @@ function renderSidebarFilters(){
   data.forEach(d => { if(d.service) serviceCount[d.service] = (serviceCount[d.service] || 0) + 1; });
   const usedServicesSorted = Object.keys(serviceCount).sort();
   const svf = document.getElementById('serviceFilters');
-  svf.innerHTML = usedServicesSorted.length
-    ? usedServicesSorted.map(s => `<button class="filter-item ${filterService === s ? 'active' : ''}" data-service="${esc(s)}"><span class="lbl">${esc(s)}</span><span class="cnt">${serviceCount[s]}</span></button>`).join('')
-    : '<div class="side-note">Belum ada layanan</div>';
+  svf.innerHTML = `<button class="dd-item ${!filterService ? 'active' : ''}" data-service=""><span class="lbl">Semua layanan</span><span class="cnt">${data.length}</span></button>`
+    + usedServicesSorted.map(sv => `<button class="dd-item ${filterService === sv ? 'active' : ''}" data-service="${esc(sv)}"><span class="lbl">${esc(sv)}</span><span class="cnt">${serviceCount[sv]}</span></button>`).join('');
   svf.querySelectorAll('[data-service]').forEach(el => {
-    el.onclick = () => { filterService = (filterService === el.dataset.service) ? null : el.dataset.service; renderAll(); };
+    el.onclick = () => { filterService = el.dataset.service || null; closeDD(); renderAll(); };
   });
-  document.getElementById('clearService').style.display = filterService ? 'inline' : 'none';
+  document.getElementById('ddSvcVal').textContent = filterService || 'Semua';
+  document.getElementById('ddSvc').classList.toggle('active', !!filterService);
+  document.getElementById('clearDD').style.display = (filterBU || filterService) ? 'inline' : 'none';
 }
 
 function cardHtml(item){
@@ -2201,8 +2225,16 @@ document.getElementById('modalSave').onclick = () => {
 };
 
 document.getElementById('clearStatus').onclick = () => { filterStatus = 'all'; renderAll(); };
-document.getElementById('clearBU').onclick = () => { filterBU = null; renderAll(); };
-document.getElementById('clearService').onclick = () => { filterService = null; renderAll(); };
+document.getElementById('clearDD').onclick = () => { filterBU = null; filterService = null; renderAll(); };
+function closeDD(){ document.querySelectorAll('.dd.open').forEach(d => { d.classList.remove('open'); d.querySelector('.dd-trigger').setAttribute('aria-expanded','false'); }); }
+document.querySelectorAll('.dd-trigger').forEach(t => t.onclick = (e) => {
+  e.stopPropagation();
+  const dd = document.getElementById(t.dataset.dd), was = dd.classList.contains('open');
+  closeDD();
+  if(!was){ dd.classList.add('open'); t.setAttribute('aria-expanded','true'); }
+});
+document.addEventListener('click', (e) => { if(!e.target.closest('.dd')) closeDD(); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeDD(); });
 document.getElementById('searchInput').oninput = (e) => {
   searchTerm = e.target.value; renderStatBar(); renderBoard();
 };
