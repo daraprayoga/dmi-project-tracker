@@ -194,6 +194,48 @@
     .board{height:100%;}
     .col{max-height:100%;}
   }
+
+  /* v0.16: Task Map */
+  .tm-scroll{flex:1;min-height:0;overflow:auto;border:1px solid var(--border-soft);border-radius:16px;background:var(--card);}
+  table.tm{border-collapse:separate;border-spacing:0;min-width:100%;font-size:12.5px;}
+  .tm th{position:sticky;top:0;z-index:4;background:var(--col-bg);text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .tm td{padding:11px 14px;border-bottom:1px solid var(--border-soft);vertical-align:middle;background:var(--card);}
+  .tm .c1{position:sticky;left:0;z-index:3;width:250px;min-width:250px;max-width:250px;}
+  .tm .c2{position:sticky;left:250px;z-index:3;width:120px;min-width:120px;box-shadow:6px 0 8px -6px rgba(28,27,24,.12);white-space:nowrap;}
+  .tm th.c1,.tm th.c2{z-index:5;}
+  .tm tr.grp td{background:var(--col-bg);font-weight:700;padding:8px 14px;border-bottom:1px solid var(--border);}
+  .tm tr.grp .gname{color:var(--accent-text);font-size:13px;}
+  .tm tr.grp .gcnt{font-weight:600;color:var(--ink-faint);font-size:11px;margin-left:6px;}
+  .tm .pname{font-weight:700;font-size:13px;line-height:1.3;}
+  .tm .psub{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .tm .rev{font-weight:700;font-variant-numeric:tabular-nums;}
+  .tm .net{font-size:10.5px;color:var(--ink-faint);margin-top:2px;font-variant-numeric:tabular-nums;}
+  .tm .rev-m{display:none;}
+  .tm-flow{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-height:40px;}
+  .tm-chip{display:flex;align-items:center;gap:8px;padding:6px 11px 6px 7px;border-radius:999px;border:1px solid var(--border);background:var(--card);white-space:nowrap;position:relative;flex-shrink:0;}
+  .tm-chip[draggable="true"]{cursor:grab;}
+  .tm-chip.done{background:#E8F4EA;border-color:#BFDDC4;color:#2F6B3A;}
+  .tm-chip.done .tt{text-decoration:line-through;text-decoration-color:rgba(47,107,58,.5);}
+  .tm-chip.dragging{opacity:.35;}
+  .tm-chip.drop-before::before,.tm-chip.drop-after::after{content:'';position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--accent);}
+  .tm-chip.drop-before::before{left:-5px;} .tm-chip.drop-after::after{right:-5px;}
+  .tm-n{width:20px;height:20px;border-radius:50%;background:var(--col-bg);color:var(--ink-soft);font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .tm-chip.done .tm-n{background:#CFE8D3;color:#2F6B3A;}
+  .tm-chip label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .tm-chip input{accent-color:var(--accent);margin:0;width:14px;height:14px;}
+  .tm-chip input:disabled{cursor:default;}
+  .tm-arrow{color:var(--ink-faint);flex-shrink:0;display:flex;}
+  .tm-add{border:1px dashed var(--border);background:transparent;color:var(--ink-soft);border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;}
+  .tm-add:hover{background:var(--col-bg);}
+  .tm-addin{border:1px solid var(--accent);border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;width:170px;outline:none;flex-shrink:0;}
+  .tm-count{margin-left:8px;font-size:11px;font-weight:700;color:var(--ink-faint);flex-shrink:0;}
+  .tm-empty{padding:40px;text-align:center;color:var(--ink-faint);}
+  @media(max-width:900px){
+    .tm .c1{width:170px;min-width:170px;max-width:170px;}
+    .tm .c2,.tm th.c2{display:none;}
+    .tm .rev-m{display:block;font-weight:700;font-size:11px;margin-top:2px;}
+    #tasksView .tm-scroll{max-height:none;}
+  }
   /* v0.13: mode ringkas */
   body.compact .card{padding:9px 11px;}
   body.compact .card-tag,body.compact .alert-box,body.compact .card-todo,body.compact .card-qty-note{display:none;}
@@ -479,8 +521,8 @@
   .view-switch button.active{background:var(--card);color:var(--accent-text);box-shadow:0 1px 2px rgba(28,27,24,.08);}
 
   /* BAU PERFORMANCE VIEW */
-  #boardView,#bauView{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
-  #bauView{display:none;}
+  #boardView,#bauView,#tasksView{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
+  #bauView,#tasksView{display:none;}
   #bauFilterPanel{display:none;}
   .bau-table-wrap{flex:1;overflow:auto;border:1px solid var(--border-soft);border-radius:16px;background:var(--card);margin-bottom:16px;}
   table.bau-table{width:100%;border-collapse:collapse;font-size:12.5px;}
@@ -548,7 +590,8 @@
 
     <div class="view-switch" id="viewSwitch">
       <button type="button" class="active" data-view="board">📋 Board</button>
-      <button type="button" data-view="bau">📈 BAU Performance</button>
+      <button type="button" data-view="bau">📈 BAU</button>
+      <button type="button" data-view="tasks">🔗 Tasks</button>
     </div>
 
     <div id="boardFilterPanel">
@@ -670,6 +713,20 @@
       <div class="board-scroll">
         <div class="board" id="board"></div>
       </div>
+    </div>
+
+    <div id="tasksView">
+      <div class="topbar">
+        <div>
+          <h1>Task Map</h1>
+          <div class="top-sub" id="tasksSub"></div>
+        </div>
+        <div class="top-spacer"></div>
+        <button class="mobile-filter-btn" id="tasksMobileFilterBtn" aria-label="Buka filter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        </button>
+      </div>
+      <div class="tm-scroll"><table class="tm" id="tasksTable"></table></div>
     </div>
 
     <div id="bauView">
@@ -1053,7 +1110,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.15';
+const APP_VERSION = '0.16';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1668,6 +1725,7 @@ function renderAll(){
   renderSidebarFilters();
   renderStatBar();
   renderBoard();
+  if(typeof currentView !== 'undefined' && currentView === 'tasks') renderTasks();
   const mfb = document.getElementById('mobileFilterBtn');
   if(mfb) mfb.classList.toggle('has-filter', filterStatus !== 'all' || !!filterBU || !!filterService);
 }
@@ -2569,6 +2627,114 @@ function exportBauCsv(){
   return rows.map(r => r.map(csvField).join(',')).join('\r\n');
 }
 
+
+/* ---- v0.16 Task Map ---- */
+const TM_ARROW = '<span class="tm-arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>';
+function renderTasks(){
+  const tbl = document.getElementById('tasksTable');
+  if(!tbl) return;
+  const list = applyFilters(data);
+  document.getElementById('tasksSub').textContent = `${STATUS_LABEL[filterStatus]} — ${list.length} project, ${new Set(list.map(d => d.bu)).size} brand`;
+  if(!list.length){ tbl.innerHTML = '<tbody><tr><td class="tm-empty">Belum ada project yang cocok dengan filter.</td></tr></tbody>'; return; }
+  const groups = {};
+  list.forEach(d => { (groups[d.bu || '-'] = groups[d.bu || '-'] || []).push(d); });
+  let html = `<thead><tr><th class="c1">Brand / Project</th><th class="c2">Nominal</th><th>Alur task${isAdmin ? ' (drag buat ubah urutan proses)' : ''}</th></tr></thead><tbody>`;
+  Object.keys(groups).sort().forEach(bu => {
+    const items = groups[bu].slice().sort((a,b) => String(a.name).localeCompare(String(b.name)));
+    const sum = items.reduce((t,d) => t + (fin(d).revenue || 0), 0);
+    html += `<tr class="grp"><td class="c1"><span class="gname">${esc(bu)}</span><span class="gcnt">${items.length} project</span></td><td class="c2">${fmtRp(sum, true)}</td><td></td></tr>`;
+    items.forEach(it => {
+      const f = fin(it), todos = it.todos || [], done = todos.filter(t => t.done).length;
+      const chips = todos.map((t, i) => `${i ? TM_ARROW : ''}<div class="tm-chip ${t.done ? 'done' : ''}" data-pid="${it.id}" data-tid="${t.id}" ${isAdmin ? 'draggable="true"' : ''}><span class="tm-n">${i+1}</span><label><input type="checkbox" class="tm-chk" ${t.done ? 'checked' : ''} ${isAdmin ? '' : 'disabled'}><span class="tt">${esc(t.text)}</span></label></div>`).join('');
+      html += `<tr><td class="c1"><div class="pname">${esc(it.name)}</div><div class="psub">${esc(it.pic || '')} · ${it.progress || 0}%</div><div class="rev-m">${fmtRp(f.revenue, true)}</div></td>
+        <td class="c2"><div class="rev">${fmtRp(f.revenue, true)}</div><div class="net">Net ${fmtRp(f.netProfit, true)}</div></td>
+        <td><div class="tm-flow" data-pid="${it.id}">${chips}${isAdmin ? `<button type="button" class="tm-add" data-add="${it.id}">+ Task</button>` : ''}${todos.length ? `<span class="tm-count">${done}/${todos.length}</span>` : ''}</div></td></tr>`;
+    });
+  });
+  tbl.innerHTML = html + '</tbody>';
+}
+(function(){
+  const tbl = document.getElementById('tasksTable');
+  let drag = null;
+  const clearMarks = () => tbl.querySelectorAll('.drop-before,.drop-after').forEach(e => e.classList.remove('drop-before','drop-after'));
+  tbl.addEventListener('change', (e) => {
+    if(!isAdmin || !e.target.classList.contains('tm-chk')) return;
+    const chip = e.target.closest('.tm-chip');
+    const it = data.find(d => d.id === chip.dataset.pid);
+    const t = it && (it.todos || []).find(x => x.id === chip.dataset.tid);
+    if(!t) return;
+    t.done = e.target.checked;
+    save(data); renderAll();
+  });
+  tbl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-add]');
+    if(!btn || !isAdmin) return;
+    const pid = btn.dataset.add;
+    const inp = document.createElement('input');
+    inp.className = 'tm-addin'; inp.placeholder = 'Nama task, Enter'; inp.maxLength = 80;
+    btn.replaceWith(inp); inp.focus();
+    let finished = false;
+    const commit = (ok) => {
+      if(finished) return; finished = true;
+      const v = inp.value.trim();
+      if(ok && v){
+        const it = data.find(d => d.id === pid);
+        if(it){ it.todos = (it.todos || []).concat({id: uid(), text: v, done: false}); save(data); }
+      }
+      renderAll();
+    };
+    inp.onkeydown = (ev) => { if(ev.key === 'Enter') commit(true); else if(ev.key === 'Escape') commit(false); };
+    inp.onblur = () => commit(true);
+  });
+  tbl.addEventListener('dragstart', (e) => {
+    const chip = e.target.closest && e.target.closest('.tm-chip');
+    if(!chip || !isAdmin) return;
+    drag = {pid: chip.dataset.pid, tid: chip.dataset.tid};
+    chip.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try{ e.dataTransfer.setData('text/plain', drag.tid); }catch(_){}
+  });
+  tbl.addEventListener('dragover', (e) => {
+    if(!drag) return;
+    const flow = e.target.closest('.tm-flow');
+    if(!flow || flow.dataset.pid !== drag.pid) return;
+    e.preventDefault(); clearMarks();
+    const chip = e.target.closest('.tm-chip');
+    if(chip && chip.dataset.tid !== drag.tid){
+      const r = chip.getBoundingClientRect();
+      chip.classList.add(e.clientX < r.left + r.width/2 ? 'drop-before' : 'drop-after');
+    }else if(!chip){
+      const chips = flow.querySelectorAll('.tm-chip');
+      if(chips.length) chips[chips.length-1].classList.add('drop-after');
+    }
+  });
+  tbl.addEventListener('drop', (e) => {
+    if(!drag) return;
+    const flow = e.target.closest('.tm-flow');
+    if(!flow || flow.dataset.pid !== drag.pid) return;
+    e.preventDefault();
+    const it = data.find(d => d.id === drag.pid);
+    if(!it) return;
+    const chip = e.target.closest('.tm-chip');
+    const arr = (it.todos || []).slice();
+    const from = arr.findIndex(t => t.id === drag.tid);
+    if(from < 0) return;
+    const [moved] = arr.splice(from, 1);
+    let to = arr.length;
+    if(chip && chip.dataset.tid !== drag.tid){
+      const r = chip.getBoundingClientRect();
+      const idx = arr.findIndex(t => t.id === chip.dataset.tid);
+      to = e.clientX < r.left + r.width/2 ? idx : idx + 1;
+    }
+    arr.splice(to, 0, moved);
+    it.todos = arr;
+    drag = null; clearMarks();
+    save(data); renderAll();
+  });
+  tbl.addEventListener('dragend', () => { drag = null; clearMarks(); tbl.querySelectorAll('.dragging').forEach(e => e.classList.remove('dragging')); });
+})();
+document.getElementById('tasksMobileFilterBtn').onclick = openSidebar;
+
 /* ---- view switching ---- */
 let currentView = 'board';
 function switchView(view){
@@ -2576,9 +2742,11 @@ function switchView(view){
   document.querySelectorAll('#viewSwitch button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.getElementById('boardView').style.display = view === 'board' ? 'flex' : 'none';
   document.getElementById('bauView').style.display = view === 'bau' ? 'flex' : 'none';
-  document.getElementById('boardFilterPanel').style.display = view === 'board' ? '' : 'none';
+  document.getElementById('tasksView').style.display = view === 'tasks' ? 'flex' : 'none';
+  document.getElementById('boardFilterPanel').style.display = (view === 'board' || view === 'tasks') ? '' : 'none';
   document.getElementById('bauFilterPanel').style.display = view === 'bau' ? '' : 'none';
   if(view === 'bau') renderBauAll();
+  if(view === 'tasks') renderTasks();
 }
 document.querySelectorAll('#viewSwitch button').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
 document.getElementById('bauMobileFilterBtn').onclick = openSidebar;
