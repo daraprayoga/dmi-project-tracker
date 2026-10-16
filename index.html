@@ -155,6 +155,11 @@
   .stat-num{font-size:18px;font-weight:700;letter-spacing:-.01em;}
   .badge-pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
   .badge-pill.good{background:var(--ok-soft);color:var(--ok-text);}
+  .stat-mg{margin-top:5px;gap:4px;flex-wrap:nowrap;}
+  .stat-mg .badge-pill{padding:2px 7px;font-size:10px;}
+  .stat-seg:first-child{flex:1.55;}
+  .mg-pill{border:0;font-family:inherit;cursor:pointer;}
+  .mg-pill.sel{box-shadow:0 0 0 2px currentColor;}
   .badge-pill.brand{background:var(--accent-soft);color:var(--accent-text);}
   .badge-pill.bad{background:var(--danger-soft);color:var(--danger-text);}
   .badge-pill.warn{background:var(--warn-soft);color:var(--warn-text);}
@@ -1148,7 +1153,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.20';
+const APP_VERSION = '0.21';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1519,10 +1524,19 @@ function renderStatBar(){
   const over   = v.filter(d => getStatus(d) === 'over').length;
   const atRisk = v.filter(d => getStatus(d) === 'track' && daysDiff(d.target) <= 3).length;
   const attention = over + atRisk;
+  // Hitungan kelompok margin: abaikan filter margin sendiri biar angkanya tetap utuh saat salah satu dipilih
+  const _fm = filterMargin; filterMargin = null;
+  const vNoMargin = applyFilters(data);
+  filterMargin = _fm;
+  const mgc = {healthy:0, mid:0, low:0, none:0};
+  vNoMargin.forEach(d => { mgc[marginGroup(d) || 'none']++; });
 
   const segs = [
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
-     l:'Project', n:v.length, b:null},
+     l:'Project', n:v.length, b:null,
+     mg:[{k:'healthy', c:'good', t:`${mgc.healthy} sehat`, tip:`Margin ≥ ${MARGIN_HEALTHY}%`},
+         {k:'mid',     c:'warn', t:`${mgc.mid} minim`,     tip:`Margin ${MARGIN_MIN} sampai < ${MARGIN_HEALTHY}%`},
+         {k:'low',     c:'bad',  t:`${mgc.low} < ${MARGIN_MIN}%`, tip:`Margin di bawah ${MARGIN_MIN}%`}]},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><text x="12" y="15.5" font-size="8.5" font-weight="800" fill="currentColor" stroke="none" text-anchor="middle" font-family="Inter,sans-serif">Rp</text></svg>',
      l:'Revenue', n:fmtRp(rev, true), b:null},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>',
@@ -1542,8 +1556,13 @@ function renderStatBar(){
           <div class="stat-num num">${s.n}</div>
           ${s.b ? `<span class="badge-pill ${s.b.c}">${s.b.t}</span>` : ''}
         </div>
+        ${s.mg ? `<div class="stat-row stat-mg">${s.mg.map(m => `<button type="button" class="badge-pill ${m.c} mg-pill ${filterMargin === m.k ? 'sel' : ''}" data-mgpill="${m.k}" title="${m.tip}. Klik buat filter.">${m.t}</button>`).join('')}</div>` : ''}
       </div>
     </div>`).join('');
+
+  document.querySelectorAll('[data-mgpill]').forEach(b => {
+    b.onclick = () => { filterMargin = (filterMargin === b.dataset.mgpill) ? null : b.dataset.mgpill; renderAll(); };
+  });
 
   const parts = [STATUS_LABEL[filterStatus]];
   if(filterBU) parts.push(filterBU);
