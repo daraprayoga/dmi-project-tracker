@@ -365,6 +365,12 @@
     .progress-row .pr-sep{display:none;}
     .progress-row .metric-remove{justify-self:end;}
   }
+  .mh-lines{display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+  .mh-line{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border-soft);border-radius:9px;padding:6px 6px 6px 10px;font-size:12px;}
+  .mh-line .ml-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-soft);}
+  .mh-line .ml-v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .mh-line button{border:0;background:transparent;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;border-radius:6px;}
+  .mh-line button:hover{background:var(--danger-soft);color:var(--danger-text);}
   .mh-calc-row{display:flex;gap:6px;align-items:center;margin-top:8px;}
   .mh-calc-row select,.mh-calc-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-family:'Inter';font-size:12px;color:var(--ink);}
   .mh-calc-row select{flex:1;min-width:0;}
@@ -872,14 +878,15 @@
     <div class="field">
       <label for="f_manhour">Manhour cost (Rp)</label>
       <input type="number" id="f_manhour" placeholder="0" min="0" step="100000">
+      <div class="mh-lines" id="mhLines"></div>
       <div class="mh-calc-row admin-only">
         <select id="mhCalcService"><option value="">Hitung dari katalog layanan...</option></select>
         <input type="number" id="mhCalcQty" placeholder="Qty" min="0" step="1" value="1">
-        <button type="button" class="btn-secondary" id="mhCalcApply">Isi</button>
+        <button type="button" class="btn-secondary" id="mhCalcApply">Tambah</button>
       </div>
       <div class="mh-calc-row admin-only">
         <input type="number" id="mhCalcHours" placeholder="Atau isi total jam kerja" min="0" step="0.5" style="flex:1;width:auto;text-align:left;">
-        <button type="button" class="btn-secondary" id="mhCalcHoursApply">Isi</button>
+        <button type="button" class="btn-secondary" id="mhCalcHoursApply">Tambah</button>
       </div>
       <div class="field-hint admin-only" id="mhCalcRateHint"></div>
     </div>
@@ -1110,7 +1117,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.16';
+const APP_VERSION = '0.17';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1815,6 +1822,7 @@ document.getElementById('importFile').onchange = (e) => {
           serviceFeePct: it.isPaidMarketing ? (it.serviceFeePct != null ? Number(it.serviceFeePct) : 8) : null,
           pphPct: it.isPaidMarketing ? (it.pphPct != null ? Number(it.pphPct) : 2) : null,
           manhour: Math.max(0, Number(it.manhour) || 0),
+          mhLines: Array.isArray(it.mhLines) ? it.mhLines.map(l => ({label: String(l.label || ''), cost: Math.max(0, +l.cost || 0)})) : [],
           metrics: Array.isArray(it.metrics)
             ? it.metrics.map(m => ({
                 name: String((m && m.name) || ''),
@@ -2160,23 +2168,42 @@ function renderMhCalcOptions(){
   const hint = document.getElementById('mhCalcRateHint');
   if(hint) hint.textContent = `Rate saat ini: ${fmtRp(catalogRate)}/jam — bisa diubah di Katalog layanan`;
 }
+let mhLines = [];
+function renderMhLines(){
+  const el = document.getElementById('mhLines');
+  if(!el) return;
+  el.innerHTML = mhLines.map((l, i) => `<div class="mh-line"><span class="ml-t" title="${esc(l.label)}">${esc(l.label)}</span><span class="ml-v">${fmtRp(l.cost)}</span>${isAdmin ? `<button type="button" data-mhdel="${i}" aria-label="Hapus">&times;</button>` : ''}</div>`).join('');
+}
+function mhAdd(label, cost){
+  const cur = Math.max(0, +document.getElementById('f_manhour').value || 0);
+  if(!mhLines.length && cur > 0) mhLines.push({label: 'Nilai sebelumnya', cost: cur});
+  mhLines.push({label, cost});
+  document.getElementById('f_manhour').value = mhLines.reduce((t, l) => t + l.cost, 0);
+  renderMhLines(); updateCalc();
+}
+document.getElementById('mhLines').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-mhdel]');
+  if(!b || !isAdmin) return;
+  const cur = Math.max(0, +document.getElementById('f_manhour').value || 0);
+  const [gone] = mhLines.splice(+b.dataset.mhdel, 1);
+  document.getElementById('f_manhour').value = Math.max(0, cur - (gone ? gone.cost : 0));
+  renderMhLines(); updateCalc();
+});
 document.getElementById('mhCalcApply').onclick = () => {
   const sel = document.getElementById('mhCalcService');
   const cat = catalogData.find(c => c.id === sel.value);
   if(!cat){ toast('Pilih layanan dari katalog dulu'); return; }
   const qty = Math.max(0, +document.getElementById('mhCalcQty').value || 0);
+  if(!qty){ toast('Qty harus lebih dari 0'); return; }
   const cost = Math.round(cat.hours * catalogRate * qty);
-  document.getElementById('f_manhour').value = cost;
-  updateCalc();
-  toast(`Manhour cost diisi: ${cat.hours} jam × ${qty} × ${fmtRp(catalogRate)} = ${fmtRp(cost)}`);
+  mhAdd(`${cat.name} · ${cat.hours} jam × ${qty}`, cost);
+  sel.value = ''; document.getElementById('mhCalcQty').value = 1;
 };
 document.getElementById('mhCalcHoursApply').onclick = () => {
   const hours = Math.max(0, +document.getElementById('mhCalcHours').value || 0);
   if(!hours){ toast('Isi total jam kerja dulu'); return; }
-  const cost = Math.round(hours * catalogRate);
-  document.getElementById('f_manhour').value = cost;
-  updateCalc();
-  toast(`Manhour cost diisi: ${hours} jam × ${fmtRp(catalogRate)} = ${fmtRp(cost)}`);
+  mhAdd(`${hours} jam kerja`, Math.round(hours * catalogRate));
+  document.getElementById('mhCalcHours').value = '';
 };
 const catalogOverlay = document.getElementById('catalogOverlay');
 function openCatalogModal(){
@@ -2224,6 +2251,8 @@ function openModal(id){
   document.getElementById('f_revenue').value  = it ? it.revenue : '';
   document.getElementById('f_cor').value      = it ? it.cor : '';
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
+  mhLines = it && Array.isArray(it.mhLines) ? it.mhLines.map(l => ({label: String(l.label || ''), cost: Math.max(0, +l.cost || 0)})) : [];
+  renderMhLines();
   renderMhCalcOptions();
   document.getElementById('mhCalcQty').value = 1;
   document.getElementById('mhCalcHours').value = '';
@@ -2282,6 +2311,7 @@ document.getElementById('modalSave').onclick = () => {
     revenue: Math.max(0, calc.rev),
     cor: Math.max(0, calc.cor),
     manhour: Math.max(0, +document.getElementById('f_manhour').value || 0),
+    mhLines: mhLines.map(l => ({label: l.label, cost: l.cost})),
     metrics: collectMetrics(),
     todos: ensureDefaultTodos(collectTodos())
   };
