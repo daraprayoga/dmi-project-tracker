@@ -182,6 +182,12 @@
   .dd-menu .dd-item.active{background:var(--accent-soft);color:var(--accent-text);font-weight:700;}
   .dd-menu .dd-item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .dd-menu .dd-item .cnt{background:var(--col-bg);color:var(--ink-faint);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;}
+  .mt-box{gap:6px;padding:8px;}
+  .mt-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);font-weight:600;}
+  .mt-row span{flex:1;}
+  .mt-row input{width:64px;text-align:right;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font:inherit;font-size:12.5px;color:var(--ink);}
+  .mt-row input:read-only{background:transparent;border-color:transparent;}
+  .mt-row b{width:12px;color:var(--ink-faint);}
   .dd-reset{border:0;background:transparent;color:var(--accent-text);font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:6px 8px;}
   @media(max-width:900px){.filter-row{margin-top:0}.dd{flex:1 1 calc(50% - 4px);}.dd-trigger{width:100%;}.dd-v{flex:1;text-align:left;max-width:none;}.dd-menu{min-width:100%;}.dd:nth-child(2) .dd-menu{left:auto;right:0;}}
 
@@ -648,6 +654,13 @@
         <div class="side-hint" id="syncHint">Mode lihat &middot; sync belum aktif</div>
       </div>
 
+      <div class="side-label" style="padding-top:10px;">Target net margin</div>
+      <div class="data-box mt-box">
+        <label class="mt-row"><span>Minimum</span><input type="number" id="mtMin" min="0" max="100" step="1"><b>%</b></label>
+        <label class="mt-row"><span>Sehat</span><input type="number" id="mtHealthy" min="0" max="100" step="1"><b>%</b></label>
+        <div class="side-hint" id="mtHint"></div>
+      </div>
+
       <div class="side-label" style="padding-top:10px;">Referensi</div>
       <div class="data-box">
         <button class="side-action" id="catalogBtn">
@@ -716,6 +729,10 @@
         <div class="dd" id="ddSvc">
           <button type="button" class="dd-trigger" data-dd="ddSvc" aria-haspopup="true" aria-expanded="false"><span class="dd-k">Layanan</span><span class="dd-v" id="ddSvcVal">Semua</span><svg class="dd-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="dd-menu" id="serviceFilters"></div>
+        </div>
+        <div class="dd" id="ddMargin">
+          <button type="button" class="dd-trigger" data-dd="ddMargin" aria-haspopup="true" aria-expanded="false"><span class="dd-k">Margin</span><span class="dd-v" id="ddMarginVal">Semua</span><svg class="dd-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="dd-menu" id="marginFilters"></div>
         </div>
         <button type="button" class="dd-reset" id="clearDD" style="display:none;">Reset</button>
       </div>
@@ -1131,7 +1148,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.19';
+const APP_VERSION = '0.20';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1164,6 +1181,7 @@ function initFirebase(){
         data = (Array.isArray(val.items) ? val.items : []).map(migrateItem);
         if(Array.isArray(val.catalog)) catalogData = val.catalog.map(it => ({...it, category: migrateCatalogCategory(it.category)}));
         if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
+        if(val.marginTargets) setMarginTargets(val.marginTargets.min, val.marginTargets.healthy);
         // val.bau may be undefined on data pushed by an older client — default to [] so a new
         // client doesn't choke on a field that doesn't exist yet.
         bauData = Array.isArray(val.bau) ? val.bau.map(migrateBauLine) : (bauData || []);
@@ -1199,6 +1217,7 @@ function pushToCloud(){
     payload = JSON.parse(JSON.stringify({
       items: data, catalog: catalogData,
       catalogRate: Number.isFinite(+catalogRate) ? +catalogRate : 99000,
+      marginTargets: {min: MARGIN_MIN, healthy: MARGIN_HEALTHY},
       bau: (typeof bauData !== 'undefined' ? bauData : []),
       updatedAt: Date.now()
     }));
@@ -1422,7 +1441,25 @@ function fmtRp(n, compact){
   return sign + 'Rp ' + abs.toLocaleString('id-ID');
 }
 // Target net margin: >= 30% sehat (hijau), 15-30% minimum (oranye), < 15% merah
-const MARGIN_HEALTHY = 30, MARGIN_MIN = 15;
+let MARGIN_HEALTHY = 30, MARGIN_MIN = 15;
+const MARGIN_KEY = 'bmd-margin-targets';
+function setMarginTargets(min, healthy){
+  min = Number(min); healthy = Number(healthy);
+  if(!Number.isFinite(min) || !Number.isFinite(healthy)) return false;
+  min = Math.max(0, Math.min(100, min)); healthy = Math.max(0, Math.min(100, healthy));
+  if(healthy < min) return false;
+  MARGIN_MIN = min; MARGIN_HEALTHY = healthy;
+  try{ localStorage.setItem(MARGIN_KEY, JSON.stringify({min, healthy})); }catch(e){}
+  return true;
+}
+try{ const mt = JSON.parse(localStorage.getItem(MARGIN_KEY) || 'null'); if(mt) setMarginTargets(mt.min, mt.healthy); }catch(e){}
+// Kelompok margin: 'healthy' >= target sehat, 'mid' antara minimum dan sehat, 'low' di bawah minimum, null kalau belum ada revenue
+function marginGroup(item){
+  const f = fin(item);
+  if(!(f.revenue > 0)) return null;
+  return f.netPct < MARGIN_MIN ? 'low' : f.netPct < MARGIN_HEALTHY ? 'mid' : 'healthy';
+}
+let filterMargin = null;
 function marginClass(pct){ return pct < MARGIN_MIN ? 'bad' : pct < MARGIN_HEALTHY ? 'warn' : 'good'; }
 function fmtMetricEntry(m){
   if(!m.name) return '';
@@ -1456,6 +1493,10 @@ function applyFilters(list){
     if(filterStatus !== 'all' && getStatus(d) !== filterStatus) return false;
     if(filterBU && d.bu !== filterBU) return false;
     if(filterService && d.service !== filterService) return false;
+    if(filterMargin){
+      const g = marginGroup(d);
+      if(filterMargin === 'ok' ? !(g === 'mid' || g === 'healthy') : g !== filterMargin) return false;
+    }
     if(q && !(d.name + ' ' + d.pic + ' ' + d.bu + ' ' + d.service).toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1507,6 +1548,7 @@ function renderStatBar(){
   const parts = [STATUS_LABEL[filterStatus]];
   if(filterBU) parts.push(filterBU);
   if(filterService) parts.push(filterService);
+  if(filterMargin) parts.push({ok:`margin ≥ ${MARGIN_MIN}%`, low:`margin < ${MARGIN_MIN}%`, healthy:`margin ≥ ${MARGIN_HEALTHY}%`, mid:`margin ${MARGIN_MIN}-${MARGIN_HEALTHY}%`}[filterMargin]);
   if(searchTerm.trim()) parts.push(`"${searchTerm.trim()}"`);
   document.getElementById('topSub').textContent =
     parts.join(' · ') + ` — ${v.length} dari ${data.length} project`;
@@ -1565,7 +1607,29 @@ function renderSidebarFilters(){
   });
   document.getElementById('ddSvcVal').textContent = filterService || 'Semua';
   document.getElementById('ddSvc').classList.toggle('active', !!filterService);
-  document.getElementById('clearDD').style.display = (filterBU || filterService) ? 'inline' : 'none';
+  const mg = {healthy:0, mid:0, low:0};
+  data.forEach(d => { const g = marginGroup(d); if(g) mg[g]++; });
+  const mDefs = [
+    {k:null,      t:'Semua margin', n:data.length},
+    {k:'ok',      t:`Di atas minimum (≥ ${MARGIN_MIN}%)`, n:mg.healthy + mg.mid},
+    {k:'low',     t:`Di bawah minimum (< ${MARGIN_MIN}%)`, n:mg.low},
+    {k:'healthy', t:`Sehat (≥ ${MARGIN_HEALTHY}%)`, n:mg.healthy},
+    {k:'mid',     t:`Minimum (${MARGIN_MIN} sampai < ${MARGIN_HEALTHY}%)`, n:mg.mid}
+  ];
+  const mf = document.getElementById('marginFilters');
+  mf.innerHTML = mDefs.map(m => `<button class="dd-item ${filterMargin === m.k ? 'active' : ''}" data-mg="${m.k || ''}"><span class="lbl">${esc(m.t)}</span><span class="cnt">${m.n}</span></button>`).join('');
+  mf.querySelectorAll('[data-mg]').forEach(el => {
+    el.onclick = () => { filterMargin = el.dataset.mg || null; closeDD(); renderAll(); };
+  });
+  const cur = mDefs.find(m => m.k === filterMargin) || mDefs[0];
+  document.getElementById('ddMarginVal').textContent = filterMargin ? cur.t.replace(/ \(.*\)$/, '') : 'Semua';
+  document.getElementById('ddMargin').classList.toggle('active', !!filterMargin);
+  const mtMin = document.getElementById('mtMin'), mtH = document.getElementById('mtHealthy');
+  if(document.activeElement !== mtMin) mtMin.value = MARGIN_MIN;
+  if(document.activeElement !== mtH) mtH.value = MARGIN_HEALTHY;
+  mtMin.readOnly = mtH.readOnly = !isAdmin;
+  document.getElementById('mtHint').textContent = isAdmin ? 'Hijau ≥ sehat, oranye ≥ minimum, merah di bawahnya.' : 'Cuma admin yang bisa ubah target.';
+  document.getElementById('clearDD').style.display = (filterBU || filterService || filterMargin) ? 'inline' : 'none';
 }
 
 function cardHtml(item){
@@ -1671,7 +1735,7 @@ function renderBoard(){
       <button class="btn-secondary" id="resetFilters">Reset semua filter</button>
     </div>`;
     document.getElementById('resetFilters').onclick = () => {
-      filterStatus = 'all'; filterBU = null; searchTerm = '';
+      filterStatus = 'all'; filterBU = null; filterMargin = null; searchTerm = '';
       document.getElementById('searchInput').value = '';
       renderAll();
     };
@@ -1872,7 +1936,7 @@ document.getElementById('importFile').onchange = (e) => {
         `${data.length} project yang ada sekarang akan diganti dengan ${clean.length} project dari file. Download backup dulu kalau belum.`,
         () => {
           data = clean; save(data);
-          filterStatus = 'all'; filterBU = null; searchTerm = '';
+          filterStatus = 'all'; filterBU = null; filterMargin = null; searchTerm = '';
           document.getElementById('searchInput').value = '';
           renderAll(); toast(`${clean.length} project di-restore`);
         });
@@ -2363,7 +2427,14 @@ document.getElementById('modalSave').onclick = () => {
 };
 
 document.getElementById('clearStatus').onclick = () => { filterStatus = 'all'; renderAll(); };
-document.getElementById('clearDD').onclick = () => { filterBU = null; filterService = null; renderAll(); };
+document.getElementById('clearDD').onclick = () => { filterBU = null; filterService = null; filterMargin = null; renderAll(); };
+function commitMarginTargets(){
+  if(!isAdmin) return;
+  const mn = document.getElementById('mtMin').value, h = document.getElementById('mtHealthy').value;
+  if(mn === '' || h === '' || !setMarginTargets(mn, h)){ toast('Target sehat harus lebih besar atau sama dengan minimum'); renderAll(); return; }
+  pushToCloud(); renderAll(); toast(`Target margin: minimum ${MARGIN_MIN}%, sehat ${MARGIN_HEALTHY}%`);
+}
+['mtMin','mtHealthy'].forEach(id => { const el = document.getElementById(id); el.onchange = commitMarginTargets; el.onkeydown = (e) => { if(e.key === 'Enter') el.blur(); }; });
 function closeDD(){ document.querySelectorAll('.dd.open').forEach(d => { d.classList.remove('open'); d.querySelector('.dd-trigger').setAttribute('aria-expanded','false'); }); }
 document.querySelectorAll('.dd-trigger').forEach(t => t.onclick = (e) => {
   e.stopPropagation();
