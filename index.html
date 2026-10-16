@@ -301,6 +301,8 @@
   .fin-val.bad{color:var(--danger-text);}
 
   .card-meta{display:flex;align-items:center;gap:6px;margin-top:11px;}
+  .card-start{margin-left:auto;border:1px solid var(--border);background:var(--card);color:var(--accent-text);font:inherit;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;cursor:pointer;}
+  .card-start:hover{background:var(--accent-soft);}
   .time-badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;}
   .time-badge svg{width:10px;height:10px;}
   .time-badge.ok{background:var(--col-bg);color:var(--ink-soft);}
@@ -823,6 +825,14 @@
       </div>
     </div>
 
+    <div class="field">
+      <label>Status pengerjaan</label>
+      <div class="type-toggle" id="startedToggle">
+        <button type="button" class="type-opt" data-started="0">Belum mulai</button>
+        <button type="button" class="type-opt" data-started="1">Sudah mulai</button>
+      </div>
+    </div>
+
     <div class="field" id="progressManualWrap">
       <label for="f_progress">Progress: <span id="f_progress_label">0</span>%</label>
       <input type="range" id="f_progress" min="0" max="100" value="0" style="width:100%;accent-color:#7C1442;">
@@ -1121,7 +1131,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.18';
+const APP_VERSION = '0.19';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1332,6 +1342,7 @@ function migrateItem(it){
   delete it.recurDay; delete it.cycleKey; delete it.contractStart; delete it.contractEnd;
   if(!okDate(it.target)) it.target = todayStr();
   it.todos = ensureDefaultTodos(it.todos);
+  if(typeof it.started !== 'boolean') it.started = hasActivity(it);
   if(it.progressMode !== 'qty') it.progressMode = 'manual';
   if(!Array.isArray(it.progressTargets)){
     // migrate the old single done/target pair into the new multi-target array
@@ -1384,11 +1395,12 @@ function hasActivity(item){
   if((item.todos || []).some(t => t.done)) return true;
   return false;
 }
+// Status mulai/belum dipilih manual (item.started). Project lama tanpa flag: ditebak sekali dari aktivitas.
+function isStarted(item){ return typeof item.started === 'boolean' ? item.started : hasActivity(item); }
 function getStatus(item){
   if(item.progress >= 100) return 'done';
   if(item.target < todayStr()) return 'over';
-  if(hasActivity(item)) return 'track';
-  return 'new';
+  return isStarted(item) ? 'track' : 'new';
 }
 function fmtDate(str){
   return new Date(str + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'});
@@ -1628,7 +1640,7 @@ function cardHtml(item){
       <div><div class="fin-lab">GPM</div><div class="fin-val">${fmtRp(f.gpm, true)}</div></div>
       <div style="text-align:right;"><div class="fin-lab">Net</div><div class="fin-val ${marginClass(f.netPct)}">${fmtRp(f.netProfit, true)}</div><div class="fin-pct ${marginClass(f.netPct)}">${f.netPct.toFixed(0)}% margin</div></div>
     </div>
-    <div class="card-meta">${timeBadge}</div>
+    <div class="card-meta">${timeBadge}${isAdmin && st === 'new' ? `<button type="button" class="card-start" data-start="${item.id}">Mulai</button>` : ''}</div>
     ${todoSummary}
     ${alertBox}
   </div>`;
@@ -1692,7 +1704,7 @@ function renderBoard(){
 
   board.querySelectorAll('.card').forEach(card => {
     card.onclick = (e) => {
-      if(e.target.closest('[data-del]') || e.target.closest('[data-prog]')) return;
+      if(e.target.closest('[data-del]') || e.target.closest('[data-prog]') || e.target.closest('[data-start]')) return;
       openModal(card.dataset.id);
     };
   });
@@ -1707,6 +1719,16 @@ function renderBoard(){
         data = data.filter(d => d.id !== el.dataset.del);
         save(data); renderAll(); toast('Project dihapus');
       });
+    };
+  });
+
+  board.querySelectorAll('[data-start]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if(!isAdmin) return;
+      const it = data.find(d => d.id === btn.dataset.start);
+      if(!it) return;
+      it.started = true; save(data); renderAll(); toast('Project ditandai sudah mulai');
     };
   });
 
@@ -1811,6 +1833,7 @@ document.getElementById('importFile').onchange = (e) => {
           service: String(it.service || 'Lainnya'),
           pic: String(it.pic || '-'),
           type: 'onetime',
+          started: typeof it.started === 'boolean' ? it.started : undefined,
           target: rawTarget,
           progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
           progressMode: it.progressMode === 'qty' ? 'qty' : 'manual',
@@ -1914,6 +1937,12 @@ function updateCalc(){
 ['f_cor_pm','f_service_fee_pct','f_pph_pct'].forEach(id => {
   document.getElementById(id).oninput = updateCalc;
 });
+let formStarted = false;
+function applyStartedUI(v){
+  formStarted = !!v;
+  document.querySelectorAll('#startedToggle .type-opt').forEach(b => b.classList.toggle('active', (b.dataset.started === '1') === formStarted));
+}
+document.querySelectorAll('#startedToggle .type-opt').forEach(btn => { btn.onclick = () => applyStartedUI(btn.dataset.started === '1'); });
 let progressMode = 'manual';
 function applyProgressUI(mode){
   progressMode = mode;
@@ -2250,6 +2279,7 @@ function openModal(id){
   document.getElementById('f_service').value  = it ? it.service : '';
   document.getElementById('f_pic').value      = it ? it.pic : '';
   document.getElementById('f_target').value = it && it.target ? it.target : todayStr();
+  applyStartedUI(it ? isStarted(it) : false);
   document.getElementById('f_progress').value = it ? it.progress : 0;
   document.getElementById('f_progress_label').textContent = it ? it.progress : 0;
   renderProgressRows(it ? it.progressTargets : []);
@@ -2311,6 +2341,7 @@ document.getElementById('modalSave').onclick = () => {
     progressMode: progressMode,
     progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
     progress: progressMode === 'qty' ? updateQtyProgress() : +document.getElementById('f_progress').value,
+    started: formStarted,
     isPaidMarketing: isPaidMktg,
     serviceFeePct: isPaidMktg ? (+document.getElementById('f_service_fee_pct').value || 0) : null,
     pphPct: isPaidMktg ? (+document.getElementById('f_pph_pct').value || 0) : null,
