@@ -257,9 +257,10 @@
   .view-switch button{flex:1 1 calc(50% - 4px);}
   .asg-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
   .asg-row select,.asg-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);}
-  .asg-row select{flex:1;min-width:0;}
-  .asg-row input{width:92px;text-align:right;}
-  .asg-row .asg-md{font-size:11px;color:var(--ink-faint);white-space:nowrap;width:62px;}
+  .asg-row select.asg-m{flex:1;min-width:0;}
+  .asg-row select.asg-u{width:112px;flex-shrink:0;}
+  .asg-row input{width:76px;text-align:right;}
+  .asg-row .asg-md{font-size:11px;color:var(--ink-faint);white-space:nowrap;width:56px;}
   .asg-sum{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
   .asg-sum b{color:var(--ink);}
   .modal.readonly select{pointer-events:none;}
@@ -268,6 +269,12 @@
   .tp-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);min-width:0;}
   .tp-row .tp-name{flex:1.2;} .tp-row .tp-role{flex:1;} .tp-row .tp-alloc{width:64px;text-align:right;}
   .tp-row span{font-size:12px;color:var(--ink-faint);}
+  .tp-row .tp-grip{cursor:grab;font-size:14px;letter-spacing:-3px;padding:6px 4px;user-select:none;line-height:1;}
+  .tp-row .tp-grip:active{cursor:grabbing;}
+  .tp-row.dragging{opacity:.35;}
+  .tp-row.drop-before{box-shadow:0 -2px 0 0 var(--accent);}
+  .tp-row.drop-after{box-shadow:0 2px 0 0 var(--accent);}
+  .modal.readonly .tp-grip{display:none;}
   .tp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .tv-scroll{flex:1;min-height:0;overflow:auto;padding:2px 2px 20px;}
   .tv-tools{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap;}
@@ -299,6 +306,12 @@
   @media(max-width:900px){.tp-grid{grid-template-columns:1fr 1fr;}.tv-grid{grid-template-columns:1fr;}}
   /* v0.13: mode ringkas */
   body.compact .card{padding:9px 11px;}
+  .card-team{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px;}
+  .ct-chip{display:inline-flex;align-items:center;gap:4px;background:var(--col-bg);border-radius:999px;padding:2px 8px 2px 2px;font-size:10.5px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .ct-chip i{font-style:normal;width:17px;height:17px;border-radius:50%;color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;letter-spacing:.02em;}
+  .ct-more{font-size:10.5px;font-weight:700;color:var(--ink-faint);}
+  .ct-total{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--ink-soft);}
+  body.compact .card-team{display:none;}
   body.compact .card-tag,body.compact .alert-box,body.compact .card-todo,body.compact .card-qty-note{display:none;}
   body.compact .card-prog{margin-top:7px;}
   body.compact .card-fin{margin-top:7px;padding-top:7px;}
@@ -828,6 +841,7 @@
           <option value="occ">Okupansi tertinggi</option>
           <option value="free">Sisa kapasitas terbanyak</option>
           <option value="name">Nama A-Z</option>
+          <option value="setup">Urutan setup</option>
         </select>
         <button class="btn-new admin-only" id="teamSetupTop" aria-label="Setup tim"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 010 5.6M18 14.8c1.8.7 3 2.4 3 5.2"/></svg><span class="label">Setup tim</span></button>
       </div>
@@ -1000,6 +1014,14 @@
       <div class="field-hint admin-only" id="mhCalcRateHint"></div>
     </div>
 
+    <div class="section-label">Tim &amp; jam kerja <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(siapa aja yang terlibat dan berapa jam, per tahun atau total project)</span></div>
+    <div id="asgRows"></div>
+    <button type="button" class="todo-add" id="addAsgRow">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Assign member
+    </button>
+    <div class="asg-sum" id="asgSum"></div>
+
     <div class="calc-box">
       <div class="calc-line" id="cRevLine" style="display:none;"><span>Revenue (auto)</span><b id="cRev">Rp 0</b></div>
       <div class="calc-line" id="cFeeLine" style="display:none;"><span>Service fee</span><b id="cFee">Rp 0</b></div>
@@ -1038,14 +1060,6 @@
       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
       Add to-do
     </button>
-
-    <div class="section-label">Tim &amp; jam kerja <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(jam per tahun tiap member di project ini)</span></div>
-    <div id="asgRows"></div>
-    <button type="button" class="todo-add" id="addAsgRow">
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
-      Assign member
-    </button>
-    <div class="asg-sum" id="asgSum"></div>
 
     <div class="modal-actions">
       <button class="btn-delete-text" id="modalDelete" style="visibility:hidden;">Hapus project</button>
@@ -1260,7 +1274,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.22';
+const APP_VERSION = '0.24';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1761,6 +1775,20 @@ function renderSidebarFilters(){
   document.getElementById('clearDD').style.display = (filterBU || filterService || filterMargin) ? 'inline' : 'none';
 }
 
+function teamStripHtml(item){
+  const asg = (item.assignments || []).filter(a => a.hours > 0 && memberById(a.memberId));
+  if(!asg.length) return '';
+  asg.sort((x, y) => y.hours - x.hours);
+  const total = asg.reduce((t, a) => t + a.hours, 0);
+  const allTotal = asg.every(a => a.unit === 'total'), allYear = asg.every(a => a.unit !== 'total');
+  const suffix = allTotal ? ' total' : allYear ? '/thn' : '';
+  const chips = asg.slice(0, 3).map(a => {
+    const m = memberById(a.memberId);
+    return `<span class="ct-chip" title="${esc(m.name)}: ${fmtNum(a.hours, 0)} jam ${a.unit === 'total' ? 'total project' : 'per tahun'}"><i style="background:${avatarColor(m.name)}">${esc(initials(m.name))}</i>${fmtNum(a.hours, 0)}j</span>`;
+  }).join('');
+  const more = asg.length > 3 ? `<span class="ct-more" title="${esc(asg.slice(3).map(a => memberById(a.memberId).name + ' ' + fmtNum(a.hours, 0) + 'j').join(', '))}">+${asg.length - 3}</span>` : '';
+  return `<div class="card-team">${chips}${more}<span class="ct-total" title="Total jam keterlibatan tim">${fmtNum(total, 0)} jam${suffix}</span></div>`;
+}
 function cardHtml(item){
   const f = fin(item), st = getStatus(item);
   const effTarget = item.target;
@@ -1828,6 +1856,7 @@ function cardHtml(item){
     ${item.progressMode === 'qty' && (item.progressTargets || []).length ? `<div class="card-qty-note">${
       item.progressTargets.map(p => `${p.done || 0}/${p.target || 0} ${esc(p.label || '')}`).join(' &middot; ')
     }</div>` : ''}
+    ${teamStripHtml(item)}
     <div class="card-fin">
       <div><div class="fin-lab">Revenue</div><div class="fin-val">${fmtRp(f.revenue, true)}</div></div>
       <div><div class="fin-lab">GPM</div><div class="fin-val">${fmtRp(f.gpm, true)}</div></div>
@@ -3026,12 +3055,15 @@ function applyTeam(t){
 function saveTeam(){ try{ localStorage.setItem(TEAM_KEY, JSON.stringify(teamState)); }catch(e){} }
 try{ applyTeam(JSON.parse(localStorage.getItem(TEAM_KEY) || 'null')); }catch(e){}
 function cleanAssignments(list){
+  // unit: 'year' = jam per tahun, 'total' = jam total selama project. Satu baris per member per project.
   const by = {};
   (Array.isArray(list) ? list : []).forEach(a => {
     const h = Math.max(0, Number(a && a.hours) || 0);
-    if(a && a.memberId && h > 0) by[a.memberId] = (by[a.memberId] || 0) + h;
+    if(!(a && a.memberId && h > 0)) return;
+    if(by[a.memberId]) by[a.memberId].hours += h;
+    else by[a.memberId] = {memberId: a.memberId, hours: h, unit: a.unit === 'total' ? 'total' : 'year'};
   });
-  return Object.keys(by).map(k => ({memberId: k, hours: by[k]}));
+  return Object.keys(by).map(k => by[k]);
 }
 const memberById = id => teamState.members.find(m => m.id === id);
 const fmtNum = (n, d) => Number(n).toLocaleString('id-ID', {maximumFractionDigits: d == null ? 1 : d});
@@ -3039,9 +3071,9 @@ const memberCapHours = m => teamState.mandaysPerYear * teamState.hoursPerDay * (
 
 /* --- assign di modal project --- */
 function asgRowHtml(a){
-  a = a || {memberId:'', hours:''};
+  a = a || {memberId:'', hours:'', unit:'year'};
   const opts = '<option value="">Pilih member...</option>' + teamState.members.map(m => `<option value="${esc(m.id)}" ${m.id === a.memberId ? 'selected' : ''}>${esc(m.name)}${m.role ? ' (' + esc(m.role) + ')' : ''}</option>`).join('');
-  return `<div class="asg-row"><select class="asg-m">${opts}</select><input type="number" class="asg-h" min="0" step="1" placeholder="jam/tahun" value="${a.hours === '' ? '' : esc(a.hours)}"><span class="asg-md"></span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
+  return `<div class="asg-row"><select class="asg-m">${opts}</select><input type="number" class="asg-h" min="0" step="1" placeholder="jam" value="${a.hours === '' ? '' : esc(a.hours)}"><select class="asg-u" title="Jam dihitung per tahun atau total selama project"><option value="year" ${a.unit !== 'total' ? 'selected' : ''}>per tahun</option><option value="total" ${a.unit === 'total' ? 'selected' : ''}>total project</option></select><span class="asg-md"></span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
 }
 function renderAsgRows(list){
   const wrap = document.getElementById('asgRows');
@@ -3056,7 +3088,7 @@ function renderAsgRows(list){
 }
 function collectAssignments(){
   return cleanAssignments([...document.querySelectorAll('#asgRows .asg-row')].map(r => ({
-    memberId: r.querySelector('.asg-m').value, hours: r.querySelector('.asg-h').value
+    memberId: r.querySelector('.asg-m').value, hours: r.querySelector('.asg-h').value, unit: r.querySelector('.asg-u').value
   })).filter(a => memberById(a.memberId)));
 }
 function updateAsgSum(){
@@ -3086,7 +3118,7 @@ document.getElementById('asgRows').addEventListener('click', (e) => {
 const teamOverlay = document.getElementById('teamOverlay');
 function teamRowHtml(m){
   m = m || {id: uid(), name: '', role: '', alloc: 100};
-  return `<div class="tp-row" data-mid="${esc(m.id)}"><input class="tp-name" placeholder="Nama" value="${esc(m.name)}"><input class="tp-role" placeholder="Role (opsional)" value="${esc(m.role || '')}"><input type="number" class="tp-alloc" min="1" max="100" value="${m.alloc}" title="Alokasi waktu di tim ini"><span>%</span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
+  return `<div class="tp-row" data-mid="${esc(m.id)}"><span class="tp-grip" title="Drag buat ubah urutan" aria-label="Drag buat ubah urutan">&#8942;&#8942;</span><input class="tp-name" placeholder="Nama" value="${esc(m.name)}"><input class="tp-role" placeholder="Role (opsional)" value="${esc(m.role || '')}"><input type="number" class="tp-alloc" min="1" max="100" value="${m.alloc}" title="Alokasi waktu di tim ini"><span>%</span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
 }
 function updateTeamCapHint(){
   const md = +document.getElementById('f_team_md').value || 0, hd = +document.getElementById('f_team_hd').value || 0;
@@ -3117,6 +3149,47 @@ document.getElementById('teamAddBtn').onclick = () => {
 document.getElementById('teamRows').addEventListener('click', (e) => {
   const b = e.target.closest('.metric-remove'); if(b && isAdmin) b.closest('.tp-row').remove();
 });
+(function(){
+  const wrap = document.getElementById('teamRows');
+  let drag = null;
+  const clear = () => wrap.querySelectorAll('.drop-before,.drop-after').forEach(e => e.classList.remove('drop-before','drop-after'));
+  // Baris cuma bisa di-drag lewat grip, biar input teks di dalamnya tetap bisa dipilih
+  wrap.addEventListener('mousedown', (e) => {
+    const g = e.target.closest('.tp-grip');
+    wrap.querySelectorAll('.tp-row').forEach(r => r.draggable = false);
+    if(g && isAdmin) g.closest('.tp-row').draggable = true;
+  });
+  wrap.addEventListener('dragstart', (e) => {
+    const row = e.target.closest && e.target.closest('.tp-row');
+    if(!row || !isAdmin) return;
+    drag = row; row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try{ e.dataTransfer.setData('text/plain', row.dataset.mid); }catch(_){}
+  });
+  wrap.addEventListener('dragover', (e) => {
+    if(!drag) return;
+    const row = e.target.closest('.tp-row');
+    e.preventDefault(); clear();
+    if(row && row !== drag){
+      const r = row.getBoundingClientRect();
+      row.classList.add(e.clientY < r.top + r.height/2 ? 'drop-before' : 'drop-after');
+    }
+  });
+  wrap.addEventListener('drop', (e) => {
+    if(!drag) return;
+    e.preventDefault();
+    const row = e.target.closest('.tp-row');
+    if(row && row !== drag){
+      const r = row.getBoundingClientRect();
+      if(e.clientY < r.top + r.height/2) wrap.insertBefore(drag, row); else row.after(drag);
+    }
+    clear();
+  });
+  wrap.addEventListener('dragend', () => {
+    if(drag){ drag.classList.remove('dragging'); drag.draggable = false; }
+    drag = null; clear();
+  });
+})();
 document.getElementById('teamSave').onclick = () => {
   if(!isAdmin) return;
   const md = +document.getElementById('f_team_md').value, hd = +document.getElementById('f_team_hd').value;
@@ -3148,7 +3221,7 @@ function teamLoad(){
     const projs = [];
     data.forEach(it => {
       const a = (it.assignments || []).find(x => x.memberId === m.id);
-      if(a && a.hours > 0) projs.push({item: it, hours: a.hours});
+      if(a && a.hours > 0) projs.push({item: it, hours: a.hours, unit: a.unit});
     });
     projs.sort((x, y) => y.hours - x.hours);
     const hours = projs.reduce((t, p) => t + p.hours, 0), cap = memberCapHours(m);
@@ -3161,7 +3234,7 @@ function renderTeam(){
   const hd = teamState.hoursPerDay, md = teamState.mandaysPerYear;
   const rows = teamLoad();
   const sort = document.getElementById('teamSort').value;
-  rows.sort((a, b) => sort === 'name' ? a.m.name.localeCompare(b.m.name) : sort === 'free' ? (b.cap - b.hours) - (a.cap - a.hours) : b.pct - a.pct);
+  if(sort !== 'setup') rows.sort((a, b) => sort === 'name' ? a.m.name.localeCompare(b.m.name) : sort === 'free' ? (b.cap - b.hours) - (a.cap - a.hours) : b.pct - a.pct);
 
   const capTot = rows.reduce((t, r) => t + r.cap, 0), hrTot = rows.reduce((t, r) => t + r.hours, 0);
   const avg = capTot ? hrTot / capTot * 100 : 0;
@@ -3187,7 +3260,7 @@ function renderTeam(){
     const s = occState(r.pct), md_ = r.hours / hd, capMd = r.cap / hd;
     const projs = r.projs.map((p, i) => {
       const share = r.hours ? p.hours / r.hours * 100 : 0;
-      return `<div class="tv-proj" data-pid="${p.item.id}"><span class="tv-rank">${i + 1}</span><div style="min-width:0;"><div class="tv-pn" title="${esc(p.item.name)}">${esc(p.item.name)}</div><div class="tv-pbar"><i style="width:${Math.min(100, share).toFixed(1)}%"></i></div></div><div class="tv-pv">${fmtNum(p.hours, 0)} jam<small>${fmtNum(p.hours / hd)} hari · ${fmtNum(share, 0)}%</small></div></div>`;
+      return `<div class="tv-proj" data-pid="${p.item.id}"><span class="tv-rank">${i + 1}</span><div style="min-width:0;"><div class="tv-pn" title="${esc(p.item.name)}">${esc(p.item.name)}</div><div class="tv-pbar"><i style="width:${Math.min(100, share).toFixed(1)}%"></i></div></div><div class="tv-pv">${fmtNum(p.hours, 0)} jam<small>${fmtNum(p.hours / hd)} hari · ${fmtNum(share, 0)}%${p.unit === 'total' ? ' · total proj' : ''}</small></div></div>`;
     }).join('');
     return `<div class="tv-card">
       <div class="tv-head"><div class="avatar" style="background:${avatarColor(r.m.name)}">${initials(r.m.name)}</div>
