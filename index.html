@@ -251,6 +251,52 @@
     .tm .rev-m{display:block;font-weight:700;font-size:11px;margin-top:2px;}
     #tasksView .tm-scroll{max-height:none;}
   }
+
+  /* v0.22: Tim & kapasitas */
+  .view-switch{flex-wrap:wrap;}
+  .view-switch button{flex:1 1 calc(50% - 4px);}
+  .asg-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .asg-row select,.asg-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);}
+  .asg-row select{flex:1;min-width:0;}
+  .asg-row input{width:92px;text-align:right;}
+  .asg-row .asg-md{font-size:11px;color:var(--ink-faint);white-space:nowrap;width:62px;}
+  .asg-sum{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+  .asg-sum b{color:var(--ink);}
+  .modal.readonly select{pointer-events:none;}
+  .modal.readonly #addAsgRow,.modal.readonly #asgToMh{display:none;}
+  .tp-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .tp-row input{background:var(--col-bg);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:12.5px;color:var(--ink);min-width:0;}
+  .tp-row .tp-name{flex:1.2;} .tp-row .tp-role{flex:1;} .tp-row .tp-alloc{width:64px;text-align:right;}
+  .tp-row span{font-size:12px;color:var(--ink-faint);}
+  .tp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .tv-scroll{flex:1;min-height:0;overflow:auto;padding:2px 2px 20px;}
+  .tv-tools{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap;}
+  .tv-legend{font-size:11.5px;color:var(--ink-faint);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .tv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start;}
+  .tv-card{background:var(--card);border:1px solid var(--border-soft);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(28,27,24,.04);}
+  .tv-head{display:flex;align-items:center;gap:11px;}
+  .tv-name{font-weight:700;font-size:14px;line-height:1.25;}
+  .tv-role{font-size:11.5px;color:var(--ink-faint);}
+  .tv-pct{margin-left:auto;text-align:right;}
+  .tv-pct b{font-size:22px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
+  .tv-pct small{display:block;font-size:10.5px;font-weight:700;}
+  .tv-bar{height:8px;border-radius:99px;background:rgba(28,27,24,.08);overflow:hidden;margin-top:12px;position:relative;}
+  .tv-bar i{display:block;height:100%;border-radius:99px;}
+  .tv-md{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-variant-numeric:tabular-nums;}
+  .tv-sub{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:14px 0 4px;}
+  .tv-projs{display:flex;flex-direction:column;max-height:300px;overflow-y:auto;}
+  .tv-proj{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:center;padding:7px 4px;border-radius:9px;cursor:pointer;border-top:1px solid var(--border-soft);}
+  .tv-proj:first-child{border-top:0;}
+  .tv-proj:hover{background:var(--col-bg);}
+  .tv-rank{font-size:10.5px;font-weight:700;color:var(--ink-faint);text-align:center;}
+  .tv-pn{font-size:12.5px;font-weight:600;line-height:1.3;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tv-pbar{height:4px;border-radius:99px;background:rgba(28,27,24,.07);margin-top:4px;overflow:hidden;}
+  .tv-pbar i{display:block;height:100%;background:var(--accent);border-radius:99px;}
+  .tv-pv{font-size:11.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .tv-pv small{display:block;font-size:10px;font-weight:600;color:var(--ink-faint);}
+  .tv-empty{font-size:12px;color:var(--ink-faint);padding:8px 0;}
+  .tv-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+  @media(max-width:900px){.tp-grid{grid-template-columns:1fr 1fr;}.tv-grid{grid-template-columns:1fr;}}
   /* v0.13: mode ringkas */
   body.compact .card{padding:9px 11px;}
   body.compact .card-tag,body.compact .alert-box,body.compact .card-todo,body.compact .card-qty-note{display:none;}
@@ -539,13 +585,13 @@
   @media(prefers-reduced-motion:reduce){ *{transition:none !important;} .card:hover{transform:none;} }
 
   /* VIEW SWITCHER */
-  .view-switch{display:flex;gap:4px;background:var(--col-bg);border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px;}
-  .view-switch button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px 6px;font-family:'Inter';font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
+  .view-switch{display:flex;flex-wrap:wrap;gap:4px;background:var(--col-bg);border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px;}
+  .view-switch button{flex:1 1 calc(50% - 4px);border:none;background:transparent;border-radius:9px;padding:9px 6px;font-family:'Inter';font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
   .view-switch button.active{background:var(--card);color:var(--accent-text);box-shadow:0 1px 2px rgba(28,27,24,.08);}
 
   /* BAU PERFORMANCE VIEW */
-  #boardView,#bauView,#tasksView{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
-  #bauView,#tasksView{display:none;}
+  #boardView,#bauView,#tasksView,#teamView{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;}
+  #bauView,#tasksView,#teamView{display:none;}
   #bauFilterPanel{display:none;}
   .bau-table-wrap{flex:1;overflow:auto;border:1px solid var(--border-soft);border-radius:16px;background:var(--card);margin-bottom:16px;}
   table.bau-table{width:100%;border-collapse:collapse;font-size:12.5px;}
@@ -615,6 +661,7 @@
       <button type="button" class="active" data-view="board">📋 Board</button>
       <button type="button" data-view="bau">📈 BAU</button>
       <button type="button" data-view="tasks">🔗 Tasks</button>
+      <button type="button" data-view="team">👥 Tim</button>
     </div>
 
     <div id="boardFilterPanel">
@@ -668,6 +715,10 @@
 
       <div class="side-label" style="padding-top:10px;">Referensi</div>
       <div class="data-box">
+        <button class="side-action" id="teamSetupBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 010 5.6M18 14.8c1.8.7 3 2.4 3 5.2"/></svg>
+          Setup tim &amp; kapasitas
+        </button>
         <button class="side-action" id="catalogBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
           Katalog layanan &amp; rate manhour
@@ -761,6 +812,28 @@
         </button>
       </div>
       <div class="tm-scroll"><table class="tm" id="tasksTable"></table></div>
+    </div>
+
+    <div id="teamView">
+      <div class="topbar">
+        <div>
+          <h1>Dashboard Tim</h1>
+          <div class="top-sub" id="teamSub"></div>
+        </div>
+        <div class="top-spacer"></div>
+        <button class="mobile-filter-btn" id="teamMobileFilterBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        </button>
+        <select class="sortsel" id="teamSort" aria-label="Urutkan member" style="display:block;">
+          <option value="occ">Okupansi tertinggi</option>
+          <option value="free">Sisa kapasitas terbanyak</option>
+          <option value="name">Nama A-Z</option>
+        </select>
+        <button class="btn-new admin-only" id="teamSetupTop" aria-label="Setup tim"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.2a3 3 0 010 5.6M18 14.8c1.8.7 3 2.4 3 5.2"/></svg><span class="label">Setup tim</span></button>
+      </div>
+      <div class="statbar" id="teamStatBar"></div>
+      <div class="tv-tools"><div class="tv-legend" id="teamLegend"></div></div>
+      <div class="tv-scroll"><div class="tv-grid" id="teamGrid"></div></div>
     </div>
 
     <div id="bauView">
@@ -966,6 +1039,14 @@
       Add to-do
     </button>
 
+    <div class="section-label">Tim &amp; jam kerja <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(jam per tahun tiap member di project ini)</span></div>
+    <div id="asgRows"></div>
+    <button type="button" class="todo-add" id="addAsgRow">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Assign member
+    </button>
+    <div class="asg-sum" id="asgSum"></div>
+
     <div class="modal-actions">
       <button class="btn-delete-text" id="modalDelete" style="visibility:hidden;">Hapus project</button>
       <div style="display:flex;gap:8px;">
@@ -1011,6 +1092,32 @@
       <div style="display:flex;gap:8px;">
         <button class="btn-secondary" id="catalogCancel">Tutup</button>
         <button class="btn-primary admin-only" id="catalogSave">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="teamOverlay">
+  <div class="modal" id="teamModal" style="max-width:600px;">
+    <h2 style="margin:0 0 4px;font-size:18px;">👥 Setup tim &amp; kapasitas</h2>
+    <p style="margin:0 0 16px;font-size:12.5px;color:var(--ink-faint);line-height:1.5;">Standar kapasitas per member per tahun. Okupansi di dashboard Tim dihitung dari jam yang di-assign ke project dibanding kapasitas ini.</p>
+    <div class="modal-readonly-hint" id="teamReadonlyHint" style="display:none;">Mode lihat aja &middot; login admin buat edit.</div>
+    <div class="tp-grid">
+      <div class="field"><label for="f_team_md">Standar mandays per tahun</label><input type="number" id="f_team_md" min="1" step="1" placeholder="200"></div>
+      <div class="field"><label for="f_team_hd">Jam kerja per manday</label><input type="number" id="f_team_hd" min="1" max="24" step="0.5" placeholder="8"></div>
+    </div>
+    <div class="field-hint" id="teamCapHint"></div>
+    <div class="side-label" style="padding:10px 0 2px;">Member <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">(alokasi % buat yang cuma sebagian waktunya di tim ini)</span></div>
+    <div id="teamRows"></div>
+    <button type="button" class="todo-add admin-only" id="teamAddBtn">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>
+      Tambah member
+    </button>
+    <div class="modal-actions">
+      <div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="teamCancel">Tutup</button>
+        <button class="btn-primary admin-only" id="teamSave">Simpan</button>
       </div>
     </div>
   </div>
@@ -1153,7 +1260,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.21';
+const APP_VERSION = '0.22';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1187,6 +1294,7 @@ function initFirebase(){
         if(Array.isArray(val.catalog)) catalogData = val.catalog.map(it => ({...it, category: migrateCatalogCategory(it.category)}));
         if(typeof val.catalogRate === 'number') catalogRate = val.catalogRate;
         if(val.marginTargets) setMarginTargets(val.marginTargets.min, val.marginTargets.healthy);
+        if(val.team){ applyTeam(val.team); saveTeam(); }
         // val.bau may be undefined on data pushed by an older client — default to [] so a new
         // client doesn't choke on a field that doesn't exist yet.
         bauData = Array.isArray(val.bau) ? val.bau.map(migrateBauLine) : (bauData || []);
@@ -1223,6 +1331,7 @@ function pushToCloud(){
       items: data, catalog: catalogData,
       catalogRate: Number.isFinite(+catalogRate) ? +catalogRate : 99000,
       marginTargets: {min: MARGIN_MIN, healthy: MARGIN_HEALTHY},
+      team: teamState,
       bau: (typeof bauData !== 'undefined' ? bauData : []),
       updatedAt: Date.now()
     }));
@@ -1367,6 +1476,7 @@ function migrateItem(it){
   if(!okDate(it.target)) it.target = todayStr();
   it.todos = ensureDefaultTodos(it.todos);
   if(typeof it.started !== 'boolean') it.started = hasActivity(it);
+  it.assignments = cleanAssignments(it.assignments);
   if(it.progressMode !== 'qty') it.progressMode = 'manual';
   if(!Array.isArray(it.progressTargets)){
     // migrate the old single done/target pair into the new multi-target array
@@ -1844,6 +1954,7 @@ function renderAll(){
   renderStatBar();
   renderBoard();
   if(typeof currentView !== 'undefined' && currentView === 'tasks') renderTasks();
+  if(typeof currentView !== 'undefined' && currentView === 'team') renderTeam();
   const mfb = document.getElementById('mobileFilterBtn');
   if(mfb) mfb.classList.toggle('has-filter', filterStatus !== 'all' || !!filterBU || !!filterService);
 }
@@ -1917,6 +2028,7 @@ document.getElementById('importFile').onchange = (e) => {
           pic: String(it.pic || '-'),
           type: 'onetime',
           started: typeof it.started === 'boolean' ? it.started : undefined,
+          assignments: cleanAssignments(it.assignments),
           target: rawTarget,
           progress: Math.max(0, Math.min(100, Number(it.progress) || 0)),
           progressMode: it.progressMode === 'qty' ? 'qty' : 'manual',
@@ -2372,6 +2484,7 @@ function openModal(id){
   document.getElementById('f_manhour').value  = it ? it.manhour : '';
   mhLines = it && Array.isArray(it.mhLines) ? it.mhLines.map(l => ({label: String(l.label || ''), cost: Math.max(0, +l.cost || 0)})) : [];
   renderMhLines();
+  renderAsgRows(it ? cleanAssignments(it.assignments) : []);
   renderMhCalcOptions();
   document.getElementById('mhCalcQty').value = 1;
   document.getElementById('mhCalcHours').value = '';
@@ -2425,6 +2538,7 @@ document.getElementById('modalSave').onclick = () => {
     progressTargets: progressMode === 'qty' ? collectProgressRows() : [],
     progress: progressMode === 'qty' ? updateQtyProgress() : +document.getElementById('f_progress').value,
     started: formStarted,
+    assignments: collectAssignments(),
     isPaidMarketing: isPaidMktg,
     serviceFeePct: isPaidMktg ? (+document.getElementById('f_service_fee_pct').value || 0) : null,
     pphPct: isPaidMktg ? (+document.getElementById('f_pph_pct').value || 0) : null,
@@ -2892,6 +3006,206 @@ function renderTasks(){
 })();
 document.getElementById('tasksMobileFilterBtn').onclick = openSidebar;
 
+
+/* ---- v0.22 Tim & kapasitas ---- */
+const TEAM_KEY = 'bmd-team';
+let teamState = {members: [], mandaysPerYear: 200, hoursPerDay: 8};
+function applyTeam(t){
+  if(!t || typeof t !== 'object') return;
+  const md = Number(t.mandaysPerYear), hd = Number(t.hoursPerDay);
+  teamState = {
+    mandaysPerYear: md > 0 ? md : 200,
+    hoursPerDay: hd > 0 ? hd : 8,
+    members: (Array.isArray(t.members) ? t.members : []).map(m => ({
+      id: String((m && m.id) || uid()), name: String((m && m.name) || '').trim(),
+      role: String((m && m.role) || '').trim(),
+      alloc: Math.max(1, Math.min(100, Number(m && m.alloc) || 100))
+    })).filter(m => m.name)
+  };
+}
+function saveTeam(){ try{ localStorage.setItem(TEAM_KEY, JSON.stringify(teamState)); }catch(e){} }
+try{ applyTeam(JSON.parse(localStorage.getItem(TEAM_KEY) || 'null')); }catch(e){}
+function cleanAssignments(list){
+  const by = {};
+  (Array.isArray(list) ? list : []).forEach(a => {
+    const h = Math.max(0, Number(a && a.hours) || 0);
+    if(a && a.memberId && h > 0) by[a.memberId] = (by[a.memberId] || 0) + h;
+  });
+  return Object.keys(by).map(k => ({memberId: k, hours: by[k]}));
+}
+const memberById = id => teamState.members.find(m => m.id === id);
+const fmtNum = (n, d) => Number(n).toLocaleString('id-ID', {maximumFractionDigits: d == null ? 1 : d});
+const memberCapHours = m => teamState.mandaysPerYear * teamState.hoursPerDay * (m.alloc / 100);
+
+/* --- assign di modal project --- */
+function asgRowHtml(a){
+  a = a || {memberId:'', hours:''};
+  const opts = '<option value="">Pilih member...</option>' + teamState.members.map(m => `<option value="${esc(m.id)}" ${m.id === a.memberId ? 'selected' : ''}>${esc(m.name)}${m.role ? ' (' + esc(m.role) + ')' : ''}</option>`).join('');
+  return `<div class="asg-row"><select class="asg-m">${opts}</select><input type="number" class="asg-h" min="0" step="1" placeholder="jam/tahun" value="${a.hours === '' ? '' : esc(a.hours)}"><span class="asg-md"></span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
+}
+function renderAsgRows(list){
+  const wrap = document.getElementById('asgRows');
+  if(!teamState.members.length){
+    wrap.innerHTML = '<div class="field-hint">Belum ada member. Tambah dulu di Setup tim &amp; kapasitas (sidebar).</div>';
+    document.getElementById('addAsgRow').style.display = 'none';
+  }else{
+    wrap.innerHTML = (list || []).map(asgRowHtml).join('');
+    document.getElementById('addAsgRow').style.display = '';
+  }
+  updateAsgSum();
+}
+function collectAssignments(){
+  return cleanAssignments([...document.querySelectorAll('#asgRows .asg-row')].map(r => ({
+    memberId: r.querySelector('.asg-m').value, hours: r.querySelector('.asg-h').value
+  })).filter(a => memberById(a.memberId)));
+}
+function updateAsgSum(){
+  let total = 0;
+  document.querySelectorAll('#asgRows .asg-row').forEach(r => {
+    const h = Math.max(0, +r.querySelector('.asg-h').value || 0); total += h;
+    r.querySelector('.asg-md').textContent = h ? '= ' + fmtNum(h / teamState.hoursPerDay) + ' hari' : '';
+  });
+  const el = document.getElementById('asgSum');
+  el.innerHTML = total
+    ? `<span>Total <b>${fmtNum(total, 0)} jam</b> (${fmtNum(total / teamState.hoursPerDay)} mandays), setara <b>${fmtRp(Math.round(total * catalogRate))}</b> di rate ${fmtRp(catalogRate)}/jam</span>${isAdmin ? '<button type="button" class="btn-secondary" id="asgToMh" style="padding:5px 10px;font-size:11.5px;">Tambah ke Manhour cost</button>' : ''}`
+    : '';
+  const b = document.getElementById('asgToMh');
+  if(b) b.onclick = () => { mhAdd(`Tim: ${fmtNum(total, 0)} jam`, Math.round(total * catalogRate)); toast('Biaya jam tim ditambah ke Manhour cost'); };
+}
+document.getElementById('addAsgRow').onclick = () => {
+  document.getElementById('asgRows').insertAdjacentHTML('beforeend', asgRowHtml());
+  updateAsgSum();
+};
+document.getElementById('asgRows').addEventListener('input', updateAsgSum);
+document.getElementById('asgRows').addEventListener('click', (e) => {
+  const b = e.target.closest('.metric-remove'); if(!b) return;
+  b.closest('.asg-row').remove(); updateAsgSum();
+});
+
+/* --- setup tim --- */
+const teamOverlay = document.getElementById('teamOverlay');
+function teamRowHtml(m){
+  m = m || {id: uid(), name: '', role: '', alloc: 100};
+  return `<div class="tp-row" data-mid="${esc(m.id)}"><input class="tp-name" placeholder="Nama" value="${esc(m.name)}"><input class="tp-role" placeholder="Role (opsional)" value="${esc(m.role || '')}"><input type="number" class="tp-alloc" min="1" max="100" value="${m.alloc}" title="Alokasi waktu di tim ini"><span>%</span><button type="button" class="metric-remove" aria-label="Hapus">&times;</button></div>`;
+}
+function updateTeamCapHint(){
+  const md = +document.getElementById('f_team_md').value || 0, hd = +document.getElementById('f_team_hd').value || 0;
+  document.getElementById('teamCapHint').textContent = md && hd ? `Kapasitas penuh: ${fmtNum(md * hd, 0)} jam per member per tahun.` : '';
+}
+function openTeamSetup(){
+  document.getElementById('f_team_md').value = teamState.mandaysPerYear;
+  document.getElementById('f_team_hd').value = teamState.hoursPerDay;
+  document.getElementById('teamRows').innerHTML = teamState.members.map(teamRowHtml).join('') || (isAdmin ? teamRowHtml() : '<div class="field-hint">Belum ada member.</div>');
+  updateTeamCapHint();
+  document.getElementById('teamModal').classList.toggle('readonly', !isAdmin);
+  document.getElementById('teamReadonlyHint').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('teamCancel').textContent = isAdmin ? 'Batal' : 'Tutup';
+  teamOverlay.classList.add('show');
+}
+function closeTeamSetup(){ teamOverlay.classList.remove('show'); }
+document.getElementById('teamSetupBtn').onclick = openTeamSetup;
+document.getElementById('teamSetupTop').onclick = openTeamSetup;
+document.getElementById('teamCancel').onclick = closeTeamSetup;
+teamOverlay.onclick = (e) => { if(e.target === teamOverlay) closeTeamSetup(); };
+document.getElementById('teamAddBtn').onclick = () => {
+  const w = document.getElementById('teamRows');
+  if(w.querySelector('.field-hint')) w.innerHTML = '';
+  w.insertAdjacentHTML('beforeend', teamRowHtml());
+  w.lastElementChild.querySelector('.tp-name').focus();
+};
+['f_team_md','f_team_hd'].forEach(id => document.getElementById(id).addEventListener('input', updateTeamCapHint));
+document.getElementById('teamRows').addEventListener('click', (e) => {
+  const b = e.target.closest('.metric-remove'); if(b && isAdmin) b.closest('.tp-row').remove();
+});
+document.getElementById('teamSave').onclick = () => {
+  if(!isAdmin) return;
+  const md = +document.getElementById('f_team_md').value, hd = +document.getElementById('f_team_hd').value;
+  if(!(md > 0) || !(hd > 0)){ toast('Mandays per tahun dan jam per manday harus lebih dari 0'); return; }
+  const members = [...document.querySelectorAll('#teamRows .tp-row')].map(r => ({
+    id: r.dataset.mid, name: r.querySelector('.tp-name').value.trim(), role: r.querySelector('.tp-role').value.trim(),
+    alloc: Math.max(1, Math.min(100, +r.querySelector('.tp-alloc').value || 100))
+  })).filter(m => m.name);
+  const keep = new Set(members.map(m => m.id));
+  const removedWithWork = teamState.members.filter(m => !keep.has(m.id) && data.some(it => (it.assignments || []).some(a => a.memberId === m.id)));
+  const commit = () => {
+    teamState = {mandaysPerYear: md, hoursPerDay: hd, members};
+    saveTeam();
+    data.forEach(it => { it.assignments = (it.assignments || []).filter(a => keep.has(a.memberId)); });
+    save(data); closeTeamSetup(); renderAll(); toast('Setup tim disimpan');
+  };
+  if(removedWithWork.length) askConfirm('Hapus member?', `${removedWithWork.map(m => m.name).join(', ')} masih punya jam di project. Assignment-nya ikut dihapus.`, commit);
+  else commit();
+};
+
+/* --- dashboard tim --- */
+function occState(pct){
+  if(pct > 100) return {c:'var(--danger-text)', bg:'var(--danger)', t:'Overload'};
+  if(pct >= 60) return {c:'var(--ok-text)', bg:'#3E9A52', t:'Optimal'};
+  return {c:'var(--warn-text)', bg:'#E8A03A', t:'Longgar'};
+}
+function teamLoad(){
+  return teamState.members.map(m => {
+    const projs = [];
+    data.forEach(it => {
+      const a = (it.assignments || []).find(x => x.memberId === m.id);
+      if(a && a.hours > 0) projs.push({item: it, hours: a.hours});
+    });
+    projs.sort((x, y) => y.hours - x.hours);
+    const hours = projs.reduce((t, p) => t + p.hours, 0), cap = memberCapHours(m);
+    return {m, projs, hours, cap, pct: cap ? hours / cap * 100 : 0};
+  });
+}
+function renderTeam(){
+  const grid = document.getElementById('teamGrid');
+  if(!grid) return;
+  const hd = teamState.hoursPerDay, md = teamState.mandaysPerYear;
+  const rows = teamLoad();
+  const sort = document.getElementById('teamSort').value;
+  rows.sort((a, b) => sort === 'name' ? a.m.name.localeCompare(b.m.name) : sort === 'free' ? (b.cap - b.hours) - (a.cap - a.hours) : b.pct - a.pct);
+
+  const capTot = rows.reduce((t, r) => t + r.cap, 0), hrTot = rows.reduce((t, r) => t + r.hours, 0);
+  const avg = capTot ? hrTot / capTot * 100 : 0;
+  const over = rows.filter(r => r.pct > 100).length;
+  const unassigned = data.filter(it => !(it.assignments || []).some(a => a.hours > 0 && memberById(a.memberId))).length;
+  const st = occState(avg);
+  const segs = [
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>', l:'Member', n:rows.length, b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>', l:'Kapasitas tim', n:fmtNum(capTot / hd, 0) + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', l:'Ter-assign', n:fmtNum(hrTot / hd, 0) + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>', l:'Okupansi tim', n:fmtNum(avg, 0) + '%', b: rows.length ? {c: avg > 100 ? 'bad' : avg >= 60 ? 'good' : 'warn', t: st.t} : null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>', l:'Project tanpa tim', n:unassigned, b: over ? {c:'bad', t: over + ' overload'} : null}
+  ];
+  document.getElementById('teamStatBar').innerHTML = segs.map(s => `<div class="stat-seg"><div class="stat-ico">${s.i}</div><div style="min-width:0;"><div class="stat-label">${s.l}</div><div class="stat-row"><div class="stat-num num">${s.n}</div>${s.b ? `<span class="badge-pill ${s.b.c}">${s.b.t}</span>` : ''}</div></div></div>`).join('');
+  document.getElementById('teamSub').textContent = `Standar ${fmtNum(md, 0)} mandays x ${fmtNum(hd)} jam per tahun`;
+  document.getElementById('teamLegend').innerHTML = '<span><i class="tv-dot" style="background:#E8A03A"></i>Longgar &lt; 60%</span><span><i class="tv-dot" style="background:#3E9A52"></i>Optimal 60-100%</span><span><i class="tv-dot" style="background:var(--danger)"></i>Overload &gt; 100%</span>';
+
+  if(!rows.length){
+    grid.innerHTML = `<div class="tv-card" style="grid-column:1/-1;text-align:center;padding:36px;"><div class="tv-name">Belum ada member</div><div class="tv-role" style="margin-top:4px;">${isAdmin ? 'Klik Setup tim buat nambah member dan atur standar kapasitas.' : 'Admin belum setup tim.'}</div></div>`;
+    return;
+  }
+  grid.innerHTML = rows.map(r => {
+    const s = occState(r.pct), md_ = r.hours / hd, capMd = r.cap / hd;
+    const projs = r.projs.map((p, i) => {
+      const share = r.hours ? p.hours / r.hours * 100 : 0;
+      return `<div class="tv-proj" data-pid="${p.item.id}"><span class="tv-rank">${i + 1}</span><div style="min-width:0;"><div class="tv-pn" title="${esc(p.item.name)}">${esc(p.item.name)}</div><div class="tv-pbar"><i style="width:${Math.min(100, share).toFixed(1)}%"></i></div></div><div class="tv-pv">${fmtNum(p.hours, 0)} jam<small>${fmtNum(p.hours / hd)} hari · ${fmtNum(share, 0)}%</small></div></div>`;
+    }).join('');
+    return `<div class="tv-card">
+      <div class="tv-head"><div class="avatar" style="background:${avatarColor(r.m.name)}">${initials(r.m.name)}</div>
+        <div style="min-width:0;"><div class="tv-name">${esc(r.m.name)}</div><div class="tv-role">${esc(r.m.role || 'Member')}${r.m.alloc < 100 ? ' · alokasi ' + r.m.alloc + '%' : ''}</div></div>
+        <div class="tv-pct"><b style="color:${s.c}">${fmtNum(r.pct, 0)}%</b><small style="color:${s.c}">${s.t}</small></div></div>
+      <div class="tv-bar"><i style="width:${Math.min(100, r.pct).toFixed(1)}%;background:${s.bg}"></i></div>
+      <div class="tv-md"><span><b>${fmtNum(md_)}</b> / ${fmtNum(capMd)} mandays per tahun</span><span>${r.cap - r.hours >= 0 ? 'sisa ' + fmtNum((r.cap - r.hours) / hd) + ' hari' : 'lebih ' + fmtNum((r.hours - r.cap) / hd) + ' hari'}</span></div>
+      <div class="tv-sub">Project, paling dedicated di atas (${r.projs.length})</div>
+      <div class="tv-projs">${projs || '<div class="tv-empty">Belum di-assign ke project mana pun.</div>'}</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('teamSort').onchange = renderTeam;
+document.getElementById('teamGrid').addEventListener('click', (e) => {
+  const p = e.target.closest('[data-pid]'); if(p) openModal(p.dataset.pid);
+});
+document.getElementById('teamMobileFilterBtn').onclick = openSidebar;
+
 /* ---- view switching ---- */
 let currentView = 'board';
 function switchView(view){
@@ -2900,10 +3214,12 @@ function switchView(view){
   document.getElementById('boardView').style.display = view === 'board' ? 'flex' : 'none';
   document.getElementById('bauView').style.display = view === 'bau' ? 'flex' : 'none';
   document.getElementById('tasksView').style.display = view === 'tasks' ? 'flex' : 'none';
+  document.getElementById('teamView').style.display = view === 'team' ? 'flex' : 'none';
   document.getElementById('boardFilterPanel').style.display = (view === 'board' || view === 'tasks') ? '' : 'none';
   document.getElementById('bauFilterPanel').style.display = view === 'bau' ? '' : 'none';
   if(view === 'bau') renderBauAll();
   if(view === 'tasks') renderTasks();
+  if(view === 'team') renderTeam();
 }
 document.querySelectorAll('#viewSwitch button').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
 document.getElementById('bauMobileFilterBtn').onclick = openSidebar;
