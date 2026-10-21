@@ -1274,7 +1274,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.24';
+const APP_VERSION = '0.25';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1488,7 +1488,13 @@ function migrateItem(it){
   it.type = 'onetime';
   delete it.recurDay; delete it.cycleKey; delete it.contractStart; delete it.contractEnd;
   if(!okDate(it.target)) it.target = todayStr();
-  it.todos = ensureDefaultTodos(it.todos);
+  // Default to-do (Cost Structure, PKS/PO/SPK/CL) cuma di-seed sekali. Setelah itu apa yang dihapus user tetap terhapus.
+  // Flag todosSeeded perlu karena Firebase membuang array kosong, jadi project dengan to-do kosong balik tanpa field todos.
+  if(it.todosSeeded !== true){
+    it.todos = Array.isArray(it.todos) && it.todos.length ? it.todos : ensureDefaultTodos([]);
+    it.todosSeeded = true;
+  }
+  if(!Array.isArray(it.todos)) it.todos = [];
   if(typeof it.started !== 'boolean') it.started = hasActivity(it);
   it.assignments = cleanAssignments(it.assignments);
   if(it.progressMode !== 'qty') it.progressMode = 'manual';
@@ -2083,7 +2089,8 @@ document.getElementById('importFile').onchange = (e) => {
                 value: (m && m.value != null && m.value !== '') ? Number(m.value) : null
               })).filter(m => m.name)
             : (it.metricName ? [{name:String(it.metricName), unit:String(it.metricUnit||''), value: it.metricValue != null ? Number(it.metricValue) : null}] : []),
-          todos: ensureDefaultTodos(Array.isArray(it.todos)
+          todosSeeded: true,
+          todos: (Array.isArray(it.todos)
             ? it.todos.map(x => ({
                 id: (x && x.id) || uid(),
                 text: String((x && x.text) || ''),
@@ -2522,7 +2529,7 @@ function openModal(id){
   document.getElementById('f_pph_pct').value         = it && it.pphPct != null ? it.pphPct : 2;
   applyPaidMktgUI(it ? !!it.isPaidMarketing : false);
   renderMetricRows(it ? it.metrics : []);
-  renderTodoRows(it ? ensureDefaultTodos(it.todos) : ensureDefaultTodos([]));
+  renderTodoRows(it ? (it.todos || []) : ensureDefaultTodos([]));
   document.getElementById('modalDelete').style.visibility = it ? 'visible' : 'hidden';
   updateCalc();
   overlay.classList.add('show');
@@ -2576,7 +2583,8 @@ document.getElementById('modalSave').onclick = () => {
     manhour: Math.max(0, +document.getElementById('f_manhour').value || 0),
     mhLines: mhLines.map(l => ({label: l.label, cost: l.cost})),
     metrics: collectMetrics(),
-    todos: ensureDefaultTodos(collectTodos())
+    todosSeeded: true,
+    todos: collectTodos()
   };
   if(editingId){
     Object.assign(data.find(d => d.id === editingId), payload);
