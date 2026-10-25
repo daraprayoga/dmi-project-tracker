@@ -759,6 +759,79 @@
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important;}
   }
+
+  /* ---- v0.27 micro motion ---- */
+  @keyframes drawTick{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
+  @keyframes tick{0%{clip-path:inset(80% 100% 0 0)}45%{clip-path:inset(80% 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
+  @keyframes chipPop{0%{transform:scale(.94);box-shadow:0 0 0 0 rgba(47,107,58,.35)}45%{transform:scale(1.045)}100%{transform:scale(1);box-shadow:0 0 0 9px rgba(47,107,58,0)}}
+  @keyframes boxPop{0%{transform:scale(.7)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+  @keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.38);color:var(--accent-text)}100%{transform:scale(1)}}
+  @keyframes shine{from{background-position:100% 0}to{background-position:0 0}}
+  @keyframes donePop{0%{transform:scale(1.025)}100%{transform:scale(1)}}
+  @keyframes btnSpin{to{transform:rotate(360deg)}}
+
+  /* centang custom: kotak, tick yang tergambar */
+  .todo-row input[type="checkbox"],.tm-chip input.tm-chk{
+    -webkit-appearance:none;appearance:none;position:relative;display:inline-block;flex-shrink:0;margin:0;
+    width:18px;height:18px;border:1.5px solid #CFC9BA;border-radius:6px;background:var(--card);
+    transition:background-color .18s ease, border-color .18s ease, transform .2s var(--ease-spring);}
+  .tm-chip input.tm-chk{width:15px;height:15px;border-radius:5px;}
+  .todo-row input[type="checkbox"]:hover:not(:disabled),.tm-chip input.tm-chk:hover:not(:disabled){border-color:var(--accent);}
+  .todo-row input[type="checkbox"]:active,.tm-chip input.tm-chk:not(:disabled):active{transform:scale(.84);}
+  .todo-row input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent);}
+  .tm-chip input.tm-chk:checked{background:#2F6B3A;border-color:#2F6B3A;}
+  .todo-row input[type="checkbox"]::after,.tm-chip input.tm-chk::after{
+    content:'';position:absolute;box-sizing:content-box;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+    left:4.5px;top:1px;width:4px;height:8px;clip-path:inset(80% 100% 0 0);transition:clip-path .28s var(--ease-out) .04s;}
+  .tm-chip input.tm-chk::after{left:3.5px;top:.5px;width:3px;height:6.5px;}
+  .todo-row input[type="checkbox"]:checked::after,.tm-chip input.tm-chk:checked::after{clip-path:inset(0 0 0 0);}
+  .tm-chip.just{animation:chipPop .55s var(--ease-spring);}
+  .tm-chip.just input.tm-chk:checked{animation:boxPop .38s var(--ease-spring);}
+  .tm-chip.just input.tm-chk:checked::after{animation:tick .34s var(--ease-out) both;}
+  .todo-row .tr-done:checked{animation:boxPop .32s var(--ease-spring);}
+
+  /* tombol simpan: teks -> spinner -> centang */
+  .btn-primary.sv{position:relative;overflow:hidden;}
+  .btn-primary .bl{display:inline-block;transition:opacity .15s ease, transform .22s var(--ease-out);}
+  .btn-primary .bx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+  .btn-primary .spin{position:absolute;width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.28);border-top-color:#fff;opacity:0;transition:opacity .15s ease;}
+  .btn-primary .tk{position:absolute;width:18px;height:18px;opacity:0;}
+  .btn-primary .tk path{stroke-dasharray:24;stroke-dashoffset:24;}
+  .btn-primary.busy{pointer-events:none;}
+  .btn-primary.busy .bl{opacity:0;transform:translateY(-7px);}
+  .btn-primary.busy:not(.ok) .spin{opacity:1;animation:btnSpin .6s linear infinite;}
+  .btn-primary.ok,.btn-primary.ok:hover{background:#2F6B3A;}
+  .btn-primary.ok .tk{opacity:1;}
+  .btn-primary.ok .tk path{animation:drawTick .32s var(--ease-out) forwards;}
+
+  /* kartu pindah kolom + kilau Selesai */
+  .card-ghost{box-shadow:0 18px 34px -14px rgba(28,27,24,.3);will-change:transform;}
+  .card.just-done{animation:donePop .55s var(--ease-spring);}
+  .card.just-done::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(105deg,transparent 42%,rgba(255,255,255,.9) 50%,transparent 58%);
+    background-size:300% 100%;background-repeat:no-repeat;animation:shine 1s var(--ease-out) forwards;}
+  .card.just-done .time-badge.good svg path{stroke-dasharray:24;animation:drawTick .5s .25s var(--ease-out) backwards;}
+
+  /* angka count membal waktu berubah */
+  .col-count,.tm-count{display:inline-block;}
+  .bump{animation:bump .5s var(--ease-spring);}
+
+  /* hover ikon */
+  #addBtn svg,#bauAddBtn svg{transition:transform .38s var(--ease-spring);}
+  #addBtn:hover svg,#bauAddBtn:hover svg{transform:rotate(90deg);}
+  #teamSetupTop svg{transition:transform .3s var(--ease-spring);}
+  #teamSetupTop:hover svg{transform:scale(1.14) rotate(-7deg);}
+  .filter-item .ic{transition:transform .26s var(--ease-spring);}
+  .filter-item:hover .ic{transform:scale(1.16);}
+  .side-action svg{transition:transform .26s var(--ease-spring);}
+  .side-action:not(.locked):hover svg{transform:translateY(-1px) scale(1.12);}
+  .dd:not(.open) .dd-trigger:hover .dd-chev{transform:translateY(1.5px);}
+  .card-del{transition:opacity .12s, color .15s, transform .28s var(--ease-spring);}
+  .card-del:hover{transform:rotate(-10deg) scale(1.18);}
+  @media (prefers-reduced-motion:reduce){
+    .tm-chip.just,.card.just-done,.bump,.tm-chip.just input.tm-chk:checked,.tm-chip.just input.tm-chk:checked::after{animation:none !important;}
+    .card.just-done::after{display:none;}
+  }
 </style>
 </head>
 <body>
@@ -1382,7 +1455,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.26';
+const APP_VERSION = '0.27';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1780,6 +1853,53 @@ function tweenNums(root, scope){
     requestAnimationFrame(step);
   });
 }
+const cntPrev = {};
+function bumpCounts(root){
+  root.querySelectorAll('[data-bk]').forEach(el => {
+    const k = el.dataset.bk, v = el.textContent;
+    if(!reduceMotion && k in cntPrev && cntPrev[k] !== v) el.classList.add('bump');
+    cntPrev[k] = v;
+  });
+}
+function shineCard(card){
+  card.classList.add('just-done');
+  setTimeout(() => card.classList.remove('just-done'), 1300);
+}
+// Kartu pindah kolom: salinan kartu terbang dari posisi lama ke posisi baru, lalu kilau kalau masuk Selesai
+function ghostMove(card, p, nr, toDone){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = p.html;
+  const g = wrap.firstElementChild;
+  g.classList.remove('anim-in'); g.classList.add('card-ghost');
+  Object.assign(g.style, {position:'fixed', left:p.r.left + 'px', top:p.r.top + 'px', width:p.r.width + 'px', margin:'0', zIndex:'90', pointerEvents:'none', boxSizing:'border-box'});
+  document.body.appendChild(g);
+  card.style.visibility = 'hidden';
+  const dx = nr.left - p.r.left, dy = nr.top - p.r.top;
+  const a = g.animate([
+    {transform:'translate(0,0) scale(1)'},
+    {transform:`translate(${dx * .5}px,${dy * .5}px) scale(1.04)`, offset:.5, boxShadow:'0 26px 44px -16px rgba(28,27,24,.38)'},
+    {transform:`translate(${dx}px,${dy}px) scale(1)`}
+  ], {duration:540, easing:'cubic-bezier(.22,1,.36,1)'});
+  let fin = false;
+  const end = () => { if(fin) return; fin = true; g.remove(); card.style.visibility = ''; if(toDone) shineCard(card); };
+  a.onfinish = end; a.oncancel = end;
+}
+// Tombol Simpan: teks -> spinner -> centang hijau -> modal nutup
+function initSaveBtns(){
+  ['modalSave','catalogSave','teamSave','bauModalSave'].forEach(id => {
+    const b = document.getElementById(id);
+    if(!b || b.querySelector('.bl')) return;
+    b.classList.add('sv');
+    b.innerHTML = `<span class="bl">${b.textContent}</span><span class="bx"><i class="spin"></i><svg class="tk" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>`;
+  });
+}
+function btnDone(btn, after){
+  if(!btn || reduceMotion){ after(); return; }
+  btn.classList.add('busy');
+  setTimeout(() => btn.classList.add('ok'), 170);
+  setTimeout(() => { after(); setTimeout(() => btn.classList.remove('busy','ok'), 320); }, 560);
+}
+let justTid = null;
 function meterHtml(pct, max, cls, ticks, title){
   const w = Math.max(0, Math.min(100, pct / max * 100));
   return `<div class="meter ${cls}" title="${esc(title)}" role="img" aria-label="${esc(title)}"><i style="width:${w.toFixed(1)}%"></i>${(ticks || []).map(t => `<b style="left:${Math.min(100, t / max * 100).toFixed(1)}%"></b>`).join('')}</div>`;
@@ -1881,8 +2001,9 @@ function renderSidebarFilters(){
   const sf = document.getElementById('statusFilters');
   sf.innerHTML = sDefs.map(d => `
     <button class="filter-item ${filterStatus === d.k ? 'active' : ''}" data-status="${d.k}">
-      <span class="ic">${d.ic}</span><span class="lbl">${d.t}</span><span class="cnt">${counts[d.k]}</span>
+      <span class="ic">${d.ic}</span><span class="lbl">${d.t}</span><span class="cnt" data-bk="s:${d.k}">${counts[d.k]}</span>
     </button>`).join('');
+  bumpCounts(sf);
   sf.querySelectorAll('[data-status]').forEach(el => {
     el.onclick = () => { filterStatus = el.dataset.status; renderAll(); };
   });
@@ -2072,6 +2193,12 @@ function renderBoard(){
   }
 
   const colScroll = [...board.querySelectorAll('.col')].map(c => c.scrollTop);
+  document.querySelectorAll('.card-ghost').forEach(g => g.remove());
+  const prevCards = new Map();
+  if(!reduceMotion) board.querySelectorAll('.col').forEach((col, ci) => col.querySelectorAll('.card').forEach(c => {
+    const r = c.getBoundingClientRect();
+    if(r.width > 0) prevCards.set(c.dataset.id, {r, ck: COLUMNS[ci] && COLUMNS[ci].key, html: c.outerHTML});
+  }));
   board.innerHTML = COLUMNS.map(col => {
     const items = filtered.filter(d => getStatus(d) === col.key);
     const rev = items.reduce((s,d) => s + fin(d).revenue, 0);
@@ -2088,7 +2215,7 @@ function renderBoard(){
       <div class="col-head">
         <div class="col-head-top">
           <div class="col-title">${col.title}</div>
-          <span class="col-count">${items.length}</span>
+          <span class="col-count" data-bk="c:${col.key}">${items.length}</span>
         </div>
         ${sub ? `<div class="col-sub">${sub}</div>` : ''}
       </div>
@@ -2104,10 +2231,28 @@ function renderBoard(){
     col.querySelectorAll('.card').forEach(c => {
       const key = ci + ':' + c.dataset.id;
       newKeys.add(key);
-      if(!boardKeys.has(key)){ c.classList.add('anim-in'); c.style.setProperty('--i', Math.min(k, 8)); k++; }
+      if(!boardKeys.has(key) && !prevCards.has(c.dataset.id)){ c.classList.add('anim-in'); c.style.setProperty('--i', Math.min(k, 8)); k++; }
     });
   });
   boardKeys = newKeys;
+  bumpCounts(board);
+  if(prevCards.size){
+    const inView = r => r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+    board.querySelectorAll('.col').forEach((col, ci) => {
+      const ck = COLUMNS[ci].key;
+      col.querySelectorAll('.card').forEach(card => {
+        const p = prevCards.get(card.dataset.id);
+        if(!p) return;
+        const nr = card.getBoundingClientRect();
+        const dx = p.r.left - nr.left, dy = p.r.top - nr.top;
+        const moved = p.ck !== ck, toDone = moved && ck === 'done';
+        const ok = (Math.abs(dx) >= 3 || Math.abs(dy) >= 3) && (inView(p.r) || inView(nr));
+        if(moved && ok) ghostMove(card, p, nr, toDone);
+        else if(moved){ if(toDone) shineCard(card); }
+        else if(ok) card.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}], {duration:400, easing:'cubic-bezier(.22,1,.36,1)'});
+      });
+    });
+  }
 
   board.querySelectorAll('.card').forEach(card => {
     card.onclick = (e) => {
@@ -2665,14 +2810,14 @@ document.getElementById('catalogBtn').onclick = openCatalogModal;
 document.getElementById('catalogCancel').onclick = closeCatalogModal;
 catalogOverlay.onclick = (e) => { if(e.target === catalogOverlay) closeCatalogModal(); };
 document.getElementById('catalogSave').onclick = () => {
-  if(!isAdmin) return;
+  if(!isAdmin || document.getElementById('catalogSave').classList.contains('busy')) return;
   catalogRate = Math.max(0, +document.getElementById('f_catalog_rate').value || 0);
   catalogData = collectCatalogRows();
   saveCatalog();
   pushToCloud();
   renderMhCalcOptions();
-  closeCatalogModal();
   toast('Katalog layanan disimpan');
+  btnDone(document.getElementById('catalogSave'), closeCatalogModal);
 };
 
 function openModal(id){
@@ -2735,7 +2880,7 @@ document.getElementById('modalDelete').onclick = () => {
   });
 };
 document.getElementById('modalSave').onclick = () => {
-  if(!isAdmin) return;
+  if(!isAdmin || document.getElementById('modalSave').classList.contains('busy')) return;
   const name = document.getElementById('f_name').value.trim();
   if(!name){ document.getElementById('f_name').focus(); toast('Nama project wajib diisi'); return; }
 
@@ -2772,7 +2917,8 @@ document.getElementById('modalSave').onclick = () => {
     data.push({id:uid(), ...payload});
     toast('Project ditambahkan');
   }
-  save(data); closeModal(); renderAll();
+  save(data); renderAll();
+  btnDone(document.getElementById('modalSave'), closeModal);
 };
 
 document.getElementById('clearStatus').onclick = () => { filterStatus = 'all'; renderAll(); };
@@ -3135,10 +3281,16 @@ function renderTasks(){
       const chips = todos.map((t, i) => `${i ? TM_ARROW : ''}<div class="tm-chip ${t.done ? 'done' : ''}" data-pid="${it.id}" data-tid="${t.id}" ${isAdmin ? 'draggable="true"' : ''}><span class="tm-n">${i+1}</span><label><input type="checkbox" class="tm-chk" ${t.done ? 'checked' : ''} ${isAdmin ? '' : 'disabled'}><span class="tt">${esc(t.text)}</span></label></div>`).join('');
       html += `<tr><td class="c1"><div class="pname">${esc(it.name)}</div><div class="psub">${esc(it.pic || '')} · ${it.progress || 0}%</div><div class="rev-m">${fmtRp(f.revenue, true)}</div></td>
         <td class="c2"><div class="rev">${fmtRp(f.revenue, true)}</div><div class="net ${marginClass(f.netPct)}">Net ${fmtRp(f.netProfit, true)} · ${f.netPct.toFixed(0)}%</div></td>
-        <td><div class="tm-flow" data-pid="${it.id}">${chips}${isAdmin ? `<button type="button" class="tm-add" data-add="${it.id}">+ Task</button>` : ''}${todos.length ? `<span class="tm-count">${done}/${todos.length}</span>` : ''}</div></td></tr>`;
+        <td><div class="tm-flow" data-pid="${it.id}">${chips}${isAdmin ? `<button type="button" class="tm-add" data-add="${it.id}">+ Task</button>` : ''}${todos.length ? `<span class="tm-count" data-bk="t:${it.id}">${done}/${todos.length}</span>` : ''}</div></td></tr>`;
     });
   });
   tbl.innerHTML = html + '</tbody>';
+  bumpCounts(tbl);
+  if(justTid){
+    const c = tbl.querySelector(`.tm-chip[data-tid="${justTid}"]`);
+    if(c){ c.classList.add('just'); setTimeout(() => c.classList.remove('just'), 700); }
+    justTid = null;
+  }
 }
 (function(){
   const tbl = document.getElementById('tasksTable');
@@ -3151,6 +3303,7 @@ function renderTasks(){
     const t = it && (it.todos || []).find(x => x.id === chip.dataset.tid);
     if(!t) return;
     t.done = e.target.checked;
+    justTid = t.done ? t.id : null;
     save(data); renderAll();
   });
   tbl.addEventListener('click', (e) => {
@@ -3378,7 +3531,7 @@ document.getElementById('teamRows').addEventListener('click', (e) => {
   });
 })();
 document.getElementById('teamSave').onclick = () => {
-  if(!isAdmin) return;
+  if(!isAdmin || document.getElementById('teamSave').classList.contains('busy')) return;
   const md = +document.getElementById('f_team_md').value, hd = +document.getElementById('f_team_hd').value;
   if(!(md > 0) || !(hd > 0)){ toast('Mandays per tahun dan jam per manday harus lebih dari 0'); return; }
   const members = [...document.querySelectorAll('#teamRows .tp-row')].map(r => ({
@@ -3391,7 +3544,7 @@ document.getElementById('teamSave').onclick = () => {
     teamState = {mandaysPerYear: md, hoursPerDay: hd, members};
     saveTeam();
     data.forEach(it => { it.assignments = (it.assignments || []).filter(a => keep.has(a.memberId)); });
-    save(data); closeTeamSetup(); renderAll(); toast('Setup tim disimpan');
+    save(data); renderAll(); toast('Setup tim disimpan'); btnDone(document.getElementById('teamSave'), closeTeamSetup);
   };
   if(removedWithWork.length) askConfirm('Hapus member?', `${removedWithWork.map(m => m.name).join(', ')} masih punya jam di project. Assignment-nya ikut dihapus.`, commit);
   else commit();
@@ -3896,6 +4049,7 @@ document.getElementById('bauModalDelete').onclick = () => {
   });
 };
 document.getElementById('bauModalSave').onclick = () => {
+  if(document.getElementById('bauModalSave').classList.contains('busy')) return;
   if(!isAdmin) return;
   const bu = document.getElementById('bau_f_bu').value.trim();
   if(!bu){ document.getElementById('bau_f_bu').focus(); toast('Business unit wajib diisi'); return; }
@@ -3917,9 +4071,11 @@ document.getElementById('bauModalSave').onclick = () => {
     bauData.push(migrateBauLine({id: uid(), ...payload}));
     toast('Baris BAU ditambahkan');
   }
-  saveBau(bauData); closeBauModal(); renderBauAll();
+  saveBau(bauData); renderBauAll();
+  btnDone(document.getElementById('bauModalSave'), closeBauModal);
 };
 
+initSaveBtns();
 applyAdminUI();
 initFirebase();
 renderAll();
