@@ -651,6 +651,114 @@
     table.bau-table{min-width:900px;}
     .bau-month-grid{overflow-x:auto;}
   }
+
+  /* ===== v0.26: motion system & chart styling ===== */
+  :root{
+    --ease-out:cubic-bezier(.22,1,.36,1);
+    --ease-spring:cubic-bezier(.34,1.36,.64,1);
+    --ok-fill:#3E9A52; --warn-fill:#E8A03A;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}}
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.985)}}
+  @keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.98)}}
+  @keyframes growX{from{transform:scaleX(0)}}
+  @keyframes growY{from{transform:scaleY(0)}}
+  @keyframes ringIn{from{stroke-dashoffset:var(--len)}}
+
+  /* view masuk: tiap blok fade naik bergantian */
+  .view-enter > *{animation:fadeUp .5s var(--ease-out) backwards;}
+  .view-enter > *:nth-child(2){animation-delay:.05s;}
+  .view-enter > *:nth-child(3){animation-delay:.1s;}
+  .view-enter > *:nth-child(4){animation-delay:.15s;}
+  .view-enter > *:nth-child(5){animation-delay:.2s;}
+
+  /* kartu board: cuma kartu yang baru muncul yang dianimasi */
+  .card{transition:transform .26s var(--ease-out), box-shadow .26s var(--ease-out), background-color .2s;}
+  .card.anim-in{animation:cardIn .45s var(--ease-out) backwards;animation-delay:calc(var(--i,0) * 45ms);}
+  .card-prog-fill{transition:width .5s var(--ease-out);transform-origin:left;}
+  .card.anim-in .card-prog-fill{animation:growX .8s var(--ease-out) backwards;animation-delay:calc(var(--i,0) * 45ms + .15s);}
+  .card-prog-track.dragging .card-prog-fill{transition:none;}
+
+  /* tombol: transisi warna halus + efek tekan */
+  button{transition:background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .14s var(--ease-out), opacity .18s ease;}
+  .btn-new:active,.btn-primary:active,.btn-secondary:active,.dd-trigger:active,.filter-item:active,.side-action:active,
+  .card-start:active,.tm-add:active,.todo-add:active,.mg-pill:active,.view-switch button:active,.view-toggle button:active,.type-opt:active{transform:scale(.97);}
+  .filter-item,.dd-item,.side-action{transition:background-color .18s ease, color .18s ease, border-color .18s ease, transform .14s var(--ease-out);}
+  .tm-chip{transition:background-color .22s ease, border-color .22s ease, color .22s ease, opacity .2s ease;}
+  input,select,textarea{transition:border-color .18s ease, background-color .18s ease, box-shadow .18s ease;}
+
+  /* modal: overlay fade in/out, modal muncul naik pelan */
+  .overlay{display:flex;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .22s ease, visibility 0s linear .22s;}
+  .overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .22s ease, visibility 0s;}
+  .overlay.show .modal{animation:popIn .36s var(--ease-out);}
+
+  /* dropdown: fade + sedikit turun */
+  .dd-menu{display:block;visibility:hidden;opacity:0;transform:translateY(-4px) scale(.98);transform-origin:top left;
+    transition:opacity .16s ease, transform .22s var(--ease-out), visibility 0s linear .22s;}
+  .dd.open .dd-menu{visibility:visible;opacity:1;transform:none;transition:opacity .16s ease, transform .22s var(--ease-out), visibility 0s;}
+  .dd-chev{transition:transform .25s var(--ease-out);}
+
+  /* toast */
+  .toast{transition:opacity .22s ease, transform .42s var(--ease-spring);}
+
+  /* segmented control: pil aktif geser halus */
+  .seg-host{position:relative;isolation:isolate;}
+  .seg-host > button{position:relative;z-index:1;}
+  .seg-thumb{position:absolute;top:0;left:0;z-index:0;pointer-events:none;opacity:0;
+    transition:transform .36s var(--ease-out), width .36s var(--ease-out), height .36s var(--ease-out), opacity .2s ease;}
+  .seg-thumb.instant{transition:none;}
+  .view-toggle{padding:3px;gap:2px;border-radius:12px;overflow:visible;}
+  .view-toggle button{border-radius:8px;padding:6px 11px;}
+  #viewToggle .seg-thumb{background:var(--ink);border-radius:8px;}
+  #viewToggle.seg-host button.on{background:transparent;}
+  .view-switch .seg-thumb{background:var(--card);border-radius:9px;box-shadow:0 1px 2px rgba(28,27,24,.08), 0 3px 10px -4px rgba(28,27,24,.12);}
+  .view-switch.seg-host button.active{background:transparent;box-shadow:none;}
+  .type-toggle .seg-thumb{background:var(--card);border-radius:8px;box-shadow:0 1px 2px rgba(28,27,24,.08);}
+  .type-toggle.seg-host .type-opt.active{background:transparent;box-shadow:none;}
+
+  /* ---- chart di stat bar ---- */
+  .stat-seg > div:last-child{flex:1;}
+  .meter{position:relative;height:6px;border-radius:99px;margin-top:8px;max-width:160px;}
+  .meter i{display:block;height:100%;border-radius:99px;transform-origin:left;animation:growX .9s var(--ease-out) backwards .15s;}
+  .meter b{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--card);border-radius:1px;}
+  .meter.m-acc{background:var(--accent-soft);} .meter.m-acc i{background:var(--accent);}
+  .meter.m-good{background:var(--ok-soft);} .meter.m-good i{background:var(--ok-fill);}
+  .meter.m-warn{background:var(--warn-soft);} .meter.m-warn i{background:var(--warn-fill);}
+  .meter.m-bad{background:var(--danger-soft);} .meter.m-bad i{background:var(--danger);}
+  .mbar{display:flex;gap:2px;height:6px;margin-top:8px;max-width:180px;transform-origin:left;animation:growX .9s var(--ease-out) backwards .1s;}
+  .mbar i{border-radius:99px;min-width:4px;}
+  .mbar .healthy{background:var(--ok-fill);} .mbar .mid{background:var(--warn-fill);} .mbar .low{background:var(--danger);}
+  .bubars{display:flex;align-items:flex-end;gap:2px;height:20px;margin-top:5px;max-width:160px;}
+  .bubars i{flex:1;max-width:10px;min-width:3px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.32;transform-origin:bottom;
+    animation:growY .6s var(--ease-out) backwards;animation-delay:calc(var(--i,0) * 35ms + .12s);transition:opacity .15s ease;}
+  .bubars i.top{opacity:1;} .bubars i:hover{opacity:.75;}
+  .statbar.still .meter i,.statbar.still .mbar,.statbar.still .bubars i{animation:none;}
+
+  /* ---- BAU: spark bar per bulan ---- */
+  .bau-strip{display:flex;align-items:flex-end;gap:2px;height:22px;position:relative;border-bottom:1px solid var(--border);}
+  .bau-strip::after{content:'';position:absolute;left:0;right:0;bottom:66.67%;height:1px;background:var(--border-soft);pointer-events:none;}
+  .bau-strip span{width:8px;height:3px;border-radius:2px 2px 0 0;background:var(--border);flex-shrink:0;position:relative;z-index:1;
+    transform-origin:bottom;animation:growY .5s var(--ease-out) backwards;animation-delay:calc(var(--i,0) * 25ms);}
+  .bau-strip span.achieve{background:var(--accent);}
+  .bau-strip span.under{background:var(--danger);}
+
+  /* ---- Tim: ring okupansi ---- */
+  .tv-pct{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .tv-pct small{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--ink-soft);}
+  .tv-pct small .tv-dot{margin:0;}
+  .ring .ring-t{font:800 13px 'Inter',sans-serif;fill:var(--ink);font-variant-numeric:tabular-nums;}
+  .ring-fill{animation:ringIn 1s var(--ease-out) backwards .1s;}
+  .tv-grid:not(.still) .tv-card{animation:cardIn .45s var(--ease-out) backwards;animation-delay:calc(var(--i,0) * 50ms);}
+  .tv-grid:not(.still) .tv-pbar i{transform-origin:left;animation:growX .8s var(--ease-out) backwards .25s;}
+  .tv-grid.still .ring-fill{animation:none;}
+  .tv-card{transition:box-shadow .25s var(--ease-out), transform .25s var(--ease-out);}
+  .tv-card:hover{box-shadow:0 1px 2px rgba(28,27,24,.05), 0 10px 24px -12px rgba(28,27,24,.2);}
+  .tv-pbar i{transition:width .5s var(--ease-out);}
+
+  @media(max-width:900px){ .dd:nth-child(2) .dd-menu{transform-origin:top right;} .stat-mg{flex-wrap:wrap;} .stat-seg:first-child{flex:1 1 50%;} }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important;}
+  }
 </style>
 </head>
 <body>
@@ -881,7 +989,7 @@
         <span class="lg-item"><span class="lg-dot achieve"></span>Achieve (capaian ≥ 100% target)</span>
         <span class="lg-item"><span class="lg-dot under"></span>Under Achieve (capaian &lt; 100% target)</span>
         <span class="lg-item"><span class="lg-dot"></span>Belum ada data (target/actual kosong)</span>
-        <span class="lg-note">1 kotak = 1 bulan, urut Jan sampai Des</span>
+        <span class="lg-note">1 batang = 1 bulan, tinggi = capaian, garis tipis = 100%, urut Jan sampai Des</span>
       </div>
 
       <div class="bau-table-wrap">
@@ -1274,7 +1382,7 @@ const RTDB_PATH = 'dmd-tracker/board';
 const ADMIN_PIN = '7777';
 // Bump this (and the delivered filename) every time a new revision goes out,
 // so it's always clear which version is live on a given browser/device.
-const APP_VERSION = '0.25';
+const APP_VERSION = '0.26';
 document.getElementById('appVersion').textContent = `BMD Project Tracker · v${APP_VERSION}`;
 let db = null, boardRef = null, cloudReady = false;
 // Blocks every push until the first cloud snapshot has landed, so stale local data
@@ -1645,6 +1753,52 @@ function sortList(list){
   return a;
 }
 
+
+/* ---- v0.26 motion & chart helpers ---- */
+const reduceMotion = (() => { try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+const numPrev = {};
+function fmtCount(v, f){
+  if(f === 'rp') return fmtRp(Math.round(v), true);
+  if(f === 'pct') return Math.round(v).toLocaleString('id-ID') + '%';
+  return Math.round(v).toLocaleString('id-ID');
+}
+// Angka naik halus dari nilai sebelumnya ke nilai baru (atau dari 0 saat halaman baru dibuka)
+function tweenNums(root, scope){
+  const prev = numPrev[scope] || (numPrev[scope] = {});
+  root.querySelectorAll('[data-cv]').forEach(el => {
+    const key = el.dataset.key, to = +el.dataset.cv || 0, f = el.dataset.fmt;
+    const from = prev[key] == null ? 0 : prev[key];
+    prev[key] = to;
+    if(reduceMotion || from === to){ el.textContent = fmtCount(to, f); return; }
+    const t0 = performance.now(), dur = 700;
+    el.textContent = fmtCount(from, f);
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmtCount(from + (to - from) * e, f);
+      if(k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+function meterHtml(pct, max, cls, ticks, title){
+  const w = Math.max(0, Math.min(100, pct / max * 100));
+  return `<div class="meter ${cls}" title="${esc(title)}" role="img" aria-label="${esc(title)}"><i style="width:${w.toFixed(1)}%"></i>${(ticks || []).map(t => `<b style="left:${Math.min(100, t / max * 100).toFixed(1)}%"></b>`).join('')}</div>`;
+}
+function marginBarHtml(mgc){
+  const tot = mgc.healthy + mgc.mid + mgc.low;
+  if(!tot) return '';
+  const lab = {healthy:`sehat (≥ ${MARGIN_HEALTHY}%)`, mid:`minim (${MARGIN_MIN} sampai < ${MARGIN_HEALTHY}%)`, low:`di bawah ${MARGIN_MIN}%`};
+  return `<div class="mbar" role="img" aria-label="Sebaran margin project">${['healthy','mid','low'].filter(k => mgc[k]).map(k => `<i class="${k}" style="flex:${mgc[k]}" title="${mgc[k]} project ${lab[k]}"></i>`).join('')}</div>`;
+}
+function buBarsHtml(list){
+  const by = {};
+  list.forEach(d => { const r = fin(d).revenue; if(r > 0){ const k = d.bu || '-'; by[k] = (by[k] || 0) + r; } });
+  const arr = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  if(arr.length < 2) return '';
+  const max = arr[0][1];
+  return `<div class="bubars" role="img" aria-label="Revenue per BU">${arr.map(([bu, r], i) => `<i class="${i === 0 ? 'top' : ''}" style="height:${Math.max(8, r / max * 100).toFixed(1)}%;--i:${i}" title="${esc(bu)}: ${fmtRp(r, true)}"></i>`).join('')}</div>`;
+}
+let statSig = '';
 function renderStatBar(){
   const v = applyFilters(data);
   let rev = 0, gpm = 0, net = 0;
@@ -1663,18 +1817,20 @@ function renderStatBar(){
 
   const segs = [
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
-     l:'Project', n:v.length, b:null,
+     l:'Project', n:v.length, cv:v.length, fmt:'int', b:null, viz: marginBarHtml(mgc),
      mg:[{k:'healthy', c:'good', t:`${mgc.healthy} sehat`, tip:`Margin ≥ ${MARGIN_HEALTHY}%`},
          {k:'mid',     c:'warn', t:`${mgc.mid} minim`,     tip:`Margin ${MARGIN_MIN} sampai < ${MARGIN_HEALTHY}%`},
          {k:'low',     c:'bad',  t:`${mgc.low} < ${MARGIN_MIN}%`, tip:`Margin di bawah ${MARGIN_MIN}%`}]},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><text x="12" y="15.5" font-size="8.5" font-weight="800" fill="currentColor" stroke="none" text-anchor="middle" font-family="Inter,sans-serif">Rp</text></svg>',
-     l:'Revenue', n:fmtRp(rev, true), b:null},
+     l:'Revenue', n:fmtRp(rev, true), cv:rev, fmt:'rp', b:null, viz: buBarsHtml(v)},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>',
-     l:'Gross profit margin', n:fmtRp(gpm, true), b:rev ? {c:'brand', t:gpmPct.toFixed(0) + '%'} : null},
+     l:'Gross profit margin', n:fmtRp(gpm, true), cv:gpm, fmt:'rp', b:rev ? {c:'brand', t:gpmPct.toFixed(0) + '%'} : null,
+     viz: rev ? meterHtml(gpmPct, 100, 'm-acc', [], `GPM ${gpmPct.toFixed(1)}% dari revenue`) : ''},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
-     l:'Net profit', n:fmtRp(net, true), b:rev ? {c:marginClass(netPct), t:netPct.toFixed(1) + '%'} : null},
+     l:'Net profit', n:fmtRp(net, true), cv:net, fmt:'rp', b:rev ? {c:marginClass(netPct), t:netPct.toFixed(1) + '%'} : null,
+     viz: rev ? meterHtml(netPct, Math.max(MARGIN_HEALTHY * 2, 20), 'm-' + marginClass(netPct), [MARGIN_MIN, MARGIN_HEALTHY], `Net margin ${netPct.toFixed(1)}% · minimum ${MARGIN_MIN}% · sehat ${MARGIN_HEALTHY}%`) : ''},
     {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
-     l:'Butuh atensi', n:attention, b:attention > 0 ? {c:'bad', t:over + ' overdue'} : {c:'good', t:'aman'}}
+     l:'Butuh atensi', n:attention, cv:attention, fmt:'int', b:attention > 0 ? {c:'bad', t:over + ' overdue'} : {c:'good', t:'aman'}}
   ];
 
   document.getElementById('statBar').innerHTML = segs.map(s => `
@@ -1683,12 +1839,20 @@ function renderStatBar(){
       <div style="min-width:0;">
         <div class="stat-label">${s.l}</div>
         <div class="stat-row">
-          <div class="stat-num num">${s.n}</div>
+          <div class="stat-num num" ${s.cv != null ? `data-cv="${s.cv}" data-fmt="${s.fmt}" data-key="${s.l}"` : ''}>${s.n}</div>
           ${s.b ? `<span class="badge-pill ${s.b.c}">${s.b.t}</span>` : ''}
         </div>
+        ${s.viz || ''}
         ${s.mg ? `<div class="stat-row stat-mg">${s.mg.map(m => `<button type="button" class="badge-pill ${m.c} mg-pill ${filterMargin === m.k ? 'sel' : ''}" data-mgpill="${m.k}" title="${m.tip}. Klik buat filter.">${m.t}</button>`).join('')}</div>` : ''}
       </div>
     </div>`).join('');
+
+  // Animasi chart cuma jalan kalau angkanya berubah, biar gak kedip tiap sync
+  const sbEl = document.getElementById('statBar');
+  const sig = JSON.stringify([v.length, rev, gpm, net, mgc, MARGIN_MIN, MARGIN_HEALTHY]);
+  sbEl.classList.toggle('still', sig === statSig);
+  statSig = sig;
+  tweenNums(sbEl, 'board');
 
   document.querySelectorAll('[data-mgpill]').forEach(b => {
     b.onclick = () => { filterMargin = (filterMargin === b.dataset.mgpill) ? null : b.dataset.mgpill; renderAll(); };
@@ -1874,6 +2038,7 @@ function cardHtml(item){
   </div>`;
 }
 
+let boardKeys = new Set();
 function renderBoard(){
   const board = document.getElementById('board');
 
@@ -1906,6 +2071,7 @@ function renderBoard(){
     return;
   }
 
+  const colScroll = [...board.querySelectorAll('.col')].map(c => c.scrollTop);
   board.innerHTML = COLUMNS.map(col => {
     const items = filtered.filter(d => getStatus(d) === col.key);
     const rev = items.reduce((s,d) => s + fin(d).revenue, 0);
@@ -1929,6 +2095,19 @@ function renderBoard(){
       ${items.length ? items.map(cardHtml).join('') : '<div class="col-empty">Kosong</div>'}
     </div>`;
   }).join('');
+
+  // Balikin posisi scroll tiap kolom, lalu animasikan kartu yang baru muncul di kolomnya saja
+  const newKeys = new Set();
+  board.querySelectorAll('.col').forEach((col, ci) => {
+    if(colScroll[ci]) col.scrollTop = colScroll[ci];
+    let k = 0;
+    col.querySelectorAll('.card').forEach(c => {
+      const key = ci + ':' + c.dataset.id;
+      newKeys.add(key);
+      if(!boardKeys.has(key)){ c.classList.add('anim-in'); c.style.setProperty('--i', Math.min(k, 8)); k++; }
+    });
+  });
+  boardKeys = newKeys;
 
   board.querySelectorAll('.card').forEach(card => {
     card.onclick = (e) => {
@@ -1962,27 +2141,27 @@ function renderBoard(){
 
   if(!isAdmin) return;
   board.querySelectorAll('[data-prog]').forEach(track => {
-    let dragging = false;
-    const setFrom = (e) => {
-      const r = track.getBoundingClientRect();
-      const x = e.touches ? e.touches[0].clientX : e.clientX;
-      const pct = Math.max(0, Math.min(100, Math.round((x - r.left)/r.width*100)));
-      const item = data.find(d => d.id === track.dataset.prog);
-      if(!item) return;
-      item.progress = pct;
-      track.querySelector('.card-prog-fill').style.width = pct + '%';
-      track.parentElement.querySelector('.card-prog-val').textContent = pct + '%';
-    };
-    const stop = () => { if(dragging){ dragging = false; save(data); renderAll(); } };
-    track.onmousedown = (e) => { e.stopPropagation(); e.preventDefault(); dragging = true; setFrom(e); };
+    track.onmousedown = (e) => { e.stopPropagation(); e.preventDefault(); progDrag = track; track.classList.add('dragging'); progSetFrom(track, e); };
     track.onclick = (e) => e.stopPropagation();
-    track.addEventListener('touchstart', (e) => { dragging = true; setFrom(e); }, {passive:true});
-    track.addEventListener('touchmove', (e) => { if(dragging) setFrom(e); }, {passive:true});
-    track.addEventListener('touchend', stop);
-    window.addEventListener('mousemove', (e) => { if(dragging) setFrom(e); });
-    window.addEventListener('mouseup', stop);
+    track.addEventListener('touchstart', (e) => { progDrag = track; track.classList.add('dragging'); progSetFrom(track, e); }, {passive:true});
+    track.addEventListener('touchmove', (e) => { if(progDrag === track) progSetFrom(track, e); }, {passive:true});
+    track.addEventListener('touchend', progStop);
   });
 }
+let progDrag = null;
+function progSetFrom(track, e){
+  const r = track.getBoundingClientRect();
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const pct = Math.max(0, Math.min(100, Math.round((x - r.left)/r.width*100)));
+  const item = data.find(d => d.id === track.dataset.prog);
+  if(!item) return;
+  item.progress = pct;
+  track.querySelector('.card-prog-fill').style.width = pct + '%';
+  track.parentElement.querySelector('.card-prog-val').textContent = pct + '%';
+}
+function progStop(){ if(progDrag){ progDrag = null; save(data); renderAll(); } }
+window.addEventListener('mousemove', (e) => { if(progDrag) progSetFrom(progDrag, e); });
+window.addEventListener('mouseup', progStop);
 
 function renderAll(){
   renderSidebarFilters();
@@ -3220,9 +3399,9 @@ document.getElementById('teamSave').onclick = () => {
 
 /* --- dashboard tim --- */
 function occState(pct){
-  if(pct > 100) return {c:'var(--danger-text)', bg:'var(--danger)', t:'Overload'};
-  if(pct >= 60) return {c:'var(--ok-text)', bg:'#3E9A52', t:'Optimal'};
-  return {c:'var(--warn-text)', bg:'#E8A03A', t:'Longgar'};
+  if(pct > 100) return {c:'var(--danger-text)', bg:'var(--danger)', soft:'var(--danger-soft)', t:'Overload'};
+  if(pct >= 60) return {c:'var(--ok-text)', bg:'#3E9A52', soft:'var(--ok-soft)', t:'Optimal'};
+  return {c:'var(--warn-text)', bg:'#E8A03A', soft:'var(--warn-soft)', t:'Longgar'};
 }
 function teamLoad(){
   return teamState.members.map(m => {
@@ -3236,6 +3415,14 @@ function teamLoad(){
     return {m, projs, hours, cap, pct: cap ? hours / cap * 100 : 0};
   });
 }
+function ringHtml(pct, st){
+  const r = 26, C = 2 * Math.PI * r, f = Math.max(0, Math.min(1, pct / 100));
+  return `<svg class="ring" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Okupansi ${Math.round(pct)}%">
+    <circle cx="32" cy="32" r="${r}" fill="none" stroke="${st.soft}" stroke-width="7"/>
+    ${f > 0 ? `<circle class="ring-fill" cx="32" cy="32" r="${r}" fill="none" stroke="${st.bg}" stroke-width="7" stroke-linecap="round" transform="rotate(-90 32 32)" style="stroke-dasharray:${C.toFixed(2)};stroke-dashoffset:${(C * (1 - f)).toFixed(2)};--len:${C.toFixed(2)}"/>` : ''}
+    <text x="32" y="36.5" text-anchor="middle" class="ring-t">${Math.round(pct)}%</text></svg>`;
+}
+let teamAnim = true;
 function renderTeam(){
   const grid = document.getElementById('teamGrid');
   if(!grid) return;
@@ -3250,13 +3437,14 @@ function renderTeam(){
   const unassigned = data.filter(it => !(it.assignments || []).some(a => a.hours > 0 && memberById(a.memberId))).length;
   const st = occState(avg);
   const segs = [
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>', l:'Member', n:rows.length, b:null},
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>', l:'Kapasitas tim', n:fmtNum(capTot / hd, 0) + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', l:'Ter-assign', n:fmtNum(hrTot / hd, 0) + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>', l:'Okupansi tim', n:fmtNum(avg, 0) + '%', b: rows.length ? {c: avg > 100 ? 'bad' : avg >= 60 ? 'good' : 'warn', t: st.t} : null},
-    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>', l:'Project tanpa tim', n:unassigned, b: over ? {c:'bad', t: over + ' overload'} : null}
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>', l:'Member', n:`<span data-cv="${rows.length}" data-fmt="int" data-key="m">${rows.length}</span>`, b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>', l:'Kapasitas tim', n:`<span data-cv="${Math.round(capTot / hd)}" data-fmt="int" data-key="cap">${fmtNum(capTot / hd, 0)}</span>` + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>', l:'Ter-assign', n:`<span data-cv="${Math.round(hrTot / hd)}" data-fmt="int" data-key="asg">${fmtNum(hrTot / hd, 0)}</span>` + ' <small style="font-size:12px;font-weight:600;color:var(--ink-faint)">mandays</small>', b:null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>', l:'Okupansi tim', n:`<span data-cv="${Math.round(avg)}" data-fmt="pct" data-key="occ">${fmtNum(avg, 0)}%</span>`, b: rows.length ? {c: avg > 100 ? 'bad' : avg >= 60 ? 'good' : 'warn', t: st.t} : null},
+    {i:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.9 18a2 2 0 001.7 3h16.8a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>', l:'Project tanpa tim', n:`<span data-cv="${unassigned}" data-fmt="int" data-key="un">${unassigned}</span>`, b: over ? {c:'bad', t: over + ' overload'} : null}
   ];
   document.getElementById('teamStatBar').innerHTML = segs.map(s => `<div class="stat-seg"><div class="stat-ico">${s.i}</div><div style="min-width:0;"><div class="stat-label">${s.l}</div><div class="stat-row"><div class="stat-num num">${s.n}</div>${s.b ? `<span class="badge-pill ${s.b.c}">${s.b.t}</span>` : ''}</div></div></div>`).join('');
+  tweenNums(document.getElementById('teamStatBar'), 'team');
   document.getElementById('teamSub').textContent = `Standar ${fmtNum(md, 0)} mandays x ${fmtNum(hd)} jam per tahun`;
   document.getElementById('teamLegend').innerHTML = '<span><i class="tv-dot" style="background:#E8A03A"></i>Longgar &lt; 60%</span><span><i class="tv-dot" style="background:#3E9A52"></i>Optimal 60-100%</span><span><i class="tv-dot" style="background:var(--danger)"></i>Overload &gt; 100%</span>';
 
@@ -3264,17 +3452,18 @@ function renderTeam(){
     grid.innerHTML = `<div class="tv-card" style="grid-column:1/-1;text-align:center;padding:36px;"><div class="tv-name">Belum ada member</div><div class="tv-role" style="margin-top:4px;">${isAdmin ? 'Klik Setup tim buat nambah member dan atur standar kapasitas.' : 'Admin belum setup tim.'}</div></div>`;
     return;
   }
-  grid.innerHTML = rows.map(r => {
+  grid.classList.toggle('still', !teamAnim);
+  teamAnim = false;
+  grid.innerHTML = rows.map((r, idx) => {
     const s = occState(r.pct), md_ = r.hours / hd, capMd = r.cap / hd;
     const projs = r.projs.map((p, i) => {
       const share = r.hours ? p.hours / r.hours * 100 : 0;
       return `<div class="tv-proj" data-pid="${p.item.id}"><span class="tv-rank">${i + 1}</span><div style="min-width:0;"><div class="tv-pn" title="${esc(p.item.name)}">${esc(p.item.name)}</div><div class="tv-pbar"><i style="width:${Math.min(100, share).toFixed(1)}%"></i></div></div><div class="tv-pv">${fmtNum(p.hours, 0)} jam<small>${fmtNum(p.hours / hd)} hari · ${fmtNum(share, 0)}%${p.unit === 'total' ? ' · total proj' : ''}</small></div></div>`;
     }).join('');
-    return `<div class="tv-card">
+    return `<div class="tv-card" style="--i:${Math.min(idx, 8)}">
       <div class="tv-head"><div class="avatar" style="background:${avatarColor(r.m.name)}">${initials(r.m.name)}</div>
         <div style="min-width:0;"><div class="tv-name">${esc(r.m.name)}</div><div class="tv-role">${esc(r.m.role || 'Member')}${r.m.alloc < 100 ? ' · alokasi ' + r.m.alloc + '%' : ''}</div></div>
-        <div class="tv-pct"><b style="color:${s.c}">${fmtNum(r.pct, 0)}%</b><small style="color:${s.c}">${s.t}</small></div></div>
-      <div class="tv-bar"><i style="width:${Math.min(100, r.pct).toFixed(1)}%;background:${s.bg}"></i></div>
+        <div class="tv-pct">${ringHtml(r.pct, s)}<small><i class="tv-dot" style="background:${s.bg}"></i>${s.t}</small></div></div>
       <div class="tv-md"><span><b>${fmtNum(md_)}</b> / ${fmtNum(capMd)} mandays per tahun</span><span>${r.cap - r.hours >= 0 ? 'sisa ' + fmtNum((r.cap - r.hours) / hd) + ' hari' : 'lebih ' + fmtNum((r.hours - r.cap) / hd) + ' hari'}</span></div>
       <div class="tv-sub">Project, paling dedicated di atas (${r.projs.length})</div>
       <div class="tv-projs">${projs || '<div class="tv-empty">Belum di-assign ke project mana pun.</div>'}</div>
@@ -3287,6 +3476,33 @@ document.getElementById('teamGrid').addEventListener('click', (e) => {
 });
 document.getElementById('teamMobileFilterBtn').onclick = openSidebar;
 
+
+/* ---- v0.26 segmented control dengan pil yang geser ---- */
+function initSegThumb(host, activeSel){
+  if(!host || host.querySelector(':scope > .seg-thumb')) return;
+  host.classList.add('seg-host');
+  const th = document.createElement('div');
+  th.className = 'seg-thumb instant';
+  host.prepend(th);
+  let first = true;
+  const place = () => {
+    const a = host.querySelector(activeSel);
+    if(!a || !a.offsetWidth){ th.style.opacity = 0; first = true; if(!th.classList.contains('instant')) th.classList.add('instant'); return; }
+    th.style.width = a.offsetWidth + 'px';
+    th.style.height = a.offsetHeight + 'px';
+    th.style.transform = `translate(${a.offsetLeft}px, ${a.offsetTop}px)`;
+    th.style.opacity = 1;
+    if(first){ first = false; requestAnimationFrame(() => requestAnimationFrame(() => th.classList.remove('instant'))); }
+  };
+  // Abaikan perubahan class si pil sendiri, biar observer gak muter terus
+  new MutationObserver(recs => { if(recs.some(r => r.target !== th)) place(); }).observe(host, {subtree:true, attributes:true, attributeFilter:['class']});
+  if(window.ResizeObserver) new ResizeObserver(place).observe(host);
+  place();
+}
+initSegThumb(document.getElementById('viewToggle'), 'button.on');
+initSegThumb(document.getElementById('viewSwitch'), 'button.active');
+document.querySelectorAll('.type-toggle').forEach(t => initSegThumb(t, '.type-opt.active'));
+
 /* ---- view switching ---- */
 let currentView = 'board';
 function switchView(view){
@@ -3298,9 +3514,12 @@ function switchView(view){
   document.getElementById('teamView').style.display = view === 'team' ? 'flex' : 'none';
   document.getElementById('boardFilterPanel').style.display = (view === 'board' || view === 'tasks') ? '' : 'none';
   document.getElementById('bauFilterPanel').style.display = view === 'bau' ? '' : 'none';
+  if(view === 'board'){ boardKeys = new Set(); numPrev.board = {}; statSig = ''; renderAll(); }
   if(view === 'bau') renderBauAll();
   if(view === 'tasks') renderTasks();
-  if(view === 'team') renderTeam();
+  if(view === 'team'){ teamAnim = true; numPrev.team = {}; renderTeam(); }
+  const vEl = document.getElementById(view + 'View');
+  if(vEl && !reduceMotion){ vEl.classList.remove('view-enter'); void vEl.offsetWidth; vEl.classList.add('view-enter'); }
 }
 document.querySelectorAll('#viewSwitch button').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
 document.getElementById('bauMobileFilterBtn').onclick = openSidebar;
@@ -3406,7 +3625,8 @@ function bauMiniStrip(line){
     const cls = ach === 'Achieve' ? 'achieve' : ach === 'Under Achieve' ? 'under' : '';
     const pct = computeMonthPct(line, mk);
     const tip = pct == null ? `${MONTH_LABEL_ID[mk]}: belum ada data` : `${MONTH_LABEL_ID[mk]}: ${ach} (${Math.round(pct)}%)`;
-    return `<span class="${cls}" title="${tip}"></span>`;
+    const h = pct == null ? 0 : Math.max(14, Math.min(pct, 150) / 150 * 100);
+    return `<span class="${cls}" style="--i:${MONTH_KEYS.indexOf(mk)};${h ? `height:${h.toFixed(1)}%` : ''}" title="${tip}"></span>`;
   }).join('');
 }
 function bauAchPill(ach){
